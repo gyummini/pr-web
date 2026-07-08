@@ -1,0 +1,56 @@
+{
+  "_readme": "시작 페이지 인트로 스크립트. 대사 엔진 포맷(speaker/sprite/text, type:choice). SKIP 시 choice 블록으로 즉시 점프한다.",
+  "script_id": "intro",
+  "lines": [
+    {
+      "speaker": "???",
+      "sprite": "normal",
+      "text": "어서 오세요! 기다리고 있었어요."
+    },
+    {
+      "speaker": "클루",
+      "sprite": "happy",
+      "text": "저는 이 사이트의 안내를 맡은 조수, 클루예요. 지원자 김경민 님이 이력서와 자기소개서를 한 권의 '사건 파일'로 엮었거든요."
+    },
+    {
+  "speaker": "클루",
+  "sprite": "normal",
+  "text": "그러니까 오늘, 이 파일을 검토하러 오신 분은 — 사건의 진위를 가리는 '탐정님'이신 셈이죠!"
+    },
+    {
+      "speaker": "클루",
+      "sprite": "normal",
+      "text": "자기소개서의 형광펜 표시된 문장을 누르면, 그 주장을 뒷받침하는 포트폴리오가 '증거'로 연결돼요."
+    },
+    {
+      "speaker": "클루",
+      "sprite": "happy",
+      "text": "증거는 제가 미리 요약해뒀으니, 원본은 필요할 때만 열어보시면 돼요. 전부 모으면… 좋은 일이 있을지도?"
+    },
+    {
+      "speaker": "클루",
+      "sprite": "normal",
+      "text": "그럼 탐정님, 수사는 어떻게 진행하시겠어요?"
+    },
+    {
+      "type": "choice",
+      "prompt": "수사 방식을 선택하세요",
+      "options": [
+        {
+          "label": "직접 수사한다",
+          "sub": "이력서와 자기소개서를 순서대로 · 약 5분",
+          "goto": "basic"
+        },
+        {
+          "label": "수사 결과만 본다",
+          "sub": "포트폴리오 일람 · 바로 보기",
+          "goto": "evidence_all_unlocked"
+        }
+      ]
+    }
+  ],
+  "skip_behavior": {
+    "target": "choice",
+    "note": "SKIP 클릭 시 대사 전부 생략하고 choice 블록만 표시. 이때 클루 스탠딩은 normal로 표시 유지."
+  }
+}
