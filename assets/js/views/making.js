@@ -31,7 +31,7 @@ export function renderMaking(view) {
         <h3>연락처</h3>
         <p>📞 <a href="tel:${r.phone.replace(/-/g, '')}">${r.phone}</a> &nbsp;·&nbsp; ✉ <a href="mailto:${r.email}">${r.email}</a></p>
         <div class="record-actions">
-          <a class="btn accent" href="${r.pdf}" download>이력서 PDF 다운로드 ⬇</a>
+          <a class="btn accent" href="${r.fullPdf}" download>이력서, 자기소개서 PDF 다운로드 ⬇</a>
           <a class="btn ghost" href="mailto:${r.email}">이메일 보내기 ✉</a>
         </div>
       </div>
