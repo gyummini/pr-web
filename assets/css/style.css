@@ -455,6 +455,62 @@ button { font-family: inherit; }
 }
 .fig-arrow { color: var(--accent); font-weight: 800; }
 
+/* 2-1: 컨셉 매핑 + 앵커 UI 재현 */
+.fig-map { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
+.fig-map-row { display: flex; align-items: center; justify-content: center; gap: 12px; }
+.fig-map-a, .fig-map-b {
+  min-width: 120px; text-align: center; padding: 7px 14px; border-radius: 999px;
+  font-size: .88rem; font-weight: 700;
+}
+.fig-map-a { border: 1.5px solid var(--ink-soft); background: var(--paper); }
+.fig-map-b { background: var(--accent); color: #fff; }
+.fig-map-eq { color: var(--accent); font-weight: 800; }
+.fig-uidemo {
+  border: 1px solid var(--line); border-radius: 8px; background: var(--paper);
+  padding: 16px 18px;
+}
+.fig-uidemo p { margin: 0; font-size: .95rem; line-height: 1.85; }
+.fig-uidemo .anchor { cursor: default; }
+
+/* 3-2: JSON ↔ 대사창 재현 / 5-1: 문서 발췌 */
+.fig-pair { display: flex; gap: 12px; align-items: stretch; }
+.fig-pair-arrow { align-self: center; color: var(--accent); font-size: 1.3rem; font-weight: 800; }
+.fig-bar {
+  background: #2c2b33; color: #d8d5cc; font-size: .74rem; font-weight: 700;
+  padding: 6px 12px; letter-spacing: .03em;
+}
+.fig-code { flex: 1; background: #1f1e24; border-radius: 8px; overflow: hidden; }
+.fig-code pre {
+  margin: 0; padding: 12px 14px; color: #e8e6df; font-size: .78rem; line-height: 1.8;
+  font-family: Consolas, "Courier New", monospace; white-space: pre-wrap; word-break: break-all;
+}
+.fig-dlgdemo {
+  flex: 1.2; background: var(--scene-bg); border-radius: 8px;
+  padding: 14px 14px 12px; display: flex; flex-direction: column;
+  align-items: center; justify-content: flex-end; gap: 0; overflow: hidden;
+}
+.demo-standing { height: 130px; object-fit: contain; margin-bottom: -8px; }
+.demo-box {
+  position: relative; width: 100%;
+  background: var(--scene-panel); border: 1px solid rgba(255,255,255,.22);
+  border-radius: 8px; padding: 16px 14px 14px; color: #f2f0ea;
+  font-size: .84rem; line-height: 1.65;
+}
+.demo-name {
+  position: absolute; top: -10px; left: 12px;
+  background: var(--accent); color: #fff; font-weight: 800; font-size: .7rem;
+  padding: 1px 10px; border-radius: 3px;
+}
+.demo-ctc {
+  position: absolute; right: 10px; bottom: 5px; color: #f2c14e; font-size: .72rem;
+  animation: ctc-blink 1s steps(2) infinite;
+}
+.fig-doc { border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+.fig-doc-body { padding: 14px 18px; background: var(--paper); font-size: .87rem; line-height: 1.75; }
+.fig-doc-h { font-weight: 800; margin: 8px 0 6px; }
+.fig-doc-body ol, .fig-doc-body ul { margin: 0 0 10px; padding-left: 22px; }
+.fig-doc-body li { margin-bottom: 4px; }
+
 /* 5-3: 비포/애프터 */
 .fig-ba { display: flex; gap: 14px; align-items: stretch; }
 .fig-ba-item { flex: 1; margin: 0; display: flex; flex-direction: column; }
@@ -475,6 +531,8 @@ button { font-family: inherit; }
   .fig-sheet-item { flex: 1 1 42%; }
   .fig-ba { flex-direction: column; }
   .fig-ba-arrow { transform: rotate(90deg); }
+  .fig-pair { flex-direction: column; }
+  .fig-pair-arrow { transform: rotate(90deg); align-self: center; }
 }
 
 .mk-evlink {

@@ -26,6 +26,29 @@ const FIGURES = {
       <div class="fig-note">조정 기준: <strong>"검토하시는 분의 5분"</strong> — 게임성과 검토 시간이 충돌하면 검토 시간이 이긴다</div>
     </div>`,
 
+  // 2-1: 컨셉 매핑 + 실제 앵커 UI (사이트 CSS 컴포넌트 재현 — 스크린샷과 동일 실물)
+  '2-1': () => `
+    <div class="fig-map">
+      ${[
+        ['방문자', '탐정'],
+        ['자기소개서', '진술'],
+        ['포트폴리오', '증거'],
+      ]
+        .map(
+          ([a, b]) => `
+        <div class="fig-map-row">
+          <span class="fig-map-a">${a}</span>
+          <span class="fig-map-eq">=</span>
+          <span class="fig-map-b">${b}</span>
+        </div>`
+        )
+        .join('')}
+    </div>
+    <div class="fig-uidemo">
+      <p>… <span class="anchor" aria-hidden="true">로블록스 게임을 제작하며 인기 장르인 브레인롯 콘텐츠를 분석했을 때<span class="anchor-ic">🔍</span></span>, 처음에는 수집과 강화라는 시스템 구조에 집중했습니다. …</p>
+    </div>
+    <div class="fig-note">세부 사항 페이지의 실제 앵커 UI — 형광펜 문장을 누르면 그 주장을 뒷받침하는 증거 팝업이 열린다</div>`,
+
   // 3-1: 렌파이 채택안 vs 자체 구현안 비교표
   '3-1': () => {
     const rows = [
@@ -45,6 +68,30 @@ const FIGURES = {
       </table>
       <div class="fig-note">기각 근거: 심사는 '플레이 모드'가 아니라 '읽기 모드'로 이루어진다</div>`;
   },
+
+  // 3-2: 대사 스크립트 JSON ↔ 렌더링 결과 (사이트 CSS 컴포넌트 재현)
+  '3-2': () => `
+    <div class="fig-pair">
+      <div class="fig-code">
+        <div class="fig-bar">스크립트_인트로.json</div>
+        <pre>{
+  "speaker": "클루",
+  "sprite": "happy",
+  "text": "저는 이 사이트의 안내를
+  맡은 조수, 클루예요. …"
+}</pre>
+      </div>
+      <div class="fig-pair-arrow">→</div>
+      <div class="fig-dlgdemo">
+        <img class="demo-standing" src="${SPRITES.standing.happy}" alt="클루 스탠딩 (happy)" loading="lazy">
+        <div class="demo-box">
+          <div class="demo-name">클루</div>
+          <div class="demo-text">저는 이 사이트의 안내를 맡은 조수, 클루예요. …</div>
+          <div class="demo-ctc">▼</div>
+        </div>
+      </div>
+    </div>
+    <div class="fig-note">JSON 한 줄이 그대로 화면 연출이 된다 — 대사 데이터와 렌더러의 완전 분리 (진행 표시 ▼는 지금도 깜빡이는 실제 컴포넌트)</div>`,
 
   // 4-1: 클루 표정 시트 (스탠딩 4종)
   '4-1': () => {
@@ -86,6 +133,43 @@ const FIGURES = {
       </table>
       <div class="fig-note">모든 정보가 <strong>'기록광 조수'</strong> 한 속성으로 귀결되도록 설계</div>`;
   },
+
+  // 4-3: 분석서의 공식(이론) ↔ 클루(실전 적용) 대응
+  '4-3': () => {
+    const rows = [
+      ['① 한 단어로 압축', "'기록광 조수'"],
+      ['② 속성과 관련된 부작용 짝짓기', "'요약에 과하게 진심' — 수집 리액션의 톤 근거"],
+      ['③ 모든 정보를 속성으로 귀결 (정보 도배)', "이름·생일·소품·말버릇이 전부 '기록/단서'로"],
+      ['④ 호출을 통한 입체화', '인트로 각인 → 팝업·수집 알림 호출 → 엔딩에서 코어 공개'],
+    ];
+    return `
+      <table class="fig-table fig-dobae">
+        <thead><tr><th>「캐릭터 매력 분석서」의 공식 — 이론</th><th>클루 — 실전 적용</th></tr></thead>
+        <tbody>
+          ${rows.map((r) => `<tr><td>${r[0]}</td><td>${r[1]}</td></tr>`).join('')}
+        </tbody>
+      </table>
+      <div class="fig-note">공식의 원본은 위의 증거 E1 「서브컬처 캐릭터 매력 분석서」에서 확인할 수 있다</div>`;
+  },
+
+  // 5-1: 개발 명세서 발췌 (원문 인용)
+  '5-1': () => `
+    <div class="fig-doc">
+      <div class="fig-bar">PR웹사이트_개발명세서.md — 절대 원칙 · 임의 판단 금지</div>
+      <div class="fig-doc-body">
+        <p class="fig-doc-h">절대 원칙 (충돌 시 이 순서로 우선)</p>
+        <ol>
+          <li><strong>정보 접근은 항상 즉시</strong>: 어떤 화면에서든 2클릭 이내에 모든 포트폴리오 문서에 도달할 수 있어야 한다.</li>
+          <li><strong>게임적 경험은 항상 선택</strong>: 연출·수집·히든은 여유 있는 방문자를 위한 것. 바쁜 방문자를 막는 벽이 되어서는 안 된다.</li>
+          <li><strong>읽기를 방해하지 않는다</strong>: 본문 열람 중 페이지 강제 이동, 강제 대기, 스킵 불가 연출 금지.</li>
+        </ol>
+        <p class="fig-doc-h">구현 시 임의 판단 금지 항목</p>
+        <ul>
+          <li>대사·요약·본문 텍스트를 새로 창작하거나 수정하지 않는다. 제공된 데이터 파일이 유일한 소스.</li>
+          <li>증거 수(7), 챕터 수(4), 수집 규칙을 변경하지 않는다.</li>
+        </ul>
+      </div>
+    </div>`,
 
   // 5-2: AI 협업 워크플로우 사이클
   '5-2': () => {
