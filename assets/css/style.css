@@ -391,6 +391,92 @@ button { font-family: inherit; }
 }
 .img-slot-id { font-weight: 700; letter-spacing: .05em; }
 
+/* ---------- 제작기 시각 자료 (CSS 도식/표) ---------- */
+.mk-fig {
+  margin: 18px 0; padding: 18px;
+  border: 1px solid var(--line); border-radius: 10px; background: #fff;
+}
+.fig-note {
+  margin-top: 12px; padding: 8px 12px;
+  background: var(--accent-soft); border-left: 3px solid var(--accent);
+  font-size: .84rem; color: var(--ink); border-radius: 0 6px 6px 0;
+}
+
+/* 1-1: 설계 목표 충돌 도식 */
+.fig-goals-row { display: flex; gap: 12px; justify-content: center; }
+.fig-goal {
+  flex: 1; max-width: 300px;
+  border: 1.5px solid var(--ink-soft); border-radius: 8px;
+  padding: 12px 14px; font-size: .88rem; line-height: 1.6; background: var(--paper);
+}
+.fig-goal.wide { max-width: 400px; border-color: var(--accent); }
+.fig-goal-no {
+  display: block; font-size: .74rem; font-weight: 800; color: var(--accent);
+  letter-spacing: .08em; margin-bottom: 3px;
+}
+.fig-goals-clash {
+  text-align: center; margin: 10px 0; color: var(--accent);
+  font-size: .84rem; font-weight: 700;
+}
+
+/* 공용 표 (3-1 비교표, 4-2 정보 도배) */
+.fig-table { width: 100%; border-collapse: collapse; font-size: .87rem; }
+.fig-table th, .fig-table td {
+  border: 1px solid var(--line); padding: 8px 12px; text-align: left; vertical-align: top;
+}
+.fig-table thead th { background: var(--ink); color: #f0eee9; font-weight: 700; }
+.fig-table tbody th { background: var(--paper-dark); font-weight: 700; white-space: nowrap; }
+.fig-table td { background: #fff; }
+.fig-o { color: #2e7d43; font-weight: 800; }
+.fig-x { color: var(--accent); font-weight: 800; }
+.fig-table:not(.fig-dobae) td { text-align: center; }
+
+/* 4-1: 표정 시트 */
+.fig-sheet { display: flex; gap: 10px; justify-content: space-between; }
+.fig-sheet-item { flex: 1; margin: 0; text-align: center; }
+.fig-sheet-item img {
+  width: 100%; max-height: 240px; object-fit: contain; object-position: bottom;
+  background: var(--paper-dark); border-radius: 8px; padding: 8px 0;
+}
+.fig-sheet-item figcaption { margin-top: 6px; font-size: .8rem; font-weight: 700; }
+.fig-sheet-item figcaption span { display: block; font-weight: 500; color: var(--ink-soft); }
+
+/* 5-2: 워크플로우 사이클 */
+.fig-cycle { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; justify-content: center; }
+.fig-step {
+  display: flex; align-items: center; gap: 8px;
+  border: 1.5px solid var(--ink-soft); border-radius: 999px;
+  padding: 8px 16px; font-size: .86rem; font-weight: 700; background: var(--paper);
+}
+.fig-step-no {
+  width: 20px; height: 20px; border-radius: 50%;
+  background: var(--accent); color: #fff; font-size: .72rem; font-weight: 800;
+  display: grid; place-items: center;
+}
+.fig-arrow { color: var(--accent); font-weight: 800; }
+
+/* 5-3: 비포/애프터 */
+.fig-ba { display: flex; gap: 14px; align-items: stretch; }
+.fig-ba-item { flex: 1; margin: 0; display: flex; flex-direction: column; }
+.fig-ba-item img {
+  width: 100%; border-radius: 8px; background: var(--paper-dark);
+  object-fit: contain; max-height: 300px;
+}
+.fig-ba-item.after img { padding: 10px 0; }
+.fig-ba-item figcaption {
+  margin-top: 8px; font-size: .8rem; line-height: 1.6; color: var(--ink-soft);
+}
+.fig-ba-arrow { align-self: center; color: var(--accent); font-size: 1.4rem; font-weight: 800; }
+
+@media (max-width: 700px) {
+  .fig-goals-row { flex-direction: column; align-items: stretch; }
+  .fig-goal, .fig-goal.wide { max-width: none; }
+  .fig-sheet { flex-wrap: wrap; }
+  .fig-sheet-item { flex: 1 1 42%; }
+  .fig-ba { flex-direction: column; }
+  .fig-ba-arrow { transform: rotate(90deg); }
+}
+
 .mk-evlink {
   display: flex; align-items: baseline; gap: 10px; width: 100%;
   border: 1px solid var(--line); border-radius: 8px; background: #fff;

@@ -2,6 +2,7 @@ import { DB, getCard } from '../data.js';
 import { state } from '../state.js';
 import { openDoc } from '../ui.js';
 import { sdSprite } from '../sprites.js';
+import { figureHtml } from '../figures.js';
 
 // E7 히든 포트폴리오 — 제작기 열람 페이지 (#/making).
 // 외부 문서가 아니라 사이트 내 페이지. 원고는 콘텐츠_제작기.md에서 로드.
@@ -87,7 +88,11 @@ function blocksHtml(blocks) {
   return blocks
     .map((b) => {
       if (b.type === 'img') {
-        return `<div class="img-slot" aria-hidden="true">🖼 이미지 준비 중 <span class="img-slot-id">[${b.slot}]</span></div>`;
+        // 제작 완료된 시각 자료(figures.js)가 있으면 렌더, 없으면 플레이스홀더
+        return (
+          figureHtml(b.slot) ||
+          `<div class="img-slot" aria-hidden="true">🖼 이미지 준비 중 <span class="img-slot-id">[${b.slot}]</span></div>`
+        );
       }
       if (b.type === 'evlink') {
         return `<button type="button" class="mk-evlink" data-eid="${b.eid}">
