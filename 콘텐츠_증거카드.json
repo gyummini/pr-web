@@ -1,5 +1,5 @@
 {
-  "_readme": "증거 카드 데이터. E1~E6 url 실링크 연결됨(E5는 노션, 나머지는 드라이브·anyone 열람 확인). 남은 placeholder: E7(제작기 작성 후). sd_dialogue는 조수 캐릭터 '클루'의 확정 대사(캐릭터_조수_클루.md 톤 가이드 준수). sd_dialogue_revisit은 이미 수집된 증거의 앵커를 다시 클릭했을 때 대사(null이면 기본 sd_dialogue 재사용).",
+  "_readme": "증거 카드 데이터. E1~E6 url 실링크 연결됨(E5는 노션, 나머지는 드라이브·anyone 열람 확인). placeholder 없음 — E7 제작기는 외부 문서가 아니라 사이트 내 페이지(#/making, 원고: 콘텐츠_제작기.md)로 구현됨(E7 url 필드는 미사용). sd_dialogue는 조수 캐릭터 '클루'의 확정 대사(캐릭터_조수_클루.md 톤 가이드 준수). sd_dialogue_revisit은 이미 수집된 증거의 앵커를 다시 클릭했을 때 대사(null이면 기본 sd_dialogue 재사용).",
   "evidences": [
     {
       "id": "E1",

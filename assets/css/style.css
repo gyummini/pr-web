@@ -359,6 +359,62 @@ button { font-family: inherit; }
 .view-detail .ev-sub, .view-making .ev-sub { margin: 0; color: var(--ink-soft); }
 .making-divider { border: none; border-top: 1px dashed var(--line); margin: 34px 0 6px; }
 
+/* ---------- E7 제작기 문서 ---------- */
+.making-doc { max-width: 780px; }
+.mk-doc-title { margin: 8px 0 2px; font-size: 1.55rem; }
+.mk-chapters { margin-top: 30px; }
+.mk-chapter { margin-bottom: 34px; }
+.mk-title {
+  margin: 0 0 12px; font-size: 1.12rem;
+  border-left: 4px solid var(--accent); padding-left: 12px; line-height: 1.5;
+}
+.mk-summary p { margin: 0 0 1em; font-size: 1rem; line-height: 1.85; }
+.mk-detail {
+  margin-top: 6px; border: 1px solid var(--line); border-radius: 8px;
+  background: #fbfaf7;
+}
+.mk-detail summary {
+  cursor: pointer; padding: 11px 16px; font-size: .88rem; font-weight: 700;
+  color: var(--accent); user-select: none; list-style: none;
+}
+.mk-detail summary::-webkit-details-marker { display: none; }
+.mk-detail summary::before { content: '▸ '; }
+.mk-detail[open] summary::before { content: '▾ '; }
+.mk-detail summary:hover { background: var(--accent-soft); border-radius: 8px; }
+.mk-detail-body { padding: 4px 18px 16px; border-top: 1px dashed var(--line); }
+.mk-detail-body p { margin: 1em 0; font-size: .97rem; line-height: 1.85; }
+
+.img-slot {
+  border: 2px dashed var(--line); border-radius: 8px;
+  padding: 26px 16px; margin: 14px 0; text-align: center;
+  color: var(--ink-soft); font-size: .86rem; background: var(--paper-dark);
+}
+.img-slot-id { font-weight: 700; letter-spacing: .05em; }
+
+.mk-evlink {
+  display: flex; align-items: baseline; gap: 10px; width: 100%;
+  border: 1px solid var(--line); border-radius: 8px; background: #fff;
+  padding: 12px 16px; margin: 4px 0 14px; cursor: pointer; text-align: left;
+  font-size: .92rem; transition: border-color .12s ease, transform .12s ease;
+}
+.mk-evlink:hover { border-color: var(--accent); transform: translateY(-1px); }
+.mk-evlink-kicker { font-size: .76rem; font-weight: 800; color: var(--accent); white-space: nowrap; }
+.mk-evlink-title { font-weight: 700; flex: 1; }
+.mk-evlink-open { font-size: .8rem; font-weight: 700; color: var(--accent); white-space: nowrap; }
+
+.mk-closing {
+  display: flex; align-items: center; gap: 16px;
+  background: var(--scene-panel); border-radius: 10px;
+  padding: 18px 22px; margin-top: 36px;
+}
+.mk-sd { width: 74px; height: 74px; object-fit: contain; flex-shrink: 0; }
+.mk-line { position: relative; color: #f2f0ea; font-size: .97rem; line-height: 1.7; }
+.mk-name {
+  display: inline-block; background: var(--accent); color: #fff;
+  font-weight: 800; font-size: .78rem; padding: 1px 10px; border-radius: 4px;
+  margin-right: 10px; vertical-align: 2px;
+}
+
 /* ---------- 수집 애니메이션 / 토스트 ---------- */
 #fly-root { position: fixed; inset: 0; pointer-events: none; z-index: 300; }
 .fly-ghost {
