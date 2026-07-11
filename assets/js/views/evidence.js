@@ -118,9 +118,11 @@ function renderHiddenSlot(wrap, hidden) {
   wrap.querySelector('.hidden-sub').textContent = hidden.subtitle || '';
 
   const slot = wrap.querySelector('.hidden-slot');
+  // E7의 목적지는 증거 카드 데이터가 결정 (내부 라우트, 예: #/notebook)
+  const e7Target = hidden.url && hidden.url.startsWith('#/') ? hidden.url : '#/notebook';
   const act = () => {
-    // 직접 수사 완주자: 엔딩 대화 → 제작기. 결과만 보기/엔딩 완료자: 제작기 바로.
-    if (state.resultOnlyMode || state.endingSeen) location.hash = '#/making';
+    // 직접 수사 완주자: 엔딩 대화 → E7. 결과만 보기/엔딩 완료자: E7 바로.
+    if (state.resultOnlyMode || state.endingSeen) location.hash = e7Target;
     else location.hash = '#/ending';
   };
   slot.addEventListener('click', act);

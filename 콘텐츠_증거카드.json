@@ -92,17 +92,17 @@
     },
     {
       "id": "E7",
-      "title": "이 사건 파일의 제작기",
-      "subtitle": "히든 증거 — 이 웹사이트는 어떻게 만들어졌는가",
+      "title": "클루의 수사 수첩",
+      "subtitle": "히든 — 사건 외 기록: 의뢰인의 개인적인 면모",
       "chapters": [],
       "hidden": true,
       "unlock_condition": "E1~E6 전부 수집",
-      "summary": "지금 보고 계신 이 웹사이트의 기획·설계·구현 과정 기록. 컨셉 결정, 조수 캐릭터 설계, 자체 대사 엔진 구현, AI 협업 워크플로우까지.",
-      "url": "PLACEHOLDER_E7",
+      "summary": "조수 클루가 수사 중 몰래 기록해둔 것들 — 클루 본인의 프로필과, 서류에는 없는 지원자의 개인적인 취향 기록.",
+      "url": "#/notebook",
       "attachments": [],
       "sd_dialogue": null,
       "sd_dialogue_revisit": null,
-      "_note": "해금 시 sd_dialogue 대신 엔딩 대화 스크립트(별도 JSON)로 진입"
+      "_note": "외부 링크가 아닌 사이트 내 라우트. 해금 시 엔딩 대화(스크립트_엔딩.json) 후 진입."
     }
   ]
 }

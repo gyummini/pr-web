@@ -27,7 +27,9 @@ export function renderEnding(view) {
     state.endingSeen = true;
     state.collected.add('E7'); // 히든 증거 수집 완료 → 7/7
     syncBadge();
-    location.hash = '#/making'; // on_complete: open_evidence E7
+    // on_complete: open_evidence E7 — 목적지는 E7 카드의 내부 라우트
+    const e7 = DB.cards.find((c) => c.hidden);
+    location.hash = e7 && e7.url && e7.url.startsWith('#/') ? e7.url : '#/notebook';
   };
 
   engine.play(DB.ending.lines, { onComplete: finish });

@@ -5,7 +5,8 @@ export const DB = {
   ending: null,    // 스크립트_엔딩.json
   chapters: null,  // 콘텐츠_자기소개서.md 파싱 결과
   resume: null,    // data/resume.json
-  making: null,    // 콘텐츠_제작기.md 파싱 결과 (E7 히든 포트폴리오)
+  making: null,    // 콘텐츠_제작기.md 파싱 결과 (구 E7 제작기 페이지)
+  notebook: null,  // 콘텐츠_수사수첩.json (E7 히든 — 클루의 수사 수첩)
 };
 
 async function fetchJSON(path) {
@@ -21,13 +22,14 @@ async function fetchText(path) {
 }
 
 export async function loadAll() {
-  const [cardsJson, intro, ending, essayMd, resume, makingMd] = await Promise.all([
+  const [cardsJson, intro, ending, essayMd, resume, makingMd, notebook] = await Promise.all([
     fetchJSON('./콘텐츠_증거카드.json'),
     fetchJSON('./스크립트_인트로.json'),
     fetchJSON('./스크립트_엔딩.json'),
     fetchText('./콘텐츠_자기소개서.md'),
     fetchJSON('./data/resume.json'),
     fetchText('./콘텐츠_제작기.md'),
+    fetchJSON('./콘텐츠_수사수첩.json'),
   ]);
   DB.cards = cardsJson.evidences;
   DB.intro = intro;
@@ -35,6 +37,7 @@ export async function loadAll() {
   DB.chapters = parseEssay(essayMd);
   DB.resume = resume;
   DB.making = parseMaking(makingMd);
+  DB.notebook = notebook;
   return DB;
 }
 

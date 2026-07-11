@@ -6,6 +6,7 @@ import { renderEvidence } from './views/evidence.js';
 import { renderDetail } from './views/detail.js';
 import { renderEnding } from './views/ending.js';
 import { renderMaking } from './views/making.js';
+import { renderNotebook } from './views/notebook.js';
 
 // URL 해시 라우팅 — 브라우저 뒤로가기가 탭/챕터 이동과 자연스럽게 동작 (명세서 6)
 let current = null;
@@ -16,6 +17,7 @@ const TAB_OF = {
   evidence: 'evidence',
   ending: 'evidence',
   making: 'evidence',
+  notebook: 'evidence',
 };
 
 export function startRouter() {
@@ -57,6 +59,9 @@ function dispatch() {
       break;
     case 'making':
       current = renderMaking(view);
+      break;
+    case 'notebook':
+      current = renderNotebook(view);
       break;
     default:
       current = renderIntro(view);
