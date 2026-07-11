@@ -4,9 +4,19 @@ import { SPRITES } from '../sprites.js';
 
 // E7 히든 — 클루의 수사 수첩 (#/notebook). 작업지시_수첩디자인이식.md 기준 구현.
 // 페이지 구성: 표지 / 1부 / 2부(3항목) / 2부 계속(2항목) / 3부 / 접힌 페이지 = 6쪽.
-// 데스크톱: scroll-snap 페이지 넘김 + 종이 넘김 연출. 모바일·reduced-motion: 폴백.
+// 넘김 방식: 임계값 전환 (작업지시 — 임계값전환). 휠/스와이프 델타 누적 → 임계값 초과 시
+// 잠금과 함께 1페이지 즉시 전환. 페이지 내부 스크롤이 끝에 닿기 전에는 넘김 미발동.
 const PAGE_COUNT = 6;
 const FONT_ID = 'nb-fonts';
+
+// ---- 넘김 튜닝 상수 ----
+const TURN_MS = 600;        // 넘김 애니메이션 길이 (CSS와 동기)
+const LOCK_EXTRA_MS = 100;  // 애니메이션 종료 후 추가 입력 잠금
+const REDUCED_LOCK_MS = 300; // reduced-motion: 교체는 즉시지만 관성 연속 넘김 방지용 최소 잠금
+const WHEEL_RATIO = 0.25;   // 휠 임계값 = 스테이지 높이 × 비율
+const TOUCH_THRESHOLD = 70; // 모바일 스와이프 임계값(px)
+const ACC_RESET_MS = 200;   // 무입력 시 휠 누적 리셋
+const BOUNCE_MS = 320;      // 경계 저항 모션 길이
 
 function injectFonts() {
   // 수첩 전용 폰트(Gaegu, Gowun Dodum)는 이 페이지 첫 진입 시에만 로드 — 본편 성능 영향 없음
@@ -50,7 +60,7 @@ export function renderNotebook(view) {
 
   view.className = 'view-notebook';
   view.innerHTML = `
-    <div class="nb-scroller">
+    <div class="nb-stage">
       ${pageCover(nb.cover)}
       ${pagePart1(nb.part1)}
       ${pagePart2(nb.part2, 0, 3, false)}
@@ -72,33 +82,151 @@ export function renderNotebook(view) {
     );
   });
 
-  // 페이지 인디케이터 + 종이 넘김 연출 (사용자 스크롤 통제권은 유지 — 네이티브 스크롤/스냅만 사용)
-  const scroller = view.querySelector('.nb-scroller');
-  const pages = [...view.querySelectorAll('.nb-page')];
+  return setupPager(view);
+}
+
+// ---- 임계값 전환 페이저 ----
+// 델타 누적 → 임계값 초과 시 1페이지 전환 + 입력 잠금.
+// 내부 스크롤이 있는 페이지는 끝(상/하단)에 도달한 상태에서만 누적을 시작한다.
+function setupPager(view) {
+  const stage = view.querySelector('.nb-stage');
+  const pages = [...stage.querySelectorAll('.nb-page')];
   const curEl = view.querySelector('.nb-cur');
   const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const mobile = matchMedia('(max-width: 820px)').matches;
-  const io = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((ent) => {
-        if (!ent.isIntersecting) return;
-        const idx = pages.indexOf(ent.target);
-        if (idx === -1) return;
-        curEl.textContent = idx + 1;
-        if (reduced || mobile) return; // 연출 생략
-        const sheet = ent.target.querySelector('.nb-sheet, .nb-cover');
-        if (sheet) {
-          sheet.classList.remove('nb-turn');
-          void sheet.offsetWidth;
-          sheet.classList.add('nb-turn');
-        }
-      });
-    },
-    { root: scroller, threshold: 0.55 }
-  );
-  pages.forEach((p) => io.observe(p));
+  let cur = 0;
+  let acc = 0;
+  let lastWheel = 0; // 마지막 휠 이벤트 시각 (잠금 중 포함 — 관성 흐름 감지용)
+  let locked = false;
+  let armed = true;  // false면 같은 관성 흐름 무시. 입력이 끊겨야(200ms+) 재무장.
+  pages[0].classList.add('active');
 
-  return { destroy: () => io.disconnect() };
+  const atEdge = (page, dir) => {
+    if (page.scrollHeight - page.clientHeight <= 1) return true; // 내부 스크롤 없음
+    return dir > 0
+      ? page.scrollTop + page.clientHeight >= page.scrollHeight - 1
+      : page.scrollTop <= 0;
+  };
+
+  // 첫/마지막 페이지 경계: 저항 모션 (reduced-motion 시 생략)
+  const bounce = (dir) => {
+    if (locked) return;
+    if (reduced) return;
+    locked = true;
+    const page = pages[cur];
+    const cls = dir > 0 ? 'nb-bounce-next' : 'nb-bounce-prev';
+    page.classList.add(cls);
+    setTimeout(() => {
+      page.classList.remove(cls);
+      locked = false;
+    }, BOUNCE_MS);
+  };
+
+  const turn = (dir) => {
+    if (locked) return;
+    const nextIdx = cur + dir;
+    if (nextIdx < 0 || nextIdx >= pages.length) {
+      bounce(dir);
+      return;
+    }
+    locked = true; // 전환 잠금 — 관성 스크롤 연속 넘김 방지
+    armed = false; // 이 제스처(관성 포함)로는 더 넘기지 않음 — 입력 공백 후 재무장
+    acc = 0;
+    const out = pages[cur];
+    const inn = pages[nextIdx];
+    inn.scrollTop = 0;
+    cur = nextIdx;
+    curEl.textContent = cur + 1; // 인디케이터 동기화
+    if (reduced) {
+      // 애니메이션 생략, 즉시 교체 — 잠금은 관성 방지를 위해 유지
+      out.classList.remove('active');
+      inn.classList.add('active');
+      setTimeout(() => {
+        locked = false;
+      }, REDUCED_LOCK_MS);
+      return;
+    }
+    const outCls = dir > 0 ? 'nb-leave-fwd' : 'nb-leave-back';
+    const innCls = dir > 0 ? 'nb-enter-fwd' : 'nb-enter-back';
+    out.classList.add(outCls);
+    inn.classList.add('active', innCls);
+    setTimeout(() => {
+      out.classList.remove('active', outCls);
+      inn.classList.remove(innCls);
+      locked = false;
+    }, TURN_MS + LOCK_EXTRA_MS);
+  };
+
+  const onWheel = (e) => {
+    const dir = e.deltaY > 0 ? 1 : e.deltaY < 0 ? -1 : 0;
+    if (!dir) return;
+    const now = performance.now();
+    const gap = now - lastWheel;
+    lastWheel = now;
+    if (locked) {
+      e.preventDefault();
+      return;
+    }
+    // 전환 직후의 관성 꼬리: 입력이 끊기기 전까지는 같은 제스처로 보고 무시
+    if (!armed) {
+      if (gap > ACC_RESET_MS) {
+        armed = true;
+      } else {
+        e.preventDefault();
+        return;
+      }
+    }
+    // 내부 스크롤 우선: 끝에 닿기 전엔 네이티브 스크롤에 맡기고 누적하지 않는다
+    if (!atEdge(pages[cur], dir)) {
+      acc = 0;
+      return;
+    }
+    e.preventDefault();
+    if (gap > ACC_RESET_MS) acc = 0; // 무입력 리셋
+    acc += e.deltaY;
+    if (Math.abs(acc) >= stage.clientHeight * WHEEL_RATIO) {
+      turn(acc > 0 ? 1 : -1);
+    }
+  };
+
+  // 모바일: 시작 시점에 끝에 있었던 방향으로만, 스와이프 거리 임계값으로 전환
+  let touchY = null;
+  let touchEdge = { next: false, prev: false };
+  const onTouchStart = (e) => {
+    touchY = e.touches[0].clientY;
+    touchEdge = { next: atEdge(pages[cur], 1), prev: atEdge(pages[cur], -1) };
+  };
+  const onTouchEnd = (e) => {
+    if (touchY == null) return;
+    const dy = touchY - e.changedTouches[0].clientY; // 양수 = 위로 스와이프 = 다음
+    touchY = null;
+    if (locked || Math.abs(dy) < TOUCH_THRESHOLD) return;
+    if (dy > 0 && touchEdge.next) turn(1);
+    else if (dy < 0 && touchEdge.prev) turn(-1);
+  };
+
+  const onKey = (e) => {
+    if (e.target && /^(A|BUTTON|INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) return;
+    const nextKey = e.key === 'ArrowDown' || e.key === 'PageDown' || (e.code === 'Space' && !e.shiftKey);
+    const prevKey = e.key === 'ArrowUp' || e.key === 'PageUp' || (e.code === 'Space' && e.shiftKey);
+    if (nextKey) {
+      e.preventDefault();
+      turn(1);
+    } else if (prevKey) {
+      e.preventDefault();
+      turn(-1);
+    }
+  };
+
+  stage.addEventListener('wheel', onWheel, { passive: false });
+  stage.addEventListener('touchstart', onTouchStart, { passive: true });
+  stage.addEventListener('touchend', onTouchEnd, { passive: true });
+  document.addEventListener('keydown', onKey);
+
+  return {
+    destroy() {
+      document.removeEventListener('keydown', onKey);
+    },
+  };
 }
 
 function pageCover(c) {
