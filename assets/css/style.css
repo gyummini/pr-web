@@ -99,6 +99,15 @@ button { font-family: inherit; }
 .scene {
   position: relative; height: calc(100vh - var(--header-h));
   overflow: hidden;
+  /* 대화 씬 배경 — 탐정 사무소 (design 폴더 원본, 웹 최적화본) */
+  background: var(--scene-bg) url('../img/bg_office.jpg') center / cover no-repeat;
+}
+/* 대사 가독성·캐릭터 부각용 비네트 */
+.scene::before {
+  content: '';
+  position: absolute; inset: 0; pointer-events: none;
+  background: radial-gradient(ellipse at 50% 38%, rgba(20, 18, 24, .06), rgba(20, 18, 24, .38) 100%),
+    linear-gradient(to top, rgba(20, 18, 24, .38), transparent 34%);
 }
 .skip-btn {
   position: absolute; top: 18px; right: 22px; z-index: 30;
