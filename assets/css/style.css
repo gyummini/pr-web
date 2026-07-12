@@ -693,25 +693,28 @@ button { font-family: inherit; }
   to   { transform: none; opacity: 1; }
 }
 
-/* 첫/마지막 페이지 경계 저항 모션 */
-.nb-bounce-next { animation: nbBounceNext .3s ease-out; }
-@keyframes nbBounceNext { 30% { transform: translateY(-10px); } to { transform: none; } }
-.nb-bounce-prev { animation: nbBouncePrev .3s ease-out; }
-@keyframes nbBouncePrev { 30% { transform: translateY(10px); } to { transform: none; } }
-
-@media (prefers-reduced-motion: reduce) {
-  .nb-leave-fwd, .nb-enter-fwd, .nb-leave-back, .nb-enter-back,
-  .nb-bounce-next, .nb-bounce-prev { animation: none !important; }
+/* 페이지 내비게이션 (이전/다음 버튼 + 인디케이터) */
+.nb-nav {
+  position: fixed; left: 50%; bottom: 16px; transform: translateX(-50%); z-index: 40;
+  display: flex; align-items: center; gap: 10px;
+  background: rgba(38,36,31,.82); border-radius: 999px;
+  padding: 6px 10px; box-shadow: 0 4px 14px rgba(0,0,0,.25);
 }
-
-/* 페이지 인디케이터 */
 .nb-indicator {
-  position: fixed; right: 18px; bottom: 16px; z-index: 40;
   font-family: var(--nb-font-hand); font-size: 1rem; font-weight: 700;
-  background: rgba(38,36,31,.78); color: var(--nb-paper);
-  padding: 5px 14px; border-radius: 999px; letter-spacing: .1em;
-  pointer-events: none;
+  color: var(--nb-paper); letter-spacing: .1em; min-width: 52px; text-align: center;
 }
+.nb-nav-btn {
+  width: 38px; height: 38px; border-radius: 50%;
+  border: none; cursor: pointer;
+  background: var(--nb-paper); color: var(--nb-ink);
+  font-size: .85rem; line-height: 1;
+  display: grid; place-items: center;
+  transition: transform .12s ease, background .12s ease, opacity .12s ease;
+}
+.nb-nav-btn:hover:not(:disabled) { background: #fff; transform: scale(1.1); }
+.nb-nav-btn:active:not(:disabled) { transform: scale(.95); }
+.nb-nav-btn:disabled { opacity: .3; cursor: default; }
 
 /* ---- 표지 ---- */
 .nb-cover {
@@ -766,11 +769,6 @@ button { font-family: inherit; }
 .nb-seal-top { font-size: .6rem; letter-spacing: 2px; opacity: .85; }
 .nb-seal-main { font-family: var(--nb-font-hand); font-weight: 700; font-size: 1.15rem; line-height: 1.2; text-align: center; }
 .nb-seal-bottom { font-size: .55rem; letter-spacing: 1px; opacity: .85; }
-.nb-scrollhint {
-  position: absolute; bottom: 18px; right: 26px;
-  font-family: var(--nb-font-hand); font-size: .95rem; color: rgba(38,36,31,.55);
-  animation: ctc-blink 1.6s steps(2) infinite;
-}
 
 /* ---- 내지 공통 ---- */
 .nb-sheet {
