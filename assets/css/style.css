@@ -265,35 +265,71 @@ button { font-family: inherit; }
 
 /* ---------- 수집된 증거 ---------- */
 .evidence-page { max-width: 1120px; margin: 0 auto; padding: 32px 20px 60px; }
-.page-head { position: relative; margin-bottom: 22px; padding-right: 140px; }
+.page-head { position: relative; margin-bottom: 24px; padding-right: 140px; }
 .page-head .stamp { top: 0; right: 0; }
 .page-head h2 { margin: 0; }
+.page-lead { margin: 6px 0 0; font-size: .92rem; color: var(--ink-soft); }
+
+/* 포트폴리오 카드 그리드: 데스크톱 3열 / 태블릿 2열 / 모바일 1열 */
 .ev-grid {
-  display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 16px;
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 20px; align-items: stretch;
 }
 .ev-card {
-  display: flex; flex-direction: column;
-  background: var(--paper); border: 1px solid var(--line); border-radius: 8px;
-  padding: 18px; cursor: pointer; min-height: 170px;
-  transition: transform .12s ease, box-shadow .12s ease, border-color .12s ease;
+  display: flex; flex-direction: column; height: 100%;
+  background: var(--paper); border: 1px solid var(--line); border-radius: 10px;
+  overflow: hidden; cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0,0,0,.05);
+  transition: transform .14s ease, box-shadow .14s ease, border-color .14s ease;
 }
-.ev-card:hover { transform: translateY(-3px); box-shadow: 0 6px 16px rgba(0,0,0,.1); border-color: var(--ink-soft); }
+.ev-card:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(0,0,0,.12); border-color: var(--ink-soft); }
+
+/* 표지 썸네일 — 4:3 종이 프레임. 이미지가 없으면 아이콘 폴백이 보인다. */
 .ev-thumb {
-  width: 52px; height: 52px; border-radius: 8px;
-  background: var(--accent-soft); border: 1px solid var(--line);
-  display: grid; place-items: center; font-size: 1.5rem; margin-bottom: 12px;
+  position: relative; aspect-ratio: 4 / 3; width: 100%;
+  background: var(--paper-dark); border-bottom: 1px solid var(--line);
+  display: grid; place-items: center; font-size: 2rem; overflow: hidden;
 }
-.ev-card .ev-title { margin: 4px 0 4px; font-size: 1.02rem; line-height: 1.4; }
-.ev-card .ev-sub { margin: 0; font-size: .84rem; color: var(--ink-soft); }
-.ev-open {
+.ev-thumb-img {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  object-fit: cover; object-position: top;
+}
+.ev-thumb-fallback { position: relative; opacity: .5; }
+
+.ev-info { display: flex; flex-direction: column; flex: 1; padding: 14px 16px 12px; }
+.ev-type {
+  align-self: flex-start; margin-bottom: 6px;
+  font-size: .72rem; font-weight: 700; letter-spacing: .04em;
+  color: var(--accent); background: var(--accent-soft);
+  border: 1px solid rgba(178, 58, 47, .25); border-radius: 4px; padding: 2px 8px;
+}
+.ev-card .ev-title { margin: 0 0 5px; font-size: 1.06rem; line-height: 1.4; }
+.ev-card .ev-sub {
+  margin: 0; font-size: .84rem; line-height: 1.55; color: var(--ink-soft);
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+.ev-foot {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 10px;
   margin-top: auto; padding-top: 12px;
-  font-size: .84rem; font-weight: 700; color: var(--accent);
 }
+.ev-code { font-size: .7rem; letter-spacing: .06em; color: var(--muted, #9a958a); white-space: nowrap; }
+.ev-open { font-size: .82rem; font-weight: 700; color: var(--accent); white-space: nowrap; }
+
+/* 미수집: 썸네일만 흐리게 — 카드는 그대로 클릭 가능 */
 .ev-card.unknown { border-style: dashed; background: var(--paper-dark); }
-.ev-card.unknown .ev-thumb { filter: grayscale(1); background: transparent; }
+.ev-card.unknown .ev-thumb-img { filter: blur(10px) saturate(.35); transform: scale(1.08); }
+.ev-card.unknown .ev-thumb { background: var(--paper-dark); }
 .ev-card.unknown .ev-title { color: var(--ink-soft); }
 .ev-card.unknown .ev-open { color: var(--ink-soft); }
+.ev-card.unknown .ev-type { color: var(--ink-soft); background: transparent; border-color: var(--line); }
+
+/* 태블릿 2열 → 좁은 화면 1열 (아래 820px 블록보다 구체적이도록 여기서 함께 선언) */
+@media (max-width: 900px) {
+  .ev-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 620px) {
+  .ev-grid { grid-template-columns: 1fr; gap: 14px; }
+}
 
 .hidden-slot-wrap { margin-top: 26px; }
 .hidden-slot {
@@ -924,4 +960,6 @@ button { font-family: inherit; }
   .dlg-standing .dlg-sprite { bottom: 170px; }
   .dlg-text { font-size: .95rem; }
   .record-table th { width: 90px; }
+  .page-head { padding-right: 110px; }
+  .page-lead { font-size: .86rem; }
 }

@@ -15,6 +15,7 @@ export function renderEvidence(view) {
       <div class="page-head">
         <div class="stamp">증거 보관함</div>
         <h2>수집된 증거</h2>
+        <p class="page-lead">포트폴리오 ${TOTAL_EVIDENCE}건 — 자기소개서의 각 진술을 뒷받침하는 실제 작업 문서</p>
       </div>
       <div class="ev-grid">
         ${cards.map((ev) => cardHtml(ev)).join('')}
@@ -31,29 +32,27 @@ export function renderEvidence(view) {
   return {};
 }
 
+// 카드 정보 위계: 썸네일 → 문서 유형 → 제목 → 부제 → 증거코드·챕터 → 액션
 function cardHtml(ev) {
   const got = state.collected.has(ev.id);
-  if (got) {
-    return `
-      <div class="ev-card collected" data-eid="${ev.id}" tabindex="0" role="button">
-        <div class="ev-thumb">📄</div>
-        <div class="ev-info">
-          <div class="ev-kicker">${ev.id} · ${(ev.chapters || []).map(fmtCase).join(', ')}</div>
-          <h3 class="ev-title"></h3>
-          <p class="ev-sub"></p>
-        </div>
-        <div class="ev-open">문서 열기 ↗</div>
-      </div>`;
-  }
+  const thumb = ev.thumb
+    ? `<img class="ev-thumb-img" src="${ev.thumb}" alt="" loading="lazy">`
+    : '';
+  const code = got
+    ? `${ev.id} · ${(ev.chapters || []).map(fmtCase).join(', ')}`
+    : `${ev.id} · 미확인 증거`;
   return `
-    <div class="ev-card unknown" data-eid="${ev.id}" tabindex="0" role="button">
-      <div class="ev-thumb">❔</div>
+    <div class="ev-card ${got ? 'collected' : 'unknown'}" data-eid="${ev.id}" tabindex="0" role="button">
+      <div class="ev-thumb">${thumb}<span class="ev-thumb-fallback" aria-hidden="true">${got ? '📄' : '❔'}</span></div>
       <div class="ev-info">
-        <div class="ev-kicker">${ev.id} · 미확인 증거</div>
+        <span class="ev-type"></span>
         <h3 class="ev-title"></h3>
-        <p class="ev-sub">클릭하면 등장 챕터와 요약을 확인할 수 있습니다</p>
+        <p class="ev-sub"></p>
+        <div class="ev-foot">
+          <span class="ev-code">${code}</span>
+          <span class="ev-open">${got ? '문서 열기 ↗' : '요약 확인 →'}</span>
+        </div>
       </div>
-      <div class="ev-open">요약 확인 →</div>
     </div>`;
 }
 
@@ -64,10 +63,21 @@ function wireCards(view) {
 function wireCard(el) {
   const ev = DB.cards.find((c) => c.id === el.dataset.eid);
   // 텍스트는 textContent로 주입 (데이터 파일 내용 그대로)
+  const typeEl = el.querySelector('.ev-type');
+  if (typeEl) {
+    if (ev.doc_type) typeEl.textContent = ev.doc_type;
+    else typeEl.remove();
+  }
   const titleEl = el.querySelector('.ev-title');
   if (titleEl) titleEl.textContent = ev.title;
+  // 부제는 수집 여부와 무관하게 실제 한 줄 설명 (안내는 하단 '요약 확인 →' 액션이 담당)
   const subEl = el.querySelector('.ev-sub');
-  if (subEl && el.classList.contains('collected')) subEl.textContent = ev.subtitle || '';
+  if (subEl) subEl.textContent = ev.subtitle || '';
+  // 썸네일 파일이 없으면 아이콘 폴백 (파일이 추가되면 자동으로 표시됨)
+  const img = el.querySelector('.ev-thumb-img');
+  if (img) {
+    img.addEventListener('error', () => img.remove(), { once: true });
+  }
 
   const act = () => {
     if (el.classList.contains('collected')) {
