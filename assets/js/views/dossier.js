@@ -51,6 +51,13 @@ export function renderDossier(view, num) {
 
   view.querySelectorAll('.anchor').forEach((btn) => {
     btn.addEventListener('click', () => openEvidencePopup(btn.dataset.eid));
+    // span 기반이므로 키보드 활성화를 직접 처리
+    btn.addEventListener('keydown', (e) => {
+      if (e.code === 'Enter' || e.code === 'Space') {
+        e.preventDefault();
+        openEvidencePopup(btn.dataset.eid);
+      }
+    });
   });
 
   return {

@@ -78,7 +78,9 @@ function inline(s) {
   out = out.replace(
     /\{\{(E\d+):([^}]+)\}\}/g,
     (m, id, txt) =>
-      `<button type="button" class="anchor" data-eid="${id}">${txt}<span class="anchor-ic" aria-hidden="true">🔍</span></button>`
+      // span으로 렌더 — button은 브라우저가 순수 inline으로 처리하지 않아
+      // 여러 줄로 나뉠 때 형광펜(box-decoration-break: clone)이 윗줄에 적용되지 않는다.
+      `<span role="button" tabindex="0" class="anchor" data-eid="${id}">${txt}<span class="anchor-ic" aria-hidden="true">🔍</span></span>`
   );
   out = out.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
   return out;
