@@ -230,6 +230,12 @@ function pagePart2(p, from, to, isCont) {
         )
         .join('')}
     </div>
+    ${
+      // 종합 소견은 관찰 메모를 다 나열한 뒤(마지막 2부 페이지)에만 붙인다
+      isCont && p.closing
+        ? `<div class="nb-closing">${nbInline(p.closing)}</div>`
+        : ''
+    }
   ${sheetClose}`;
 }
 
@@ -258,12 +264,19 @@ function pagePart3(p) {
 }
 
 function pageFolded(f) {
+  // line은 여러 문단(\n 구분) — 문단마다 간격을 두어 쪽지처럼 읽히게 한다
+  const paras = String(f.line)
+    .split('\n')
+    .map((s) => s.trim())
+    .filter(Boolean)
+    .map((s) => `<p>${esc(s)}</p>`)
+    .join('');
   return `
   <section class="nb-page">
     <div class="nb-sheet folded">
       <div class="nb-spiral"></div>
       <div class="nb-content">
-        <div class="nb-folded-line">${esc(f.line)}</div>
+        <div class="nb-folded-line">${paras}</div>
         <div class="nb-folded-note">${esc(f.note)}</div>
         <a class="nb-back" href="#/evidence">${esc(f.backLabel)} <span>↗</span></a>
         <div class="nb-corner"></div>

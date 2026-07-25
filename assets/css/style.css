@@ -913,6 +913,14 @@ button { font-family: inherit; }
 .nb-memo-row:nth-child(even) .nb-postit { transform: rotate(1deg); }
 .nb-postit-by { color: var(--nb-red); font-weight: 700; }
 
+/* 2부 종합 소견 — 메모 목록을 정리하는 마무리 한 단락 */
+.nb-closing {
+  margin-top: 30px; padding: 16px 20px;
+  border-top: 1px dashed var(--nb-rule);
+  font-family: var(--nb-font-hand); font-size: 1.18rem; line-height: 36px;
+  color: var(--nb-ink-soft);
+}
+
 /* ---- 3부 사진 ---- */
 .nb-photos { display: flex; gap: 44px; justify-content: center; flex-wrap: wrap; padding: 10px 0 8px; }
 .nb-polaroid.photo { transform: rotate(-2.5deg); }
@@ -934,7 +942,9 @@ button { font-family: inherit; }
 
 /* ---- 접힌 페이지 ---- */
 .nb-sheet.folded .nb-content { padding-right: 90px; }
-.nb-folded-line { font-family: var(--nb-font-hand); font-size: 1.25rem; color: var(--nb-ink-faint); margin-bottom: 6px; }
+.nb-folded-line { font-family: var(--nb-font-hand); font-size: 1.25rem; color: var(--nb-ink-faint); margin-bottom: 14px; }
+.nb-folded-line p { margin: 0 0 14px; line-height: 36px; max-width: 620px; }
+.nb-folded-line p:last-child { margin-bottom: 0; }
 .nb-folded-note { font-size: .8rem; color: var(--nb-muted); line-height: 1.7; max-width: 520px; }
 .nb-corner {
   position: absolute; right: 0; bottom: 0; width: 0; height: 0;
