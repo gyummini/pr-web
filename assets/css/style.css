@@ -62,7 +62,12 @@ button { font-family: inherit; }
   100% { transform: scale(1); }
 }
 
-#view { min-height: calc(100vh - var(--header-h)); }
+#view { min-height: calc(100vh - var(--header-h)); transition: opacity .12s ease; }
+#view.view-enter { opacity: 0; }
+@media (prefers-reduced-motion: reduce) {
+  #view { transition: none; }
+  #view.view-enter { opacity: 1; }
+}
 
 /* ---------- 공통: 종이/조서 ---------- */
 .paper {
@@ -127,12 +132,17 @@ button { font-family: inherit; }
   height: min(72vh, calc(100% - 200px), 1200px);
   min-height: 300px;
 }
+/* 표정 4종을 겹쳐두고 opacity만 전환 — 교체 순간 빈 프레임이 없다 */
 .dlg-sprite .spr {
   position: absolute; inset: 0; width: 100%; height: 100%;
   object-fit: contain; object-position: bottom;
-  opacity: 0; transition: opacity .25s ease; /* 스탠딩 디졸브 */
+  opacity: 0; pointer-events: none;
+  transition: opacity .25s ease-in-out; /* SPRITE_FADE_MS와 동기 */
 }
 .dlg-sprite .spr.show { opacity: 1; }
+@media (prefers-reduced-motion: reduce) {
+  .dlg-sprite .spr { transition: none; }
+}
 
 .dlg-box {
   position: absolute; left: 50%; bottom: 26px; transform: translateX(-50%);
@@ -666,6 +676,12 @@ button { font-family: inherit; }
 }
 
 .view-notebook { overflow: hidden; }
+/* 폰트 준비 전 짧게 가림 — 서체가 튀며 교체되는 것을 막는다 (최대 900ms, JS에서 해제) */
+.view-notebook.nb-fontwait .nb-stage,
+.view-notebook.nb-fontwait .nb-indicator,
+.view-notebook.nb-fontwait .nb-nav-btn { opacity: 0; }
+.view-notebook .nb-stage,
+.view-notebook .nb-indicator { transition: opacity .15s ease; }
 .nb-stage {
   position: relative;
   height: calc(100vh - var(--header-h));

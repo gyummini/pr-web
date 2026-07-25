@@ -39,6 +39,9 @@ function dispatch() {
   view.className = '';
   view.innerHTML = '';
   window.scrollTo(0, 0);
+  // 콘텐츠가 붙기 전 빈 화면이 스치지 않도록 짧은 페이드 인 (스피너는 쓰지 않는다)
+  view.classList.add('view-enter');
+  setTimeout(() => view.classList.remove('view-enter'), 20);
 
   switch (seg[0]) {
     case '':

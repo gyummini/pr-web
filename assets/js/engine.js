@@ -1,8 +1,11 @@
 // 자체 미니 대사 엔진 (명세서 4). 렌파이 손맛 체크리스트:
 // 타이핑 이펙트 / 2단계 클릭 / CTC 깜빡임 / 스탠딩 디졸브 / 대사창 페이드 /
 // 키보드 진행(Space·Enter) / 연타 방지(~100ms) / 화자명 네임태그
+import { SPRITE_KEYS } from './sprites.js';
+
 const TYPE_MS = 32;       // 글자당 출력 간격
 const LOCK_MS = 110;      // 문장 완성 직후 진행 잠금
+export const SPRITE_FADE_MS = 250; // 스탠딩 크로스페이드 (CSS와 동기)
 
 export class DialogueEngine {
   constructor(root, { resolveSprite, mode = 'standing' } = {}) {
@@ -17,15 +20,22 @@ export class DialogueEngine {
     this.lockUntil = 0;
     this.timer = null;
     this.currentSprite = null;
-    this.activeLayer = 0;
     this.destroyed = false;
     this.onChoice = null;
     this.onComplete = null;
 
+    // 표정 4종을 전부 미리 렌더해 겹쳐두고 opacity만 전환한다.
+    // src 교체 방식은 새 이미지 디코딩 동안 빈 프레임이 생기므로 사용하지 않는다.
+    const layers = SPRITE_KEYS.map(
+      (k) =>
+        `<img class="spr" data-key="${k}" alt="" aria-hidden="true" decoding="async"${
+          resolveSprite ? ` src="${resolveSprite(k)}"` : ''
+        }>`
+    ).join('');
     root.classList.add('dlg-scene', `dlg-${mode}`);
     root.insertAdjacentHTML(
       'beforeend',
-      `<div class="dlg-sprite"><img class="spr" alt=""><img class="spr" alt=""></div>
+      `<div class="dlg-sprite">${layers}</div>
        <div class="dlg-box">
          <div class="dlg-name"></div>
          <div class="dlg-text"></div>
@@ -34,6 +44,10 @@ export class DialogueEngine {
        <div class="dlg-choice"></div>`
     );
     this.sprImgs = root.querySelectorAll('.dlg-sprite .spr');
+    // 디코딩까지 미리 끝내둔다 (실패해도 무시)
+    this.sprImgs.forEach((img) => {
+      if (typeof img.decode === 'function') img.decode().catch(() => {});
+    });
     this.box = root.querySelector('.dlg-box');
     this.nameEl = root.querySelector('.dlg-name');
     this.textEl = root.querySelector('.dlg-text');
@@ -176,20 +190,14 @@ export class DialogueEngine {
     wrap.classList.add('on');
   }
 
-  // 스탠딩 교체: 하드 컷 금지 — 짧은 디졸브 (CSS transition 0.25s)
+  // 스탠딩 교체: 미리 렌더된 레이어 간 opacity 크로스페이드 (빈 프레임 없음)
   setSprite(key) {
     if (!this.resolveSprite || key === this.currentSprite) return;
+    const target = SPRITE_KEYS.includes(key) ? key : 'normal';
     this.currentSprite = key;
-    const url = this.resolveSprite(key);
-    const cur = this.sprImgs[this.activeLayer];
-    const next = this.sprImgs[1 - this.activeLayer];
-    next.src = url;
-    // rAF는 백그라운드 탭에서 멈추므로 setTimeout으로 디졸브 트리거
-    setTimeout(() => {
-      next.classList.add('show');
-      cur.classList.remove('show');
-    }, 20);
-    this.activeLayer = 1 - this.activeLayer;
+    this.sprImgs.forEach((img) => {
+      img.classList.toggle('show', img.dataset.key === target);
+    });
   }
 
   _finish() {

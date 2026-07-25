@@ -1,4 +1,12 @@
 import { state, TOTAL_EVIDENCE } from './state.js';
+import { preloadNotebookFonts } from './preload.js';
+
+// 수첩(E7)에 곧 도달할 신호. 폰트는 용량이 커서 진입 시점에 받으면 글씨가 늦게 바뀌므로,
+// 5/7 도달 시점에 미리 백그라운드 요청해둔다.
+const NB_FONT_TRIGGER = TOTAL_EVIDENCE - 2;
+function maybePreloadNotebookFonts() {
+  if (state.collected.size >= NB_FONT_TRIGGER) preloadNotebookFonts();
+}
 
 // ---- 수집 카운트 뱃지 ----
 // pending: 상태에는 수집됐지만 아직 수집 애니메이션이 도착하지 않은 수.
@@ -11,11 +19,13 @@ function badgeEl() {
 
 export function syncBadge() {
   renderBadge(false);
+  maybePreloadNotebookFonts();
 }
 
 export function addPending(n = 1) {
   pending += n;
   renderBadge(false);
+  maybePreloadNotebookFonts();
 }
 
 export function landOne() {

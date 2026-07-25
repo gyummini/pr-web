@@ -1,33 +1,34 @@
 import { DB } from '../data.js';
 import { state } from '../state.js';
 import { SPRITES } from '../sprites.js';
+import { preloadNotebookFonts } from '../preload.js';
 
 // E7 히든 — 클루의 수사 수첩 (#/notebook). 작업지시_수첩디자인이식.md 기준 구현.
 // 페이지 구성: 표지 / 1부 / 2부(3항목) / 2부 계속(2항목) / 3부 / 접힌 페이지 = 6쪽.
 // 넘김 방식: 버튼식 페이지네이션(이전/다음 버튼 + 키보드). 넘김 애니메이션은 순수 CSS로,
 // reduced-motion 여부와 무관하게 모든 사용자가 경험한다. 긴 페이지는 내부 스크롤 유지.
 const PAGE_COUNT = 6;
-const FONT_ID = 'nb-fonts';
 
 // ---- 넘김 튜닝 상수 ----
 const TURN_MS = 600;       // 넘김 애니메이션 길이 (CSS와 동기)
 const LOCK_EXTRA_MS = 100; // 애니메이션 종료 후 추가 입력 잠금
 
-function injectFonts() {
-  // 수첩 전용 폰트(Gaegu, Gowun Dodum)는 이 페이지 첫 진입 시에만 로드 — 본편 성능 영향 없음
-  if (document.getElementById(FONT_ID)) return;
-  const pre1 = document.createElement('link');
-  pre1.rel = 'preconnect';
-  pre1.href = 'https://fonts.googleapis.com';
-  const pre2 = document.createElement('link');
-  pre2.rel = 'preconnect';
-  pre2.href = 'https://fonts.gstatic.com';
-  pre2.crossOrigin = '';
-  const css = document.createElement('link');
-  css.id = FONT_ID;
-  css.rel = 'stylesheet';
-  css.href = 'https://fonts.googleapis.com/css2?family=Gaegu:wght@400;700&family=Gowun+Dodum&display=swap';
-  document.head.append(pre1, pre2, css);
+// 폰트가 준비되면 실제 서체로 그려진 상태로 노출한다 (교체 시 깜빡임·레이아웃 점프 방지).
+// 이미 5/7 시점에 백그라운드 요청이 시작되므로 대개 즉시 준비 완료 상태다.
+function revealWhenFontsReady(view) {
+  view.classList.add('nb-fontwait');
+  const reveal = () => view.classList.remove('nb-fontwait');
+  if (!document.fonts || !document.fonts.load) {
+    reveal();
+    return;
+  }
+  Promise.race([
+    Promise.all([
+      document.fonts.load('700 2rem Gaegu'),
+      document.fonts.load('400 1rem "Gowun Dodum"'),
+    ]),
+    new Promise((r) => setTimeout(r, 900)), // 폰트가 늦어도 본문을 계속 가리지 않는다
+  ]).then(reveal, reveal);
 }
 
 function esc(s) {
@@ -50,7 +51,7 @@ export function renderNotebook(view) {
     location.hash = '#/evidence';
     return {};
   }
-  injectFonts();
+  preloadNotebookFonts();
   const nb = DB.notebook;
 
   view.className = 'view-notebook';
@@ -81,6 +82,7 @@ export function renderNotebook(view) {
     );
   });
 
+  revealWhenFontsReady(view);
   return setupPager(view);
 }
 

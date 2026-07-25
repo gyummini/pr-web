@@ -1,6 +1,7 @@
 import { loadAll } from './data.js';
 import { syncBadge } from './ui.js';
 import { startRouter } from './router.js';
+import { startPreload } from './preload.js';
 
 const view = document.getElementById('view');
 
@@ -8,6 +9,7 @@ loadAll()
   .then(() => {
     syncBadge();
     startRouter();
+    startPreload(); // 첫 렌더 후 유휴 시간에 나머지 에셋 백그라운드 로딩
   })
   .catch((err) => {
     console.error(err);
