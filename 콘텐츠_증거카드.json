@@ -13,7 +13,7 @@
       "summary": "가챠 게임 캐릭터의 이중 과제(단기 각인 × 장기 잔존)를 푸는 설계 공식을 『100명의 그녀』에서 도출하고, 니케의 일레그로 실전 검증한 뒤, 오리지널 캐릭터 기획에 적용한 3단 구성의 분석서.",
       "url": "https://drive.google.com/file/d/18rImezDf4Znq7pyR330o5G_gTh_bUeVh/view?usp=sharing",
       "attachments": [],
-      "sd_dialogue": "요약해뒀어요, 탐정님! 사랑받는 캐릭터에도 공식이 있다는 걸 증명한 분석서예요. 원본은 여기서 확인하실 수 있어요!",
+      "sd_dialogue": "요약해뒀어요, 탐정님! 제일 오래 붙잡고 읽었는데, 그만큼 제일 재밌는 문서였어요!",
       "sd_dialogue_revisit": null
     },
     {
@@ -25,7 +25,7 @@
       "chapters": [
         "CASE03"
       ],
-      "summary": "'모에 X-COM'이라는 전투 철학에서 출발해 Cost 시스템의 설계 원칙을 정의하고, 플로우 차트·데이터 테이블·예외 처리까지 역으로 재구성한 시스템 역기획서. 실측 기반 스킬 데이터 테이블(xlsx) 첨부.",
+      "summary": "'모에 X-COM'이라는 전투 철학에서 출발해 Cost 시스템의 설계 원칙을 정의하고, 플로우 차트·데이터 테이블·예외 처리까지 역으로 재구성한 시스템 역기획서. 스킬 데이터 테이블(xlsx) 첨부.",
       "url": "https://drive.google.com/file/d/1ZWscIIxWXjkZ-xEax9OnSbzlef25iZPQ/view?usp=sharing",
       "attachments": [
         {
@@ -33,7 +33,7 @@
           "url": "https://drive.google.com/file/d/1GXr2-XDuRzRXT-Fx8uvg574Q9hDi-Qcu/view?usp=sharing"
         }
       ],
-      "sd_dialogue": "요약하자면— 시스템의 의도를 데이터 테이블까지 파고든 역기획서예요! 이렇게 잘 정리된 문서, 철해두는 보람이 있죠. 원본은 여기서요!",
+      "sd_dialogue": "요약해뒀어요, 탐정님! 이 문서는 특히 데이터테이블이 정교하게 짜여 있어서 인상 깊었어요!",
       "sd_dialogue_revisit": null
     },
     {
@@ -54,7 +54,7 @@
           "url": "https://ro.blox.com/Ebh5?af_dp=roblox%3A%2F%2Fnavigation%2Fgame_details%3FgameId%3D10357760430&af_web_dp=https%3A%2F%2Fwww.roblox.com%2Fgames%2F117347411581193"
         }
       ],
-      "sd_dialogue": "요약해뒀어요! 분석이 실제 게임 출시까지 이어진 기록이에요. 원본은 여기서 확인하실 수 있어요!",
+      "sd_dialogue": "요약해뒀어요! 아래 링크로 직접 플레이해보실 수도 있어요.",
       "sd_dialogue_revisit": "어라, 이 증거… 전에도 나왔죠? 여러 진술에 걸쳐 발견되는 물증이에요. 중요하니까 다시 기록해둘게요!"
     },
     {
@@ -69,7 +69,7 @@
       "summary": "유저가 PVE를 '숙제'로 인식하는 구조적 원인을 RTA 경험과의 단절로 진단하고, 밴·엔트리·증강 시스템으로 두 콘텐츠를 잇는 개선안을 리스크 분석과 함께 제시한 제안서.",
       "url": "https://drive.google.com/file/d/1Cb8Pq9ExdAf6NXHaFKXAKX2LD4V6YF5-/view?usp=sharing",
       "attachments": [],
-      "sd_dialogue": "요약해뒀어요! 분석이 개선 제안으로 이어진 사례예요. 리스크 대응까지 철해져 있답니다. 원본은 여기서요!",
+      "sd_dialogue": "요약해뒀어요! 분석에서 제안으로 들어가는 흐름이 설득력 있고 매끄러워 좋았어요.",
       "sd_dialogue_revisit": null
     },
     {
@@ -84,7 +84,7 @@
       "summary": "AI 도구를 기획 문서 작성 파이프라인에 적용해 효율을 분석한 보고서. 'AI는 속도를 높이지만, 무엇을 만들지는 기획자의 몫'이라는 결론까지.",
       "url": "https://app.notion.com/p/AI-36caa7a78d1180dd8382f1bb96896b76?source=copy_link",
       "attachments": [],
-      "sd_dialogue": "요약해뒀어요! 새로운 도구를 업무로 연결한 기록이에요. 원본은 여기서 확인하실 수 있어요!",
+      "sd_dialogue": "요약해뒀어요! 새로운 도구의 사용기가 아닌, 활용에 대한 철학이 보인 게 포인트였어요!",
       "sd_dialogue_revisit": null
     },
     {
@@ -99,7 +99,7 @@
       "summary": "서비스 게임의 본질적 매력(캐릭터)이 가장 깊이 체험되는 콘텐츠를 분석하고, 기존 편성·여정 구조를 해치지 않으면서 그 매력을 극대화하는 세트 시스템을 설계한 제안서.",
       "url": "https://drive.google.com/file/d/1oa1yyNDPQf3YCTQ95jjpaEapHvWAirM-/view?usp=drive_link",
       "attachments": [],
-      "sd_dialogue": "요약해뒀어요! 기존 시스템 위에 자연스럽게 얹히는 신규 설계예요. 원본은 여기서 확인하실 수 있어요!",
+      "sd_dialogue": "요약해뒀어요! 기존 시스템 위에 자연스럽게 얹히는 신규 설계예요.",
       "sd_dialogue_revisit": null
     },
     {
