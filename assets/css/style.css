@@ -308,6 +308,8 @@ button { font-family: inherit; }
   object-fit: cover; object-position: top;
 }
 .ev-thumb-fallback { position: relative; opacity: .5; }
+/* 썸네일 이미지가 있으면 폴백 아이콘을 숨긴다 (로드 실패 시 img가 제거되며 다시 나타남) */
+.ev-thumb:has(.ev-thumb-img) .ev-thumb-fallback { display: none; }
 
 .ev-info { display: flex; flex-direction: column; flex: 1; padding: 14px 16px 12px; }
 .ev-type {
