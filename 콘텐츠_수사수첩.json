@@ -88,12 +88,12 @@
     "quote": "조사 중 확보한 현장 사진. 의뢰인의 진술 — '캐릭터에 마음을 주고, 그 세계에 빠져드는 시간이 일상의 가장 중요한 부분' — …이건 물증으로 철해도 되지 않을까.",
     "photos": [
       {
-        "src": "./assets/img/notebook_photo_1.png",
+        "src": "./assets/img/notebook_photo_1.jpg",
         "label": "굿즈 전시 사진 ①",
         "caption": "진열장 한 켠."
       },
       {
-        "src": "./assets/img/notebook_photo_2.png",
+        "src": "./assets/img/notebook_photo_2.jpg",
         "label": "굿즈 전시 사진 ②",
         "caption": "2부의 기록과 대조해볼 것."
       }
