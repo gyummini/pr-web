@@ -321,6 +321,15 @@ button { font-family: inherit; }
   margin: 0; font-size: .84rem; line-height: 1.55; color: var(--ink-soft);
   display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
 }
+/* 카드 첨부 칩 — 실측 데이터·플레이 링크를 목록에서 바로 열 수 있게 */
+.ev-card-atts { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.att-chip.card {
+  max-width: 100%; font-size: .74rem; padding: 4px 9px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  border-style: dashed; color: var(--ink-soft);
+}
+.att-chip.card:hover { border-style: solid; border-color: var(--accent); color: var(--accent); }
+
 .ev-foot {
   display: flex; align-items: baseline; justify-content: space-between; gap: 10px;
   margin-top: auto; padding-top: 12px;

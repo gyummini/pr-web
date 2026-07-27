@@ -48,6 +48,15 @@ function cardHtml(ev) {
         <span class="ev-type"></span>
         <h3 class="ev-title"></h3>
         <p class="ev-sub"></p>
+        ${
+          // 첨부(실측 데이터·플레이 링크 등)는 목록에서 바로 열 수 있어야 한다.
+          // 카드 본체 클릭은 본문 열기이므로 칩은 이벤트를 가로챈다.
+          (ev.attachments || []).length
+            ? `<div class="ev-card-atts">${(ev.attachments || [])
+                .map((_, i) => `<button type="button" class="att-chip card" data-att="${i}"></button>`)
+                .join('')}</div>`
+            : ''
+        }
         <div class="ev-foot">
           <span class="ev-code">${code}</span>
           <span class="ev-open">${got ? '문서 열기 ↗' : '요약 확인 →'}</span>
@@ -78,6 +87,26 @@ function wireCard(el) {
   if (img) {
     img.addEventListener('error', () => img.remove(), { once: true });
   }
+  // 첨부 칩: 라벨은 데이터 그대로, 클릭은 카드 본체로 전파되지 않게 막는다
+  el.querySelectorAll('.att-chip.card').forEach((chip) => {
+    const att = (ev.attachments || [])[Number(chip.dataset.att)];
+    if (!att) {
+      chip.remove();
+      return;
+    }
+    chip.textContent = `📎 ${att.label}`;
+    chip.addEventListener('click', (e) => {
+      e.stopPropagation();
+      openDoc(att.url);
+    });
+    chip.addEventListener('keydown', (e) => {
+      if (e.code === 'Enter' || e.code === 'Space') {
+        e.preventDefault();
+        e.stopPropagation();
+        openDoc(att.url);
+      }
+    });
+  });
 
   const act = () => {
     if (el.classList.contains('collected')) {
