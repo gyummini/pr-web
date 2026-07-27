@@ -81,6 +81,17 @@ export function renderNotebook(view) {
       { once: true }
     );
   });
+  // 2부 스크랩 사진: 파일이 없으면 빈 프레임만 남긴다 (파일 추가 시 자동 표시)
+  view.querySelectorAll('.nb-memo-img').forEach((img) => {
+    img.addEventListener(
+      'error',
+      () => {
+        img.closest('.nb-memo-shot').classList.add('empty');
+        img.remove();
+      },
+      { once: true }
+    );
+  });
 
   revealWhenFontsReady(view);
   return setupPager(view);
@@ -224,6 +235,12 @@ function pagePart2(p, from, to, isCont) {
           <div class="nb-memo-subject">
             <div class="nb-memo-cat">${esc(it.category)}</div>
             <div class="nb-memo-name">${esc(it.name)}</div>
+            ${
+              // 스크랩 사진 슬롯 — 파일이 없으면 빈 프레임으로 자리만 남는다
+              it.image
+                ? `<div class="nb-memo-shot"><img class="nb-memo-img" src="${esc(it.image)}" alt="" loading="lazy"></div>`
+                : ''
+            }
           </div>
           <div class="nb-postit"><span class="nb-postit-by">클루 메모:</span> ${nbInline(it.memo)}</div>
         </div>`
