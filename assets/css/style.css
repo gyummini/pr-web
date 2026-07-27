@@ -666,6 +666,13 @@ button { font-family: inherit; }
 .load-error { text-align: center; }
 
 /* ==================== E7 클루의 수사 수첩 (#/notebook) ==================== */
+/* 클루의 손글씨 — 교보 손글씨 2025 lyb (자체 호스팅, 상용 한글 서브셋 WOFF2) */
+@font-face {
+  font-family: 'Kyobo Handwriting 2025 lyb';
+  src: url('../fonts/KyoboHandwriting2025lyb.woff2') format('woff2');
+  font-weight: 400 700;
+  font-display: swap;
+}
 /* 본편과 분리된 수첩 전용 토큰. 본편 페이지 스타일에는 영향 없음. */
 :root {
   --nb-desk: #ddd7c8;
@@ -682,7 +689,7 @@ button { font-family: inherit; }
   --nb-rule: #ddd6c2;
   --nb-hl: rgba(232, 184, 62, .45);
   --nb-navy: #2c4a6e; /* 본편 연결 요소 전용 컬러 */
-  --nb-font-hand: 'Gaegu', 'Malgun Gothic', sans-serif;
+  --nb-font-hand: 'Kyobo Handwriting 2025 lyb', 'Malgun Gothic', sans-serif;
   --nb-font-body: 'Gowun Dodum', 'Malgun Gothic', sans-serif;
 }
 

@@ -4,10 +4,12 @@
 import { SPRITES, SPRITE_KEYS } from './sprites.js';
 import { DB } from './data.js';
 
-// 수첩 전용 폰트 (Gaegu = 손글씨 제목, Gowun Dodum = 본문)
+// 수첩 전용 폰트: 손글씨는 자체 호스팅(교보 손글씨, style.css의 @font-face),
+// 본문 고운돋움만 Google Fonts에서 받는다.
 export const NB_FONT_CSS =
-  'https://fonts.googleapis.com/css2?family=Gaegu:wght@400;700&family=Gowun+Dodum&display=swap';
+  'https://fonts.googleapis.com/css2?family=Gowun+Dodum&display=swap';
 const NB_FONT_ID = 'nb-fonts';
+const NB_HAND_FONT = './assets/fonts/KyoboHandwriting2025lyb.woff2';
 
 const idle = (fn) =>
   typeof requestIdleCallback === 'function'
@@ -48,6 +50,13 @@ function imageList() {
 // 이후 수첩 페이지는 이미 받아진 폰트를 그대로 쓴다.
 export function preloadNotebookFonts() {
   if (document.getElementById(NB_FONT_ID)) return;
+  // 자체 호스팅 손글씨 폰트를 먼저 당겨온다 (수첩 화면 대부분이 이 서체)
+  const handPre = document.createElement('link');
+  handPre.rel = 'preload';
+  handPre.as = 'font';
+  handPre.type = 'font/woff2';
+  handPre.href = NB_HAND_FONT;
+  handPre.crossOrigin = 'anonymous';
   const pre1 = document.createElement('link');
   pre1.rel = 'preconnect';
   pre1.href = 'https://fonts.googleapis.com';
@@ -59,7 +68,7 @@ export function preloadNotebookFonts() {
   css.id = NB_FONT_ID;
   css.rel = 'stylesheet';
   css.href = NB_FONT_CSS;
-  document.head.append(pre1, pre2, css);
+  document.head.append(handPre, pre1, pre2, css);
 }
 
 // 첫 화면 렌더를 막지 않도록, 최초 렌더에 필요한 normal 스탠딩만 먼저 받고

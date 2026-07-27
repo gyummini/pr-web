@@ -24,7 +24,7 @@ function revealWhenFontsReady(view) {
   }
   Promise.race([
     Promise.all([
-      document.fonts.load('700 2rem Gaegu'),
+      document.fonts.load('700 2rem "Kyobo Handwriting 2025 lyb"'),
       document.fonts.load('400 1rem "Gowun Dodum"'),
     ]),
     new Promise((r) => setTimeout(r, 900)), // 폰트가 늦어도 본문을 계속 가리지 않는다
