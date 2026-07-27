@@ -53,31 +53,31 @@
       {
         "category": "인생 애니메이션",
         "name": "신세기 에반게리온",
-        "image": "./assets/img/memo_1.png",
+        "image": "./assets/img/memo_1.jpg",
         "memo": "인생 작품을 물었더니 작품 감상 대신 '심리를 화면 언어로 옮기는 연출'에 대한 이야기가 길어짐. 좋아하는 방식마저 분석적임."
       },
       {
         "category": "인생 게임",
         "name": "페르소나 5",
-        "image": "./assets/img/memo_2.png",
+        "image": "./assets/img/memo_2.jpg",
         "memo": "\"메뉴를 여는 것만으로 즐거운 게임\"이라고 함. UI가 게임의 정체성이 될 수 있다는 주장을 30분 들었다. …분하지만 설득됨."
       },
       {
         "category": "가장 오래한 게임",
         "name": "에픽세븐",
-        "image": "./assets/img/memo_3.png",
+        "image": "./assets/img/memo_3.jpg",
         "memo": "오래한 이유를 물으니 \"시스템적 설계가 굉장히 훌륭한 게임\"이라는 답. 길어질까봐 더 자세히 묻지는 못했음."
       },
       {
         "category": "요즘 빠져 있는 게임",
         "name": "림버스 컴퍼니",
-        "image": "./assets/img/memo_4.png",
+        "image": "./assets/img/memo_4.jpg",
         "memo": "스토리 이야기로 시작해서 게임 특유의 독창적인 플레이 디자인에 대한 칭찬으로 이어짐."
       },
       {
         "category": "서브 컬처 외 좋아하는 게임 장르",
         "name": "시뮬레이션",
-        "image": "./assets/img/memo_5.png",
+        "image": "./assets/img/memo_5.jpg",
         "memo": "게임 플레이의 핵심을 파악하고 퍼즐을 풀어나가는 듯한 경험을 좋아한다고 한다. …결국 여기서도 구조. 일관성 하나는 인정."
       }
     ],
