@@ -83,6 +83,8 @@ function inline(s) {
       `<span role="button" tabindex="0" class="anchor" data-eid="${id}">${txt}<span class="anchor-ic" aria-hidden="true">🔍</span></span>`
   );
   out = out.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+  // 원고의 문장 단위 줄바꿈을 그대로 살린다 (가독성)
+  out = out.replace(/\n/g, '<br>');
   return out;
 }
 
@@ -146,7 +148,8 @@ function renderBlocks(body) {
       const b = raw.trim();
       if (!b || b === '---') return '';
       if (b.startsWith('### ')) return `<h3>${inline(b.slice(4))}</h3>`;
-      return `<p>${inline(b.replace(/\n/g, ' '))}</p>`;
+      // 문단 안 줄바꿈은 inline()에서 <br>로 보존된다
+      return `<p>${inline(b)}</p>`;
     })
     .filter(Boolean)
     .join('\n');
