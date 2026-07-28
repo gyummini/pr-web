@@ -7,6 +7,7 @@ import { renderDetail } from './views/detail.js';
 import { renderEnding } from './views/ending.js';
 import { renderMaking } from './views/making.js';
 import { renderNotebook } from './views/notebook.js';
+import { renderDocs } from './views/docs.js';
 
 // URL 해시 라우팅 — 브라우저 뒤로가기가 탭/챕터 이동과 자연스럽게 동작 (명세서 6)
 let current = null;
@@ -66,10 +67,15 @@ function dispatch() {
     case 'notebook':
       current = renderNotebook(view);
       break;
+    case 'docs':
+      current = renderDocs(view);
+      break;
     default:
       current = renderIntro(view);
   }
 
+  // 문서 목록은 컨셉 없는 열람용 — 상단 탭 바(사건 파일 UI)를 노출하지 않는다
+  document.body.classList.toggle('plain-mode', seg[0] === 'docs');
   updateTabs(seg[0]);
   syncBadge();
 }

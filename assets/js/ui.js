@@ -5,6 +5,8 @@ import { preloadNotebookFonts } from './preload.js';
 // 5/7 도달 시점에 미리 백그라운드 요청해둔다.
 const NB_FONT_TRIGGER = TOTAL_EVIDENCE - 2;
 function maybePreloadNotebookFonts() {
+  // 문서 목록 페이지에서는 수첩 폰트가 쓰이지 않으므로 받지 않는다
+  if (location.hash.startsWith('#/docs')) return;
   if (state.collected.size >= NB_FONT_TRIGGER) preloadNotebookFonts();
 }
 

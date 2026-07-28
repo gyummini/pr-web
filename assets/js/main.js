@@ -9,7 +9,10 @@ loadAll()
   .then(() => {
     syncBadge();
     startRouter();
-    startPreload(); // 첫 렌더 후 유휴 시간에 나머지 에셋 백그라운드 로딩
+    // 문서 목록(#/docs)은 컨셉 없는 열람용이므로 스탠딩·수첩 등 연출 자원을 받지 않는다
+    if (!location.hash.startsWith('#/docs')) {
+      startPreload(); // 첫 렌더 후 유휴 시간에 나머지 에셋 백그라운드 로딩
+    }
   })
   .catch((err) => {
     console.error(err);
