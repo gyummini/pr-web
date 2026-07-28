@@ -276,11 +276,15 @@ button { font-family: inherit; }
 .record-table.rows th { width: 190px; }
 /* 프로젝트 행의 보조 설명 */
 .record-detail { margin-top: 3px; font-size: .86rem; color: var(--ink-soft); line-height: 1.55; }
-/* 보유 기술 칩 — 조서 톤 유지 (과장 표현 없이 도구명만) */
-.skill-chips { display: flex; flex-wrap: wrap; gap: 6px; }
-.skill-chip {
-  border: 1px solid var(--line); border-radius: 999px; background: #fff;
-  padding: 3px 10px; font-size: .82rem; white-space: nowrap;
+/* 보유 기술 — 기술명(좌) + 실제 가능한 수준·근거(우) */
+.skill-level { line-height: 1.55; }
+.skill-notes { margin: 4px 0 0; padding: 0; list-style: none; }
+.skill-notes li {
+  font-size: .84rem; color: var(--ink-soft); line-height: 1.55;
+  padding-left: 14px; position: relative;
+}
+.skill-notes li::before {
+  content: '└'; position: absolute; left: 0; color: var(--muted, #9a958a);
 }
 .record-actions { display: flex; gap: 10px; margin-top: 30px; flex-wrap: wrap; }
 
@@ -1039,6 +1043,13 @@ button { font-family: inherit; }
   .record-table th { width: 90px; }
   /* 기간 열이 고정 190px이면 좁은 화면에서 내용 칸이 눌려 세로로 길어진다 */
   .record-table.rows th { width: 88px; font-size: .82rem; }
+  /* 기술명은 길어서 2열을 유지하면 설명 칸이 눌린다 — 좁은 화면에서는 세로로 쌓는다 */
+  .record-table.skills, .record-table.skills tbody,
+  .record-table.skills tr, .record-table.skills th, .record-table.skills td { display: block; width: auto; }
+  .record-table.skills tr { border: 1px solid var(--line); margin-bottom: -1px; }
+  .record-table.skills th { border: none; border-bottom: 1px dashed var(--line); font-size: .88rem; }
+  .record-table.skills td { border: none; }
+  .record-table.skills td:empty { display: none; }
   .record-table th, .record-table td { padding: 8px 10px; }
   .skill-chip { font-size: .78rem; padding: 3px 8px; }
   .page-head { padding-right: 110px; }

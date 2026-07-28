@@ -28,20 +28,26 @@ function projectsSection(list) {
       </section>`;
 }
 
-// 보유 기술 — 분류별 칩 나열. 항목이 없는 분류는 건너뛴다.
+// 보유 기술 — 기술명 + 실제 가능한 수준 + 근거. 이름 없는 항목은 건너뛴다.
 function skillsSection(list) {
-  const groups = (list || []).filter((g) => (g.items || []).length);
-  if (!groups.length) return '';
+  const rows = (list || []).filter((s) => (s.name || '').trim());
+  if (!rows.length) return '';
   return `
       <section class="record-sec">
         <h3>보유 기술</h3>
-        <table class="record-table rows">
-          ${groups
-            .map(
-              (g) => `<tr><th>${esc(g.category)}</th><td><div class="skill-chips">${g.items
-                .map((s) => `<span class="skill-chip">${esc(s)}</span>`)
-                .join('')}</div></td></tr>`
-            )
+        <table class="record-table rows skills">
+          ${rows
+            .map((s) => {
+              const level = (s.level || '').trim()
+                ? `<div class="skill-level">${esc(s.level)}</div>`
+                : '';
+              const notes = (s.notes || []).length
+                ? `<ul class="skill-notes">${s.notes
+                    .map((n) => `<li>${esc(n)}</li>`)
+                    .join('')}</ul>`
+                : '';
+              return `<tr><th>${esc(s.name)}</th><td>${level || notes ? level + notes : '&nbsp;'}</td></tr>`;
+            })
             .join('')}
         </table>
       </section>`;
