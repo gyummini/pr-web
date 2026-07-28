@@ -1,5 +1,52 @@
 import { DB } from '../data.js';
 
+function esc(s) {
+  return String(s == null ? '' : s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+}
+
+// 프로젝트 — 기간·내용 2열. 이름과 역할이 모두 비어 있으면 그 행은 렌더링하지 않는다.
+function projectsSection(list) {
+  const rows = (list || []).filter((p) => (p.name || '').trim() || (p.role || '').trim());
+  if (!rows.length) return '';
+  return `
+      <section class="record-sec">
+        <h3>프로젝트</h3>
+        <table class="record-table rows">
+          ${rows
+            .map((p) => {
+              const title = [p.name, p.role].filter((v) => (v || '').trim()).map(esc).join(' — ');
+              const detail = (p.detail || '').trim()
+                ? `<div class="record-detail">${esc(p.detail)}</div>`
+                : '';
+              return `<tr><th>${esc(p.period) || '&nbsp;'}</th><td>${title}${detail}</td></tr>`;
+            })
+            .join('')}
+        </table>
+      </section>`;
+}
+
+// 보유 기술 — 분류별 칩 나열. 항목이 없는 분류는 건너뛴다.
+function skillsSection(list) {
+  const groups = (list || []).filter((g) => (g.items || []).length);
+  if (!groups.length) return '';
+  return `
+      <section class="record-sec">
+        <h3>보유 기술</h3>
+        <table class="record-table rows">
+          ${groups
+            .map(
+              (g) => `<tr><th>${esc(g.category)}</th><td><div class="skill-chips">${g.items
+                .map((s) => `<span class="skill-chip">${esc(s)}</span>`)
+                .join('')}</div></td></tr>`
+            )
+            .join('')}
+        </table>
+      </section>`;
+}
+
 // 기본 사항 — 인물 신상 조서 (명세서 2-2). 정적 페이지.
 export function renderBasic(view) {
   const r = DB.resume;
@@ -34,12 +81,20 @@ export function renderBasic(view) {
         </table>
       </section>
 
-      <section class="record-sec">
+      ${projectsSection(r.projects)}
+
+      ${skillsSection(r.skills)}
+
+      ${
+        (r.experience || []).length
+          ? `<section class="record-sec">
         <h3>경력사항 및 사회경험</h3>
         <table class="record-table rows">
-          ${r.experience.map((e) => `<tr><th>${e.period}</th><td>${e.org} — ${e.role}</td></tr>`).join('')}
+          ${r.experience.map((e) => `<tr><th>${esc(e.period)}</th><td>${esc(e.org)} — ${esc(e.role)}</td></tr>`).join('')}
         </table>
-      </section>
+      </section>`
+          : ''
+      }
 
       <div class="record-actions">
         <a class="btn accent" href="#/case/01">세부 사항 보기 →</a>
