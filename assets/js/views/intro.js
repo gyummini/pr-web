@@ -2,10 +2,17 @@ import { DB } from '../data.js';
 import { state } from '../state.js';
 import { DialogueEngine } from '../engine.js';
 import { standingSprite } from '../sprites.js';
-import { unlockAll } from '../collect.js';
 
 // 시작 페이지 (명세서 2-1). SKIP은 첫 프레임부터 상시 노출.
+// 선택지 없는 단일 동선 — 대사가 끝나거나 SKIP하면 기본 사항으로 이동한다.
 export function renderIntro(view) {
+  // 세션 내 재진입: 대사를 다시 재생하지 않고 곧바로 기본 사항으로
+  if (state.introSeen) {
+    location.replace('#/basic');
+    return {};
+  }
+  state.introSeen = true;
+
   view.className = 'view-intro';
   view.innerHTML = `
     <div class="scene">
@@ -18,25 +25,15 @@ export function renderIntro(view) {
     mode: 'standing',
   });
 
-  const onChoice = (opt) => {
-    if (opt.goto === 'evidence_all_unlocked') {
-      unlockAll();
-      location.hash = '#/evidence';
-    } else if (opt.goto === 'basic') {
-      location.hash = '#/basic'; // 직접 수사: 기본 사항(신상 조서)부터
-    } else {
-      location.hash = '#/case/01';
+  const goNext = () => {
+    if (location.hash === '#/intro' || location.hash === '' || location.hash === '#/') {
+      location.hash = '#/basic';
     }
   };
 
-  const revisit = state.introSeen;
-  state.introSeen = true;
-  if (revisit) {
-    // 세션 내 재진입: 대사 자동 스킵, 선택지만 표시
-    engine.playFromChoice(DB.intro.lines, { onChoice });
-  } else {
-    engine.play(DB.intro.lines, { onChoice });
-  }
+  // 스크립트에 choice 블록이 없으므로 재생 종료 → onComplete → 기본 사항.
+  // SKIP도 엔진 내부에서 동일한 종료 경로를 탄다.
+  engine.play(DB.intro.lines, { onComplete: goNext });
 
   view.querySelector('.skip-btn').addEventListener('click', (e) => {
     e.stopPropagation();

@@ -4,7 +4,6 @@ export const TOTAL_EVIDENCE = 7;
 
 export const state = {
   introSeen: false,        // 세션 내 시작 페이지 재진입 시 대사 자동 스킵
-  resultOnlyMode: false,   // '수사 결과만 본다' 경로
   endingSeen: false,       // 엔딩 대화 완료 여부
   hiddenFlashShown: false, // 히든 해금 강조 연출 1회 재생 여부
   viewedChapters: new Set(),   // 'CASE01' ~ 'CASE04'

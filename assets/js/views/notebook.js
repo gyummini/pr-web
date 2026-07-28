@@ -47,7 +47,7 @@ function nbInline(s) {
 }
 
 export function renderNotebook(view) {
-  if (!(state.resultOnlyMode || state.endingSeen)) {
+  if (!state.endingSeen) {
     location.hash = '#/evidence';
     return {};
   }

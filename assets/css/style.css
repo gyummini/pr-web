@@ -368,6 +368,7 @@ button { font-family: inherit; }
 }
 
 .hidden-slot-wrap { margin-top: 26px; }
+.ev-doc-actions { margin-top: 22px; display: flex; gap: 10px; flex-wrap: wrap; }
 .hidden-slot {
   display: flex; align-items: center; gap: 18px;
   border-radius: 10px; padding: 22px 24px;

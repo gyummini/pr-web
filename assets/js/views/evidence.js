@@ -21,6 +21,13 @@ export function renderEvidence(view) {
         ${cards.map((ev) => cardHtml(ev)).join('')}
       </div>
       <div class="hidden-slot-wrap"></div>
+      ${
+        DB.resume && DB.resume.fullPdf
+          ? `<div class="ev-doc-actions">
+               <a class="btn ghost" href="${DB.resume.fullPdf}" download>이력서·자기소개서 PDF ⬇</a>
+             </div>`
+          : ''
+      }
     </div>`;
 
   wireCards(view);
@@ -142,7 +149,7 @@ function renderHiddenSlot(wrap, hidden) {
   }
 
   // 해금 상태. 강조 연출(플래시)은 직접 수사 완주자 전용 보상 — 결과만 보기 경로에서는 생략.
-  const flash = !state.resultOnlyMode && !state.hiddenFlashShown;
+  const flash = !state.hiddenFlashShown;
   if (flash) state.hiddenFlashShown = true;
   wrap.innerHTML = `
     <div class="hidden-slot unlocked ${flash ? 'flash' : ''}" tabindex="0" role="button">
@@ -151,7 +158,7 @@ function renderHiddenSlot(wrap, hidden) {
         <h3 class="hidden-title"></h3>
         <p class="hidden-cond hidden-sub"></p>
       </div>
-      <div class="ev-open">${state.resultOnlyMode || state.endingSeen ? '확인하기 →' : '해금! 클릭하여 확인 →'}</div>
+      <div class="ev-open">${state.endingSeen ? '확인하기 →' : '해금! 클릭하여 확인 →'}</div>
     </div>`;
   wrap.querySelector('.hidden-title').textContent = hidden.title;
   wrap.querySelector('.hidden-sub').textContent = hidden.subtitle || '';
@@ -160,8 +167,8 @@ function renderHiddenSlot(wrap, hidden) {
   // E7의 목적지는 증거 카드 데이터가 결정 (내부 라우트, 예: #/notebook)
   const e7Target = hidden.url && hidden.url.startsWith('#/') ? hidden.url : '#/notebook';
   const act = () => {
-    // 직접 수사 완주자: 엔딩 대화 → E7. 결과만 보기/엔딩 완료자: E7 바로.
-    if (state.resultOnlyMode || state.endingSeen) location.hash = e7Target;
+    // 처음 해금하면 엔딩 대화부터, 이미 본 뒤에는 E7로 바로
+    if (state.endingSeen) location.hash = e7Target;
     else location.hash = '#/ending';
   };
   slot.addEventListener('click', act);

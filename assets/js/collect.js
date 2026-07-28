@@ -1,6 +1,6 @@
 import { state } from './state.js';
 import { DB } from './data.js';
-import { addPending, landOne, flyFromRect, toast, syncBadge } from './ui.js';
+import { addPending, landOne, flyFromRect, toast } from './ui.js';
 
 export function fmtCase(chId) {
   return `CASE ${chId.slice(4)}`;
@@ -42,12 +42,4 @@ export function autoCollectChapter(chId, originRects = null) {
   });
   setTimeout(checkChapterToasts, rest.length * 180 + 800);
   return rest.length;
-}
-
-// '수사 결과만 본다': 모든 증거(히든 포함) 해금 상태로 세팅
-export function unlockAll() {
-  state.resultOnlyMode = true;
-  DB.cards.forEach((c) => state.collected.add(c.id));
-  DB.chapters.forEach((c) => state.toastedChapters.add(c.id)); // 일괄 해금 시 토스트 생략
-  syncBadge();
 }

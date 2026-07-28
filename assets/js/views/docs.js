@@ -4,7 +4,6 @@ import { openDoc } from '../ui.js';
 // 포트폴리오 문서 목록 (#/docs).
 // 컨셉 없는 열람용 페이지 — 수사 어휘·캐릭터·수집 UI를 일절 쓰지 않는다.
 // 문서 데이터는 콘텐츠_증거카드.json을 그대로 참조한다(복제 금지).
-const DRIVE_FOLDER = 'https://drive.google.com/drive/folders/1bwSG8v3F-A8OxQKOEWZyCEV6poU8RaPf';
 
 function esc(s) {
   return String(s == null ? '' : s)
@@ -34,9 +33,7 @@ export function renderDocs(view) {
         <div class="docs-foot-block">
           <h2>문서 내려받기</h2>
           <div class="docs-actions">
-            ${r.pdf ? `<a class="btn accent" href="${esc(r.pdf)}" download>이력서 PDF ⬇</a>` : ''}
-            ${r.fullPdf ? `<a class="btn ghost" href="${esc(r.fullPdf)}" download>이력서·자기소개서 PDF ⬇</a>` : ''}
-            <button type="button" class="btn ghost docs-folder">전체 폴더에서 내려받기 ↗</button>
+            ${r.fullPdf ? `<a class="btn accent" href="${esc(r.fullPdf)}" download>이력서·자기소개서 PDF ⬇</a>` : ''}
           </div>
         </div>
 
@@ -84,7 +81,6 @@ export function renderDocs(view) {
     });
   });
 
-  view.querySelector('.docs-folder').addEventListener('click', () => openDoc(DRIVE_FOLDER));
   return {};
 }
 
