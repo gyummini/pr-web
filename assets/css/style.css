@@ -114,6 +114,76 @@ button { font-family: inherit; }
   background: radial-gradient(ellipse at 50% 38%, rgba(20, 18, 24, .06), rgba(20, 18, 24, .38) 100%),
     linear-gradient(to top, rgba(20, 18, 24, .38), transparent 34%);
 }
+/* ---------- 첫 진입 오프닝 (사건 파일 표지) ---------- */
+/* 인트로 DOM은 이미 렌더된 뒤 표지가 그 위를 덮을 뿐이다 — 콘텐츠 준비를 지연시키지 않는다.
+   전체 0.8s: 정지 0.3s + 열림 0.5s. 새 이미지·폰트 없이 기존 종이 톤과 도장 컴포넌트만 사용. */
+.opening {
+  position: fixed; inset: 0; z-index: 60;
+  perspective: 1600px; overflow: hidden;
+}
+.opening.through { pointer-events: none; } /* 대사 시작 후 남은 회전은 입력을 막지 않는다 */
+
+.opening-cover {
+  position: absolute; inset: 0;
+  background: var(--paper);
+  /* 서류철 결·좌측 접힘 음영 (이미지 없이 그라디언트만) */
+  background-image:
+    linear-gradient(90deg, rgba(38,36,31,.13), rgba(38,36,31,0) 72px),
+    repeating-linear-gradient(0deg, rgba(38,36,31,.022) 0 2px, transparent 2px 4px);
+  border-right: 1px solid var(--line);
+  display: flex; align-items: center; justify-content: center;
+  transform-origin: left center;
+  backface-visibility: hidden;
+  animation: coverOpen .5s cubic-bezier(.55, .06, .38, .96) .3s forwards;
+}
+/* 넘어가는 면에 은은한 그림자 (수첩 페이지 넘김과 같은 방식) */
+.opening-cover::after {
+  content: ''; position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(90deg, rgba(20,18,14,.45), rgba(20,18,14,0) 58%);
+  opacity: 0;
+  animation: coverShade .5s ease-in .3s forwards;
+}
+@keyframes coverOpen {
+  from { transform: rotateY(0deg); }
+  to   { transform: rotateY(-105deg); }
+}
+@keyframes coverShade { from { opacity: 0; } to { opacity: 1; } }
+
+.opening-kicker {
+  position: absolute; top: 13%; left: 0; right: 0; text-align: center;
+  font-size: .8rem; font-weight: 800; letter-spacing: .4em;
+  color: var(--ink-soft);
+}
+.opening-title {
+  font-size: clamp(1.65rem, 6.4vw, 3rem); font-weight: 800; letter-spacing: .05em;
+  color: var(--ink); padding-bottom: 14px; border-bottom: 2px solid var(--ink);
+}
+.opening-foot {
+  position: absolute; bottom: 13%; left: 0; right: 0; text-align: center;
+  font-size: .78rem; letter-spacing: .26em; color: var(--ink-soft);
+}
+/* 기존 .stamp를 그대로 쓰되 표지 중앙 아래로 재배치 */
+.opening-stamp {
+  top: calc(50% + 74px); right: auto; left: 50%;
+  transform: translateX(-50%) rotate(-7deg);
+  font-size: .85rem; padding: 6px 14px;
+}
+
+/* 표지가 열리는 동안 그 아래에서 사무실 배경이 페이드인 */
+.view-intro.opening-active .scene { animation: sceneReveal .45s ease-out .3s both; }
+@keyframes sceneReveal { from { opacity: 0; } to { opacity: 1; } }
+
+@media (max-width: 640px) {
+  .opening-kicker { letter-spacing: .3em; }
+  .opening-foot { letter-spacing: .18em; }
+  .opening-stamp { top: calc(50% + 60px); }
+}
+/* reduced-motion에서는 JS가 표지를 만들지 않는다 (아래는 안전망) */
+@media (prefers-reduced-motion: reduce) {
+  .opening { display: none; }
+  .view-intro.opening-active .scene { animation: none; }
+}
+
 .skip-btn {
   position: absolute; top: 18px; right: 22px; z-index: 30;
   background: rgba(255,255,255,.08); color: #e8e5dd;
