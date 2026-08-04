@@ -2,6 +2,7 @@ import { DB } from '../data.js';
 import { state, baseUnlocked, TOTAL_EVIDENCE } from '../state.js';
 import { addPending, landOne, flyFromRect, openDoc } from '../ui.js';
 import { checkChapterToasts, fmtCase } from '../collect.js';
+import { navigate } from '../router.js';
 
 // 수집된 증거 — 증거 보관함 (명세서 2-4)
 export function renderEvidence(view) {
@@ -119,7 +120,7 @@ function wireCard(el) {
     if (el.classList.contains('collected')) {
       openDoc(ev.url); // 수집됨: 외부 링크 새 탭
     } else {
-      location.hash = `#/evidence/${ev.id}`; // 미수집: 등장 챕터+요약 화면
+      navigate(`/evidence/${ev.id}`); // 미수집: 등장 챕터+요약 화면
     }
   };
   el.addEventListener('click', act);
@@ -164,12 +165,12 @@ function renderHiddenSlot(wrap, hidden) {
   wrap.querySelector('.hidden-sub').textContent = hidden.subtitle || '';
 
   const slot = wrap.querySelector('.hidden-slot');
-  // E7의 목적지는 증거 카드 데이터가 결정 (내부 라우트, 예: #/notebook)
-  const e7Target = hidden.url && hidden.url.startsWith('#/') ? hidden.url : '#/notebook';
+  // E7의 목적지는 증거 카드 데이터가 결정 (내부 라우트, 예: /notebook)
+  const e7Target = hidden.url && hidden.url.startsWith('/') ? hidden.url : '/notebook';
   const act = () => {
     // 처음 해금하면 엔딩 대화부터, 이미 본 뒤에는 E7로 바로
-    if (state.endingSeen) location.hash = e7Target;
-    else location.hash = '#/ending';
+    if (state.endingSeen) navigate(e7Target);
+    else navigate('/ending');
   };
   slot.addEventListener('click', act);
   slot.addEventListener('keydown', (e) => {

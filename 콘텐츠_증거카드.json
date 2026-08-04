@@ -1,10 +1,10 @@
 {
-  "_readme": "증거 카드 데이터. E1~E6 url 실링크 연결됨(E5는 노션, 나머지는 드라이브·anyone 열람 확인). E7은 사이트 내 라우트(#/notebook). doc_type=카드에 표시할 문서 유형 라벨, thumb=표지 썸네일 경로(파일이 없으면 카드가 자동으로 아이콘 폴백 — E5는 노션 문서라 표지 없음). sd_dialogue는 조수 캐릭터 '클루'의 확정 대사(캐릭터_조수_클루.md 톤 가이드 준수). sd_dialogue_revisit은 이미 수집된 증거의 앵커를 다시 클릭했을 때 대사(null이면 기본 sd_dialogue 재사용).",
+  "_readme": "증거 카드 데이터. E1~E6 url 실링크 연결됨(E5는 노션, 나머지는 드라이브·anyone 열람 확인). E7은 사이트 내 라우트(/notebook). doc_type=카드에 표시할 문서 유형 라벨, thumb=표지 썸네일 경로(파일이 없으면 카드가 자동으로 아이콘 폴백 — E5는 노션 문서라 표지 없음). sd_dialogue는 조수 캐릭터 '클루'의 확정 대사(캐릭터_조수_클루.md 톤 가이드 준수). sd_dialogue_revisit은 이미 수집된 증거의 앵커를 다시 클릭했을 때 대사(null이면 기본 sd_dialogue 재사용).",
   "evidences": [
     {
       "id": "E1",
       "doc_type": "캐릭터 분석서",
-      "thumb": "./assets/img/thumb_e1.jpg",
+      "thumb": "/assets/img/thumb_e1.jpg",
       "title": "서브컬처 캐릭터 매력 분석서",
       "subtitle": "『100명의 그녀』로 분석한 미소녀 게임 캐릭터 디자인 방법론",
       "chapters": [
@@ -19,7 +19,7 @@
     {
       "id": "E2",
       "doc_type": "시스템 역기획서",
-      "thumb": "./assets/img/thumb_e2.jpg",
+      "thumb": "/assets/img/thumb_e2.jpg",
       "title": "블루아카이브 Cost 시스템 역기획서",
       "subtitle": "설계 의도에서 데이터 테이블까지",
       "chapters": [
@@ -39,7 +39,7 @@
     {
       "id": "E3",
       "doc_type": "개발 회고",
-      "thumb": "./assets/img/thumb_e3.jpg",
+      "thumb": "/assets/img/thumb_e3.jpg",
       "title": "로블록스 브레인롯 강화 개발회고",
       "subtitle": "덜어내며 찾은 재미 — 기획·개발·출시 전 과정",
       "chapters": [
@@ -60,7 +60,7 @@
     {
       "id": "E4",
       "doc_type": "개선 제안서",
-      "thumb": "./assets/img/thumb_e4.jpg",
+      "thumb": "/assets/img/thumb_e4.jpg",
       "title": "에픽세븐 오토마톤 타워 개선 제안서",
       "subtitle": "PVE를 RTA로 잇는 전략적 학습 공간",
       "chapters": [
@@ -75,7 +75,7 @@
     {
       "id": "E5",
       "doc_type": "활용 보고서",
-      "thumb": "./assets/img/thumb_e5.jpg",
+      "thumb": "/assets/img/thumb_e5.jpg",
       "title": "AI 문서 작성 효율화 보고서",
       "subtitle": "AI를 기획 워크플로우에 접목하기",
       "chapters": [
@@ -90,7 +90,7 @@
     {
       "id": "E6",
       "doc_type": "시스템 기획서",
-      "thumb": "./assets/img/thumb_e6.jpg",
+      "thumb": "/assets/img/thumb_e6.jpg",
       "title": "아르카나 세트 시스템 제안서",
       "subtitle": "기존 구조를 지키며 캐릭터 매력을 증폭하는 신규 시스템",
       "chapters": [
@@ -110,7 +110,7 @@
       "hidden": true,
       "unlock_condition": "E1~E6 전부 수집",
       "summary": "조수 클루가 수사 중 몰래 기록해둔 것들 — 클루 본인의 프로필과, 서류에는 없는 지원자의 개인적인 취향 기록.",
-      "url": "#/notebook",
+      "url": "/notebook",
       "attachments": [],
       "sd_dialogue": null,
       "sd_dialogue_revisit": null,

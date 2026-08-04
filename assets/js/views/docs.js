@@ -1,7 +1,7 @@
 import { DB } from '../data.js';
 import { openDoc } from '../ui.js';
 
-// 포트폴리오 문서 목록 (#/docs).
+// 포트폴리오 문서 목록 (/docs).
 // 컨셉 없는 열람용 페이지 — 수사 어휘·캐릭터·수집 UI를 일절 쓰지 않는다.
 // 문서 데이터는 콘텐츠_증거카드.json을 그대로 참조한다(복제 금지).
 
@@ -47,7 +47,7 @@ export function renderDocs(view) {
         </div>
 
         <p class="docs-alt">
-          <a href="#/intro">자기소개서와 각 문서를 연결해 열람할 수 있는 버전도 있습니다 →</a>
+          <a href="/intro">자기소개서와 각 문서를 연결해 열람할 수 있는 버전도 있습니다 →</a>
         </p>
       </footer>
     </div>`;

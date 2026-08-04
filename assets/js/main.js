@@ -1,16 +1,18 @@
 import { loadAll } from './data.js';
 import { syncBadge } from './ui.js';
-import { startRouter } from './router.js';
+import { startRouter, currentRoute } from './router.js';
 import { startPreload } from './preload.js';
+import { initAnalytics } from './analytics.js';
 
 const view = document.getElementById('view');
 
 loadAll()
   .then(() => {
     syncBadge();
+    initAnalytics(); // 라우터 시작 전에 구독해야 첫 진입도 집계된다
     startRouter();
-    // 문서 목록(#/docs)은 컨셉 없는 열람용이므로 스탠딩·수첩 등 연출 자원을 받지 않는다
-    if (!location.hash.startsWith('#/docs')) {
+    // 문서 목록(/docs)은 컨셉 없는 열람용이므로 스탠딩·수첩 등 연출 자원을 받지 않는다
+    if (!currentRoute().startsWith('/docs')) {
       startPreload(); // 첫 렌더 후 유휴 시간에 나머지 에셋 백그라운드 로딩
     }
   })

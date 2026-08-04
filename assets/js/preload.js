@@ -9,7 +9,7 @@ import { DB } from './data.js';
 export const NB_FONT_CSS =
   'https://fonts.googleapis.com/css2?family=Gowun+Dodum&display=swap';
 const NB_FONT_ID = 'nb-fonts';
-const NB_HAND_FONT = './assets/fonts/KyoboHandwriting2025lyb.woff2';
+const NB_HAND_FONT = '/assets/fonts/KyoboHandwriting2025lyb.woff2';
 
 const idle = (fn) =>
   typeof requestIdleCallback === 'function'
@@ -42,7 +42,7 @@ function imageList() {
   (DB.cards || []).forEach((c) => {
     if (c.thumb) urls.push(c.thumb);
   });
-  urls.push('./assets/img/bg_office.jpg');
+  urls.push('/assets/img/bg_office.jpg');
   return [...new Set(urls.filter(Boolean))];
 }
 

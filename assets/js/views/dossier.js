@@ -2,13 +2,14 @@ import { DB } from '../data.js';
 import { state } from '../state.js';
 import { openEvidencePopup } from '../popup.js';
 import { autoCollectChapter } from '../collect.js';
+import { navigate } from '../router.js';
 
 // 세부 사항 — 진술 기록 (명세서 2-3)
 export function renderDossier(view, num) {
   const chId = `CASE${num}`;
   const ch = DB.chapters.find((c) => c.id === chId);
   if (!ch) {
-    location.hash = '#/case/01';
+    navigate('/case/01', { replace: true });
     return {};
   }
   state.viewedChapters.add(chId);
@@ -27,11 +28,11 @@ export function renderDossier(view, num) {
         <p class="chapter-sub">${ch.subtitle}</p>
         <div class="essay-body">${ch.html}</div>
         <div class="chapter-nav">
-          ${prev ? `<a class="btn ghost" href="#/case/${prev.id.slice(4)}">← ${prev.concept}</a>` : '<span></span>'}
+          ${prev ? `<a class="btn ghost" href="/case/${prev.id.slice(4)}">← ${prev.concept}</a>` : '<span></span>'}
           ${
             next
-              ? `<a class="btn accent" href="#/case/${next.id.slice(4)}">${next.concept} →</a>`
-              : `<a class="btn accent" href="#/evidence">수집된 증거 확인하기 →</a>`
+              ? `<a class="btn accent" href="/case/${next.id.slice(4)}">${next.concept} →</a>`
+              : `<a class="btn accent" href="/evidence">수집된 증거 확인하기 →</a>`
           }
         </div>
       </article>
@@ -40,7 +41,7 @@ export function renderDossier(view, num) {
         ${DB.chapters
           .map(
             (c) => `
-          <a class="idx ${c.id === chId ? 'active' : ''}" href="#/case/${c.id.slice(4)}">
+          <a class="idx ${c.id === chId ? 'active' : ''}" href="/case/${c.id.slice(4)}">
             <span class="idx-case">CASE ${c.id.slice(4)}</span>
             <span class="idx-name">${c.concept}</span>
           </a>`

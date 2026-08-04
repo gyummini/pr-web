@@ -2,6 +2,7 @@ import { DB } from '../data.js';
 import { state } from '../state.js';
 import { DialogueEngine } from '../engine.js';
 import { standingSprite } from '../sprites.js';
+import { navigate, currentRoute } from '../router.js';
 
 // 시작 페이지 (명세서 2-1). SKIP은 첫 프레임부터 상시 노출.
 // 선택지 없는 단일 동선 — 대사가 끝나거나 SKIP하면 기본 사항으로 이동한다.
@@ -15,7 +16,8 @@ const DIALOGUE_AT_MS = 650; // 스탠딩이 떠오른 뒤 대사창 등장 → �
 export function renderIntro(view) {
   // 세션 내 재진입: 대사를 다시 재생하지 않고 곧바로 기본 사항으로
   if (state.introSeen) {
-    location.replace('#/basic');
+    // replace — 뒤로가기가 인트로에 다시 걸려 되돌아오지 못하는 상황을 막는다
+    navigate('/basic', { replace: true });
     return {};
   }
   state.introSeen = true;
@@ -33,8 +35,10 @@ export function renderIntro(view) {
   });
 
   const goNext = () => {
-    if (location.hash === '#/intro' || location.hash === '' || location.hash === '#/') {
-      location.hash = '#/basic';
+    // 대사 재생 중 사용자가 이미 다른 곳으로 이동했다면 끌어오지 않는다
+    const at = currentRoute();
+    if (at === '/intro' || at === '/') {
+      navigate('/basic');
     }
   };
 

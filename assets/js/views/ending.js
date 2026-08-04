@@ -3,11 +3,12 @@ import { state, baseUnlocked } from '../state.js';
 import { DialogueEngine } from '../engine.js';
 import { standingSprite } from '../sprites.js';
 import { syncBadge } from '../ui.js';
+import { navigate } from '../router.js';
 
 // 히든 해금 엔딩 대화 (명세서 2-5). 시작 페이지와 동일한 대사 엔진 재사용.
 export function renderEnding(view) {
   if (!baseUnlocked()) {
-    location.hash = '#/evidence';
+    navigate('/evidence', { replace: true });
     return {};
   }
 
@@ -29,7 +30,8 @@ export function renderEnding(view) {
     syncBadge();
     // on_complete: open_evidence E7 — 목적지는 E7 카드의 내부 라우트
     const e7 = DB.cards.find((c) => c.hidden);
-    location.hash = e7 && e7.url && e7.url.startsWith('#/') ? e7.url : '#/notebook';
+    // 내부 라우트는 '/'로 시작한다 (외부 문서는 https://...)
+    navigate(e7 && e7.url && e7.url.startsWith('/') ? e7.url : '/notebook');
   };
 
   engine.play(DB.ending.lines, { onComplete: finish });

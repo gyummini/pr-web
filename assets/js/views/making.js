@@ -3,13 +3,14 @@ import { state } from '../state.js';
 import { openDoc } from '../ui.js';
 import { sdSprite } from '../sprites.js';
 import { figureHtml } from '../figures.js';
+import { navigate } from '../router.js';
 
-// E7 히든 포트폴리오 — 제작기 열람 페이지 (#/making).
+// E7 히든 포트폴리오 — 제작기 열람 페이지 (/making).
 // 외부 문서가 아니라 사이트 내 페이지. 원고는 콘텐츠_제작기.md에서 로드.
 // 각 장: [요약] 상시 노출 + [상세] 아코디언(기본 접힘). 상세 없는 장은 전문 노출.
 export function renderMaking(view) {
   if (!state.endingSeen) {
-    location.hash = '#/evidence';
+    navigate('/evidence', { replace: true });
     return {};
   }
   const doc = DB.making;
@@ -31,7 +32,7 @@ export function renderMaking(view) {
         <p>📞 <a href="tel:${r.phone.replace(/-/g, '')}">${r.phone}</a> &nbsp;·&nbsp; ✉ <a href="mailto:${r.email}">${r.email}</a></p>
         <div class="record-actions">
           <a class="btn accent" href="${r.fullPdf}" download>이력서, 자기소개서 PDF 다운로드 ⬇</a>
-          <a class="btn ghost" href="#/evidence">← 증거 보관함으로</a>
+          <a class="btn ghost" href="/evidence">← 증거 보관함으로</a>
         </div>
       </div>
     </div>`;

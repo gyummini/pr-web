@@ -2,8 +2,9 @@ import { DB } from '../data.js';
 import { state } from '../state.js';
 import { SPRITES } from '../sprites.js';
 import { preloadNotebookFonts } from '../preload.js';
+import { navigate } from '../router.js';
 
-// E7 히든 — 클루의 수사 수첩 (#/notebook). 작업지시_수첩디자인이식.md 기준 구현.
+// E7 히든 — 클루의 수사 수첩 (/notebook). 작업지시_수첩디자인이식.md 기준 구현.
 // 페이지 구성: 표지 / 1부 / 2부(3항목) / 2부 계속(2항목) / 3부 / 접힌 페이지 = 6쪽.
 // 넘김 방식: 버튼식 페이지네이션(이전/다음 버튼 + 키보드). 넘김 애니메이션은 순수 CSS로,
 // reduced-motion 여부와 무관하게 모든 사용자가 경험한다. 긴 페이지는 내부 스크롤 유지.
@@ -40,7 +41,7 @@ function nbInline(s) {
   let out = esc(s);
   out = out.replace(
     /\[\[(E\d+):([^\]]+)\]\]/g,
-    (m, id, label) => `<a class="nb-evlink" href="#/evidence/${id}">${label}</a>`
+    (m, id, label) => `<a class="nb-evlink" href="/evidence/${id}">${label}</a>`
   );
   out = out.replace(/\*\*(.+?)\*\*/g, '<span class="nb-hl">$1</span>');
   return out;
@@ -48,7 +49,7 @@ function nbInline(s) {
 
 export function renderNotebook(view) {
   if (!state.endingSeen) {
-    location.hash = '#/evidence';
+    navigate('/evidence', { replace: true });
     return {};
   }
   preloadNotebookFonts();
@@ -295,7 +296,7 @@ function pageFolded(f) {
       <div class="nb-content">
         <div class="nb-folded-line">${paras}</div>
         <div class="nb-folded-note">${esc(f.note)}</div>
-        <a class="nb-back" href="#/evidence">${esc(f.backLabel)} <span>↗</span></a>
+        <a class="nb-back" href="/evidence">${esc(f.backLabel)} <span>↗</span></a>
         <div class="nb-corner"></div>
       </div>
     </div>

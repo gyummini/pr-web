@@ -4,16 +4,16 @@ export const SPRITE_KEYS = ['normal', 'happy', 'surprised', 'serious'];
 
 export const SPRITES = {
   standing: {
-    normal: './assets/img/Standing.png',
-    happy: './assets/img/Happy.png',
-    surprised: './assets/img/Surprised.png',
-    serious: './assets/img/Serious.png',
+    normal: '/assets/img/Standing.png',
+    happy: '/assets/img/Happy.png',
+    surprised: '/assets/img/Surprised.png',
+    serious: '/assets/img/Serious.png',
   },
   sd: {
-    normal: './assets/img/SD.png',
-    happy: './assets/img/SD.png',
-    surprised: './assets/img/SD.png',
-    serious: './assets/img/SD.png',
+    normal: '/assets/img/SD.png',
+    happy: '/assets/img/SD.png',
+    surprised: '/assets/img/SD.png',
+    serious: '/assets/img/SD.png',
   },
 };
 

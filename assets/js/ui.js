@@ -6,7 +6,8 @@ import { preloadNotebookFonts } from './preload.js';
 const NB_FONT_TRIGGER = TOTAL_EVIDENCE - 2;
 function maybePreloadNotebookFonts() {
   // 문서 목록 페이지에서는 수첩 폰트가 쓰이지 않으므로 받지 않는다
-  if (location.hash.startsWith('#/docs')) return;
+  // router.js를 import하면 순환 참조가 되므로 경로만 직접 본다
+  if (location.pathname.startsWith('/docs')) return;
   if (state.collected.size >= NB_FONT_TRIGGER) preloadNotebookFonts();
 }
 

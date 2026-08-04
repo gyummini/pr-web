@@ -748,7 +748,7 @@ button { font-family: inherit; }
 
 .load-error { text-align: center; }
 
-/* ==================== 포트폴리오 문서 목록 (#/docs) ==================== */
+/* ==================== 포트폴리오 문서 목록 (/docs) ==================== */
 /* 컨셉 없는 열람용 페이지. 도장·수사 모티프 없이 인쇄물처럼 담백하게. */
 body.plain-mode #site-header { display: none; }
 body.plain-mode #view { min-height: 100vh; }
@@ -816,7 +816,7 @@ body.plain-mode #view { min-height: 100vh; }
   .docs-actions .btn { width: 100%; justify-content: center; }
 }
 
-/* ==================== E7 클루의 수사 수첩 (#/notebook) ==================== */
+/* ==================== E7 클루의 수사 수첩 (/notebook) ==================== */
 /* 클루의 손글씨 — 교보 손글씨 2025 lyb (자체 호스팅, 상용 한글 서브셋 WOFF2) */
 @font-face {
   font-family: 'Kyobo Handwriting 2025 lyb';

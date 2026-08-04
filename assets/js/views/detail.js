@@ -2,13 +2,14 @@ import { getCard } from '../data.js';
 import { state } from '../state.js';
 import { openDoc } from '../ui.js';
 import { fmtCase } from '../collect.js';
+import { navigate } from '../router.js';
 
 // 미수집 증거 상세 (명세서 2-4): 처음 등장하는 챕터 + 포폴 요약.
 // 방문자가 요약만 볼지, 문서 세부를 열지 선택하게 한다.
 export function renderDetail(view, eid) {
   const ev = getCard(eid);
   if (!ev || ev.hidden) {
-    location.hash = '#/evidence';
+    navigate('/evidence', { replace: true });
     return {};
   }
   const firstChapter = (ev.chapters || [])[0];
@@ -29,11 +30,11 @@ export function renderDetail(view, eid) {
       <div class="detail-actions">
         ${
           firstChapter
-            ? `<a class="btn accent" href="#/case/${firstChapter.slice(4)}">진술에서 확인하기 (${fmtCase(firstChapter)}) →</a>`
+            ? `<a class="btn accent" href="/case/${firstChapter.slice(4)}">진술에서 확인하기 (${fmtCase(firstChapter)}) →</a>`
             : ''
         }
         <button type="button" class="btn ghost open-doc">문서 바로 열기 ↗</button>
-        <a class="btn ghost" href="#/evidence">← 증거 보관함으로</a>
+        <a class="btn ghost" href="/evidence">← 증거 보관함으로</a>
       </div>
     </div>`;
 

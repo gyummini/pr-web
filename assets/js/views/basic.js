@@ -103,7 +103,7 @@ export function renderBasic(view) {
       }
 
       <div class="record-actions">
-        <a class="btn accent" href="#/case/01">세부 사항 보기 →</a>
+        <a class="btn accent" href="/case/01">세부 사항 보기 →</a>
         <a class="btn ghost" href="${r.pdf}" download>이력서 PDF 다운로드 ⬇</a>
       </div>
     </div>`;

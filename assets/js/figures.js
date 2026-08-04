@@ -191,7 +191,7 @@ const FIGURES = {
   '5-3': () => `
     <div class="fig-ba">
       <figure class="fig-ba-item">
-        <img src="./assets/img/making_before.jpg" alt="초기 시안 — 세부 프롬프트 없이 생성" loading="lazy">
+        <img src="/assets/img/making_before.jpg" alt="초기 시안 — 세부 프롬프트 없이 생성" loading="lazy">
         <figcaption><strong>Before — 초기 시안.</strong> 프롬프트를 세세하게 지정하지 않고 생성한 결과물. 배경·소품·복장이 통제되지 않아 디테일이 확정되지 못했고, 그대로 활용하기는 어려웠습니다.</figcaption>
       </figure>
       <div class="fig-ba-arrow">→</div>

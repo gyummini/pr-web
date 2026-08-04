@@ -1,5 +1,5 @@
 {
-  "_readme": "E7 히든 페이지 '클루의 수사 수첩' 콘텐츠 (#/notebook). 문체 규칙(dialogue_tone_revision.md): 표지·접힌 페이지는 독자를 향한 글이라 존댓말·'탐정님' 허용, 내지(1·2·3부)는 클루의 개인 기록이므로 순수 독백(반말 메모체) — 독자 지칭·존댓말 금지. **강조**는 형광펜 하이라이트, [[E번호:라벨]]은 증거 내부 링크로 렌더링된다. ※ part2에 'closing' 필드가 추가되었다 — items 목록 아래에 종합 소견 메모로 렌더링할 것(렌더러 지원 필요). ※ folded는 '읽힐 것을 알고 미리 남겨둔 쪽지'다. folded.line은 세 문단이며 줄바꿈(\\n) 단위로 간격을 두어 렌더링할 것. folded.note는 추신이므로 더 작은 글씨로. ※ part2 items의 image는 작품명 아래에 붙는 스크랩 사진 슬롯 — 파일이 없으면 빈 프레임으로 자리만 유지되고, 파일을 넣으면 자동 표시된다. 슬롯이 필요 없으면 image 필드를 지우면 된다.",
+  "_readme": "E7 히든 페이지 '클루의 수사 수첩' 콘텐츠 (/notebook). 문체 규칙(dialogue_tone_revision.md): 표지·접힌 페이지는 독자를 향한 글이라 존댓말·'탐정님' 허용, 내지(1·2·3부)는 클루의 개인 기록이므로 순수 독백(반말 메모체) — 독자 지칭·존댓말 금지. **강조**는 형광펜 하이라이트, [[E번호:라벨]]은 증거 내부 링크로 렌더링된다. ※ part2에 'closing' 필드가 추가되었다 — items 목록 아래에 종합 소견 메모로 렌더링할 것(렌더러 지원 필요). ※ folded는 '읽힐 것을 알고 미리 남겨둔 쪽지'다. folded.line은 세 문단이며 줄바꿈(\\n) 단위로 간격을 두어 렌더링할 것. folded.note는 추신이므로 더 작은 글씨로. ※ part2 items의 image는 작품명 아래에 붙는 스크랩 사진 슬롯 — 파일이 없으면 빈 프레임으로 자리만 유지되고, 파일을 넣으면 자동 표시된다. 슬롯이 필요 없으면 image 필드를 지우면 된다.",
   "cover": {
     "kicker": "이 사무소의 유일한 조수",
     "title": "클루의 수사 수첩",
@@ -53,31 +53,31 @@
       {
         "category": "인생 애니메이션",
         "name": "신세기 에반게리온",
-        "image": "./assets/img/memo_1.jpg",
+        "image": "/assets/img/memo_1.jpg",
         "memo": "인생 작품을 물었더니 작품 감상 대신 '심리를 화면 언어로 옮기는 연출'에 대한 이야기가 길어짐. 좋아하는 방식마저 분석적임."
       },
       {
         "category": "인생 게임",
         "name": "페르소나 5",
-        "image": "./assets/img/memo_2.jpg",
+        "image": "/assets/img/memo_2.jpg",
         "memo": "\"메뉴를 여는 것만으로 즐거운 게임\"이라고 함. UI가 게임의 정체성이 될 수 있다는 주장을 30분 들었다. …분하지만 설득됨."
       },
       {
         "category": "가장 오래한 게임",
         "name": "에픽세븐",
-        "image": "./assets/img/memo_3.jpg",
+        "image": "/assets/img/memo_3.jpg",
         "memo": "오래한 이유를 물으니 \"시스템적 설계가 굉장히 훌륭한 게임\"이라는 답. 길어질까봐 더 자세히 묻지는 못했음."
       },
       {
         "category": "요즘 빠져 있는 게임",
         "name": "림버스 컴퍼니",
-        "image": "./assets/img/memo_4.jpg",
+        "image": "/assets/img/memo_4.jpg",
         "memo": "스토리 이야기로 시작해서 게임 특유의 독창적인 플레이 디자인에 대한 칭찬으로 이어짐."
       },
       {
         "category": "서브 컬처 외 좋아하는 게임 장르",
         "name": "시뮬레이션",
-        "image": "./assets/img/memo_5.jpg",
+        "image": "/assets/img/memo_5.jpg",
         "memo": "게임 플레이의 핵심을 파악하고 퍼즐을 풀어나가는 듯한 경험을 좋아한다고 한다. …결국 여기서도 구조. 일관성 하나는 인정."
       }
     ],
@@ -88,12 +88,12 @@
     "quote": "조사 중 확보한 현장 사진. 의뢰인의 진술 — '캐릭터에 마음을 주고, 그 세계에 빠져드는 시간이 일상의 가장 중요한 부분' — …이건 물증으로 철해도 되지 않을까.",
     "photos": [
       {
-        "src": "./assets/img/notebook_photo_1.jpg",
+        "src": "/assets/img/notebook_photo_1.jpg",
         "label": "굿즈 전시 사진 ①",
         "caption": "진열장 한 켠."
       },
       {
-        "src": "./assets/img/notebook_photo_2.jpg",
+        "src": "/assets/img/notebook_photo_2.jpg",
         "label": "굿즈 전시 사진 ②",
         "caption": "2부의 기록과 대조해볼 것."
       }
