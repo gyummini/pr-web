@@ -24,7 +24,8 @@ export function checkChapterToasts() {
   }
 }
 
-// 챕터 이탈 시 미클릭 증거 자동 일괄 수집 (CASE04 제외 — 증거 페이지 진입 시 수집)
+// 챕터 이탈 시 미클릭 증거 자동 일괄 수집
+// 최종 증거가 등장하는 CASE04만 제외 — 증거 페이지 진입 시 수집한다.
 export function autoCollectChapter(chId, originRects = null) {
   const rest = chapterEvidence(chId).filter((e) => !state.collected.has(e.id));
   if (!rest.length) return 0;

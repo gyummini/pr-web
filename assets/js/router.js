@@ -128,7 +128,7 @@ function dispatch() {
       current = renderBasic(view);
       break;
     case 'case':
-      current = renderDossier(view, (seg[1] || '01').padStart(2, '0'));
+      current = renderDossier(view, seg[1] || '01');
       break;
     case 'evidence':
       current = seg[1] ? renderDetail(view, seg[1]) : renderEvidence(view);

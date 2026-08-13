@@ -6,7 +6,7 @@ export const state = {
   introSeen: false,        // 세션 내 시작 페이지 재진입 시 대사 자동 스킵
   endingSeen: false,       // 엔딩 대화 완료 여부
   hiddenFlashShown: false, // 히든 해금 강조 연출 1회 재생 여부
-  viewedChapters: new Set(),   // 'CASE01' ~ 'CASE04'
+  viewedChapters: new Set(),   // 'CASE01' ~ 'CASE04', 'EPILOGUE'
   collected: new Set(),        // 'E1' ~ 'E7'
   toastedChapters: new Set(),  // 완벽 수집 토스트 중복 방지
 };

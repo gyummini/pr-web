@@ -34,8 +34,9 @@ export function renderEvidence(view) {
   wireCards(view);
   renderHiddenSlot(view.querySelector('.hidden-slot-wrap'), hidden);
 
-  // 예외 규칙: CASE04의 증거는 '수집된 증거' 페이지 진입 시 자동 수집 (CASE04를 열람한 경우만)
-  collectCase04(view);
+  // 예외 규칙: 최종 증거가 등장하는 CASE04의 증거는 이 페이지 진입 시 자동 수집
+  // (CASE04를 열람한 경우만).
+  collectFinalChapter(view);
 
   return {};
 }
@@ -181,7 +182,7 @@ function renderHiddenSlot(wrap, hidden) {
   });
 }
 
-function collectCase04(view) {
+function collectFinalChapter(view) {
   if (!state.viewedChapters.has('CASE04')) return;
   const rest = DB.cards.filter(
     (c) => !c.hidden && (c.chapters || []).includes('CASE04') && !state.collected.has(c.id)

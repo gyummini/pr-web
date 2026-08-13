@@ -4,9 +4,10 @@ import { openEvidencePopup } from '../popup.js';
 import { autoCollectChapter } from '../collect.js';
 import { navigate } from '../router.js';
 
-// 세부 사항 — 진술 기록 (명세서 2-3)
-export function renderDossier(view, num) {
-  const chId = `CASE${num}`;
+// 세부 사항 — 진술 기록 (CASE 01~04 + EPILOGUE)
+export function renderDossier(view, routePart) {
+  const normalized = String(routePart || '01').toLowerCase();
+  const chId = normalized === 'epilogue' ? 'EPILOGUE' : `CASE${normalized.padStart(2, '0')}`;
   const ch = DB.chapters.find((c) => c.id === chId);
   if (!ch) {
     navigate('/case/01', { replace: true });
@@ -23,15 +24,15 @@ export function renderDossier(view, num) {
     <div class="dossier">
       <article class="paper essay">
         <div class="stamp">진술 기록</div>
-        <div class="case-no">CASE ${num}</div>
+        <div class="case-no">${chapterLabel(ch)}</div>
         <h2>${ch.concept}</h2>
         <p class="chapter-sub">${ch.subtitle}</p>
         <div class="essay-body">${ch.html}</div>
         <div class="chapter-nav">
-          ${prev ? `<a class="btn ghost" href="/case/${prev.id.slice(4)}">← ${prev.concept}</a>` : '<span></span>'}
+          ${prev ? `<a class="btn ghost" href="${chapterPath(prev)}">← ${prev.concept}</a>` : '<span></span>'}
           ${
             next
-              ? `<a class="btn accent" href="/case/${next.id.slice(4)}">${next.concept} →</a>`
+              ? `<a class="btn accent" href="${chapterPath(next)}">${next.concept} →</a>`
               : `<a class="btn accent" href="/evidence">수집된 증거 확인하기 →</a>`
           }
         </div>
@@ -41,8 +42,8 @@ export function renderDossier(view, num) {
         ${DB.chapters
           .map(
             (c) => `
-          <a class="idx ${c.id === chId ? 'active' : ''}" href="/case/${c.id.slice(4)}">
-            <span class="idx-case">CASE ${c.id.slice(4)}</span>
+          <a class="idx ${c.id === chId ? 'active' : ''}" href="${chapterPath(c)}">
+            <span class="idx-case">${chapterLabel(c)}</span>
             <span class="idx-name">${c.concept}</span>
           </a>`
           )
@@ -62,9 +63,18 @@ export function renderDossier(view, num) {
   });
 
   return {
-    // 챕터 이탈 시 미클릭 증거 자동 일괄 수집. CASE04는 예외(증거 페이지 진입 시 수집).
+    // 챕터 이탈 시 미클릭 증거 자동 일괄 수집.
+    // 최종 증거가 등장하는 CASE04는 예외(증거 페이지 진입 시 수집).
     onLeave() {
       if (chId !== 'CASE04') autoCollectChapter(chId);
     },
   };
+}
+
+function chapterPath(ch) {
+  return ch.id === 'EPILOGUE' ? '/case/epilogue' : `/case/${ch.id.slice(4)}`;
+}
+
+function chapterLabel(ch) {
+  return ch.id === 'EPILOGUE' ? 'EPILOGUE' : `CASE ${ch.id.slice(4)}`;
 }

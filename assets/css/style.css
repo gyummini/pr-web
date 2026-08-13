@@ -293,7 +293,7 @@ button { font-family: inherit; }
   margin: 1.8em 0 .7em; font-size: 1.08rem;
   border-left: 4px solid var(--accent); padding-left: 10px;
 }
-.essay-body p strong { display: inline-block; font-size: 1.02rem; }
+.essay-body p strong { font-size: 1.02rem; }
 
 .anchor {
   cursor: pointer; padding: 0 2px;
@@ -306,6 +306,7 @@ button { font-family: inherit; }
 }
 .anchor:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .anchor:hover { background-color: var(--highlight); }
+.anchor-tail { white-space: nowrap; }
 .anchor-ic { font-size: .8em; margin-left: 3px; }
 
 .chapter-nav {

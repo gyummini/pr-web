@@ -8,7 +8,7 @@
       "title": "서브컬처 캐릭터 매력 분석서",
       "subtitle": "『100명의 그녀』로 분석한 미소녀 게임 캐릭터 디자인 방법론",
       "chapters": [
-        "CASE04"
+        "CASE03"
       ],
       "summary": "가챠 게임 캐릭터의 이중 과제(단기 각인 × 장기 잔존)를 푸는 설계 공식을 『100명의 그녀』에서 도출하고, 니케의 일레그로 실전 검증한 뒤, 오리지널 캐릭터 기획에 적용한 3단 구성의 분석서.",
       "url": "https://drive.google.com/file/d/18rImezDf4Znq7pyR330o5G_gTh_bUeVh/view?usp=sharing",
@@ -23,7 +23,7 @@
       "title": "블루아카이브 Cost 시스템 역기획서",
       "subtitle": "설계 의도에서 데이터 테이블까지",
       "chapters": [
-        "CASE03"
+        "CASE02"
       ],
       "summary": "'모에 X-COM'이라는 전투 철학에서 출발해 Cost 시스템의 설계 원칙을 정의하고, 플로우 차트·데이터 테이블·예외 처리까지 역으로 재구성한 시스템 역기획서. 스킬 데이터 테이블(xlsx) 첨부.",
       "url": "https://drive.google.com/file/d/1ZWscIIxWXjkZ-xEax9OnSbzlef25iZPQ/view?usp=sharing",
@@ -43,8 +43,7 @@
       "title": "로블록스 브레인롯 강화 개발회고",
       "subtitle": "덜어내며 찾은 재미 — 기획·개발·출시 전 과정",
       "chapters": [
-        "CASE01",
-        "CASE03"
+        "CASE01"
       ],
       "summary": "채굴 게임에서 브레인롯 강화 게임으로 — '이 게임의 재미는 어디서 오는가'를 되물으며 시스템을 덜어낸 끝에 하나의 코어 루프를 찾아 실제 출시까지 간 개인 프로젝트 회고. MCP 기반 AI 개발 파이프라인 사용.",
       "url": "https://docs.google.com/document/d/1eqXiLJeAdRR7NuultVD4wbd-a65xVbrYCL1-4aQWsQo/edit?usp=sharing",
@@ -64,7 +63,7 @@
       "title": "에픽세븐 오토마톤 타워 개선 제안서",
       "subtitle": "PVE를 RTA로 잇는 전략적 학습 공간",
       "chapters": [
-        "CASE03"
+        "CASE02"
       ],
       "summary": "유저가 PVE를 '숙제'로 인식하는 구조적 원인을 RTA 경험과의 단절로 진단하고, 밴·엔트리·증강 시스템으로 두 콘텐츠를 잇는 개선안을 리스크 분석과 함께 제시한 제안서.",
       "url": "https://drive.google.com/file/d/1Cb8Pq9ExdAf6NXHaFKXAKX2LD4V6YF5-/view?usp=sharing",
@@ -74,32 +73,32 @@
     },
     {
       "id": "E5",
-      "doc_type": "활용 보고서",
-      "thumb": "/assets/img/thumb_e5.jpg",
-      "title": "AI 문서 작성 효율화 보고서",
-      "subtitle": "AI를 기획 워크플로우에 접목하기",
-      "chapters": [
-        "CASE03"
-      ],
-      "summary": "AI 도구를 기획 문서 작성 파이프라인에 적용해 효율을 분석한 보고서. 'AI는 속도를 높이지만, 무엇을 만들지는 기획자의 몫'이라는 결론까지.",
-      "url": "https://app.notion.com/p/AI-36caa7a78d1180dd8382f1bb96896b76?source=copy_link",
-      "attachments": [],
-      "sd_dialogue": "요약해뒀어요! 새로운 도구의 사용기가 아닌, 활용에 대한 철학이 보인 게 포인트였어요!",
-      "sd_dialogue_revisit": null
-    },
-    {
-      "id": "E6",
       "doc_type": "시스템 기획서",
       "thumb": "/assets/img/thumb_e6.jpg",
       "title": "아르카나 세트 시스템 제안서",
       "subtitle": "기존 구조를 지키며 캐릭터 매력을 증폭하는 신규 시스템",
       "chapters": [
-        "CASE04"
+        "CASE03"
       ],
       "summary": "서비스 게임의 본질적 매력(캐릭터)이 가장 깊이 체험되는 콘텐츠를 분석하고, 기존 편성·여정 구조를 해치지 않으면서 그 매력을 극대화하는 세트 시스템을 설계한 제안서.",
       "url": "https://drive.google.com/file/d/1oa1yyNDPQf3YCTQ95jjpaEapHvWAirM-/view?usp=drive_link",
       "attachments": [],
       "sd_dialogue": "요약해뒀어요! 기존 시스템 위에 자연스럽게 얹히는 신규 설계예요.",
+      "sd_dialogue_revisit": null
+    },
+    {
+      "id": "E6",
+      "doc_type": "활용 보고서",
+      "thumb": "/assets/img/thumb_e5.jpg",
+      "title": "AI 문서 작성 효율화 보고서",
+      "subtitle": "AI를 기획 워크플로우에 접목하기",
+      "chapters": [
+        "CASE04"
+      ],
+      "summary": "AI 도구를 기획 문서 작성 파이프라인에 적용해 효율을 분석한 보고서. 'AI는 속도를 높이지만, 무엇을 만들지는 기획자의 몫'이라는 결론까지.",
+      "url": "https://app.notion.com/p/AI-36caa7a78d1180dd8382f1bb96896b76?source=copy_link",
+      "attachments": [],
+      "sd_dialogue": "요약해뒀어요! 새로운 도구의 사용기가 아닌, 활용에 대한 철학이 보인 게 포인트였어요!",
       "sd_dialogue_revisit": null
     },
     {

@@ -3,7 +3,7 @@ export const DB = {
   cards: null,     // 콘텐츠_증거카드.json → evidences 배열
   intro: null,     // 스크립트_인트로.json
   ending: null,    // 스크립트_엔딩.json
-  chapters: null,  // 콘텐츠_자기소개서.md 파싱 결과
+  chapters: null,  // 콘텐츠_자기소개서.md 파싱 결과 (CASE01~04 + EPILOGUE)
   resume: null,    // data/resume.json
   making: null,    // 콘텐츠_제작기.md 파싱 결과 (구 E7 제작기 페이지)
   notebook: null,  // 콘텐츠_수사수첩.json (E7 히든 — 클루의 수사 수첩)
@@ -50,11 +50,11 @@ export function getChapter(chId) {
 }
 
 // ---- 자기소개서 MD 파서 ----
-// 챕터 구분: ## [CASE##] 컨셉 타이틀 — 실명 부제
+// 챕터 구분: ## [CASE##] 컨셉 타이틀 — 실명 부제 / ## [EPILOGUE] 제목
 // 앵커 문법: {{E번호:문장}}
 function parseEssay(md) {
   const chapters = [];
-  const parts = md.split(/^## \[(CASE\d+)\]\s*/m);
+  const parts = md.split(/^## \[(CASE\d+|EPILOGUE)\]\s*/m);
   for (let i = 1; i < parts.length; i += 2) {
     const id = parts[i];
     const content = parts[i + 1] || '';
@@ -80,12 +80,23 @@ function inline(s) {
     (m, id, txt) =>
       // span으로 렌더 — button은 브라우저가 순수 inline으로 처리하지 않아
       // 여러 줄로 나뉠 때 형광펜(box-decoration-break: clone)이 윗줄에 적용되지 않는다.
-      `<span role="button" tabindex="0" class="anchor" data-eid="${id}">${txt}<span class="anchor-ic" aria-hidden="true">🔍</span></span>`
+      `<span role="button" tabindex="0" class="anchor" data-eid="${id}">${anchorContents(txt)}</span>`
   );
   out = out.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
   // 원고의 문장 단위 줄바꿈을 그대로 살린다 (가독성)
   out = out.replace(/\n/g, '<br>');
   return out;
+}
+
+// 돋보기만 다음 줄로 밀려 밑줄이 어긋나지 않도록 마지막 단어와 한 덩어리로 묶는다.
+function anchorContents(raw) {
+  const bold = raw.match(/^\*\*(.*)\*\*$/s);
+  const text = bold ? bold[1] : raw;
+  const tail = text.match(/^(.*?)(\S+)$/s);
+  const content = tail
+    ? `${tail[1]}<span class="anchor-tail">${tail[2]}<span class="anchor-ic" aria-hidden="true">🔍</span></span>`
+    : `${text}<span class="anchor-ic" aria-hidden="true">🔍</span>`;
+  return bold ? `<strong>${content}</strong>` : content;
 }
 
 // ---- 제작기 MD 파서 ----
