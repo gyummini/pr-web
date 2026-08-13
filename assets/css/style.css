@@ -10,6 +10,7 @@
   --highlight: rgba(232, 184, 62, 0.45);
   --scene-bg: #23222a;
   --scene-panel: rgba(24, 23, 30, 0.92);
+  --dialogue-panel: rgba(24, 23, 30, 0.86);
   --header-h: 60px;
 }
 
@@ -193,14 +194,21 @@ button { font-family: inherit; }
 }
 .skip-btn:hover { background: rgba(255,255,255,.18); }
 
-.dlg-scene { position: absolute; inset: 0; cursor: pointer; }
+.dlg-scene {
+  position: absolute; inset: 0; cursor: pointer;
+  /* 전체 장면이 클릭 영역이라 모바일 브라우저의 기본 탭 하이라이트도 화면 전체를 덮는다. */
+  -webkit-tap-highlight-color: transparent;
+  -webkit-user-select: none;
+  user-select: none;
+}
 .dlg-standing .dlg-sprite {
-  position: absolute; left: 50%; bottom: 150px; transform: translateX(-50%);
+  position: absolute; left: 50%; bottom: 92px; transform: translateX(-50%);
   /* 뷰포트 높이에 비례해 스케일(72vh) — 해상도가 달라도 화면 대비 비율 일정.
      calc(100% - 200px)는 대사창 침범 방지, 1200px은 원본(1100px) 과도 업스케일 방지. */
   width: min(640px, 70vw);
   height: min(72vh, calc(100% - 200px), 1200px);
   min-height: 300px;
+  z-index: 1;
 }
 /* 표정 4종을 겹쳐두고 opacity만 전환 — 교체 순간 빈 프레임이 없다 */
 .dlg-sprite .spr {
@@ -217,7 +225,7 @@ button { font-family: inherit; }
 .dlg-box {
   position: absolute; left: 50%; bottom: 26px; transform: translateX(-50%);
   width: min(920px, 94%); min-height: 118px;
-  background: var(--scene-panel);
+  background: var(--dialogue-panel);
   border: 1px solid rgba(255,255,255,.22); border-radius: 10px;
   padding: 26px 30px 22px;
   color: #f2f0ea;
@@ -438,7 +446,7 @@ button { font-family: inherit; }
   .ev-grid { grid-template-columns: 1fr; gap: 14px; }
 }
 
-.hidden-slot-wrap { margin-top: 26px; }
+.hidden-slot-wrap { margin: 0 0 26px; }
 .ev-doc-actions { margin-top: 22px; display: flex; gap: 10px; flex-wrap: wrap; }
 .hidden-slot {
   display: flex; align-items: center; gap: 18px;
@@ -452,11 +460,20 @@ button { font-family: inherit; }
 .hidden-cond { margin: 0; font-size: .88rem; }
 .hidden-icon { font-size: 2rem; }
 .hidden-info { flex: 1; }
+.hidden-kicker {
+  display: block; margin-bottom: 4px; color: #d9b85e;
+  font-size: .7rem; font-weight: 800; letter-spacing: .12em;
+}
+.hidden-progress { margin: 10px 0 0; font-size: .78rem; color: #bdb9ae; }
 .hidden-bar {
   margin-top: 10px; height: 8px; border-radius: 999px;
   background: rgba(255,255,255,.15); overflow: hidden; max-width: 360px;
 }
 .hidden-bar-fill { height: 100%; background: var(--accent); transition: width .5s ease; }
+.hidden-slot-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+.hidden-slot-actions .btn { padding: 8px 13px; font-size: .8rem; }
+.hidden-slot.locked .hidden-find { background: #f2ead5; color: var(--ink); border-color: #f2ead5; }
+.hidden-slot.locked .hidden-direct { color: #f2ead5; border-color: rgba(255,255,255,.45); }
 
 .hidden-slot.unlocked {
   background: linear-gradient(135deg, #2c2417, #4a3a1c);
@@ -746,6 +763,27 @@ button { font-family: inherit; }
 .toast-icon { font-size: 1.5rem; }
 .toast-title { font-weight: 800; font-size: .94rem; }
 .toast-sub { font-size: .8rem; color: #b7b3a8; }
+.toast-persistent { position: relative; pointer-events: auto; padding-right: 38px; }
+.toast-persistent .toast-body { flex: 1; }
+.toast-action {
+  display: inline-block; margin-top: 7px; color: #ffd766;
+  font-size: .82rem; font-weight: 800; text-decoration: none;
+}
+.toast-action:hover { text-decoration: underline; }
+.toast-close {
+  position: absolute; top: 5px; right: 7px; width: 28px; height: 28px;
+  border: 0; background: transparent; color: #c9c5bb; cursor: pointer;
+  font-size: 1.25rem; line-height: 1;
+}
+.toast-close:hover { color: #fff; }
+
+@media (max-width: 620px) {
+  .hidden-slot { align-items: flex-start; padding: 18px; }
+  .hidden-slot-actions { flex-direction: column; }
+  .hidden-slot-actions .btn { width: 100%; text-align: center; }
+  #toast-root { left: 12px; right: 12px; bottom: 12px; }
+  .toast { min-width: 0; max-width: none; width: 100%; }
+}
 
 .load-error { text-align: center; }
 
@@ -1178,7 +1216,7 @@ body.plain-mode #view { min-height: 100vh; }
   .index-title { display: none; }
   .popup { grid-template-columns: 1fr; }
   .popup-sd { min-height: 260px; }
-  .dlg-standing .dlg-sprite { bottom: 170px; }
+  .dlg-standing .dlg-sprite { bottom: 92px; }
   .dlg-text { font-size: .95rem; }
   .record-table th { width: 90px; }
   /* 기간 열이 고정 190px이면 좁은 화면에서 내용 칸이 눌려 세로로 길어진다 */

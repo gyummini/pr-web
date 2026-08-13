@@ -6,6 +6,7 @@ export const state = {
   introSeen: false,        // 세션 내 시작 페이지 재진입 시 대사 자동 스킵
   endingSeen: false,       // 엔딩 대화 완료 여부
   hiddenFlashShown: false, // 히든 해금 강조 연출 1회 재생 여부
+  hiddenUnlockToastShown: false, // E1~E6 수집 완료 고정 토스트 중복 방지
   viewedChapters: new Set(),   // 'CASE01' ~ 'CASE04', 'EPILOGUE'
   collected: new Set(),        // 'E1' ~ 'E7'
   toastedChapters: new Set(),  // 완벽 수집 토스트 중복 방지
@@ -13,6 +14,10 @@ export const state = {
 
 export function collectedCount() {
   return state.collected.size;
+}
+
+export function collectedBaseCount() {
+  return BASE_EVIDENCE_IDS.filter((id) => state.collected.has(id)).length;
 }
 
 // 히든(E7) 해금 조건: E1~E6 전부 수집

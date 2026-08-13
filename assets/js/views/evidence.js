@@ -1,5 +1,5 @@
 import { DB } from '../data.js';
-import { state, baseUnlocked, TOTAL_EVIDENCE } from '../state.js';
+import { BASE_EVIDENCE_IDS, state, baseUnlocked, collectedBaseCount } from '../state.js';
 import { addPending, landOne, flyFromRect, openDoc } from '../ui.js';
 import { checkChapterToasts, fmtCase } from '../collect.js';
 import { navigate } from '../router.js';
@@ -16,12 +16,12 @@ export function renderEvidence(view) {
       <div class="page-head">
         <div class="stamp">증거 보관함</div>
         <h2>수집된 증거</h2>
-        <p class="page-lead">포트폴리오 ${TOTAL_EVIDENCE}건 — 자기소개서의 각 진술을 뒷받침하는 실제 작업 문서</p>
+        <p class="page-lead">포트폴리오 ${BASE_EVIDENCE_IDS.length}건 — 자기소개서의 각 진술을 뒷받침하는 실제 작업 문서</p>
       </div>
+      <div class="hidden-slot-wrap"></div>
       <div class="ev-grid">
         ${cards.map((ev) => cardHtml(ev)).join('')}
       </div>
-      <div class="hidden-slot-wrap"></div>
       ${
         DB.resume && DB.resume.fullPdf
           ? `<div class="ev-doc-actions">
@@ -135,18 +135,32 @@ function wireCard(el) {
 
 function renderHiddenSlot(wrap, hidden) {
   const unlocked = baseUnlocked();
-  const n = state.collected.size;
+  const n = collectedBaseCount();
+  const total = BASE_EVIDENCE_IDS.length;
+  const e7Target = hidden.url && hidden.url.startsWith('/') ? hidden.url : '/notebook';
 
   if (!unlocked) {
     wrap.innerHTML = `
       <div class="hidden-slot locked">
-        <div class="hidden-icon">🔒</div>
+        <div class="hidden-icon" aria-hidden="true">🔒</div>
         <div class="hidden-info">
-          <h3>히든 증거</h3>
-          <p class="hidden-cond">조건: 모든 증거를 수집하세요! &nbsp;현재: ${n} / ${TOTAL_EVIDENCE}</p>
-          <div class="hidden-bar"><div class="hidden-bar-fill" style="width:${(n / TOTAL_EVIDENCE) * 100}%"></div></div>
+          <span class="hidden-kicker">BONUS FILE</span>
+          <h3 class="hidden-title"></h3>
+          <p class="hidden-cond hidden-sub"></p>
+          <p class="hidden-progress">증거 ${n} / ${total} 수집</p>
+          <div class="hidden-bar" aria-hidden="true"><div class="hidden-bar-fill" style="width:${(n / total) * 100}%"></div></div>
+          <div class="hidden-slot-actions">
+            <button type="button" class="btn hidden-find">남은 증거 찾기</button>
+            <a class="btn ghost hidden-direct" href="${e7Target}">수첩 바로 열람</a>
+          </div>
         </div>
       </div>`;
+    wrap.querySelector('.hidden-title').textContent = hidden.title;
+    wrap.querySelector('.hidden-sub').textContent = hidden.subtitle || '';
+    const missing = BASE_EVIDENCE_IDS.find((id) => !state.collected.has(id));
+    wrap.querySelector('.hidden-find').addEventListener('click', () => {
+      navigate(missing ? `/evidence/${missing}` : '/evidence');
+    });
     return;
   }
 
@@ -157,17 +171,16 @@ function renderHiddenSlot(wrap, hidden) {
     <div class="hidden-slot unlocked ${flash ? 'flash' : ''}" tabindex="0" role="button">
       <div class="hidden-icon">🗝️</div>
       <div class="hidden-info">
+        <span class="hidden-kicker">BONUS FILE · ${total}/${total} 수집 완료</span>
         <h3 class="hidden-title"></h3>
         <p class="hidden-cond hidden-sub"></p>
       </div>
-      <div class="ev-open">${state.endingSeen ? '확인하기 →' : '해금! 클릭하여 확인 →'}</div>
+      <div class="ev-open">${state.endingSeen ? '확인하기 →' : '엔딩과 함께 열기 →'}</div>
     </div>`;
   wrap.querySelector('.hidden-title').textContent = hidden.title;
   wrap.querySelector('.hidden-sub').textContent = hidden.subtitle || '';
 
   const slot = wrap.querySelector('.hidden-slot');
-  // E7의 목적지는 증거 카드 데이터가 결정 (내부 라우트, 예: /notebook)
-  const e7Target = hidden.url && hidden.url.startsWith('/') ? hidden.url : '/notebook';
   const act = () => {
     // 처음 해금하면 엔딩 대화부터, 이미 본 뒤에는 E7로 바로
     if (state.endingSeen) navigate(e7Target);

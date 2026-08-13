@@ -1,4 +1,4 @@
-import { state, TOTAL_EVIDENCE } from './state.js';
+import { state, baseUnlocked, TOTAL_EVIDENCE } from './state.js';
 import { preloadNotebookFonts } from './preload.js';
 
 // 수첩(E7)에 곧 도달할 신호. 폰트는 용량이 커서 진입 시점에 받으면 글씨가 늦게 바뀌므로,
@@ -46,6 +46,7 @@ function renderBadge(pulse) {
     void el.offsetWidth; // 애니메이션 재시작
     el.classList.add('pulse');
   }
+  maybeShowHiddenUnlockToast();
 }
 
 // ---- 수집 비행 애니메이션: 카드가 '수집된 증거' 탭으로 날아가 흡수 ----
@@ -108,6 +109,30 @@ export function toast(title, sub = '', icon = '🏆') {
   root.appendChild(el);
   setTimeout(() => el.classList.add('out'), 3200);
   setTimeout(() => el.remove(), 3700);
+}
+
+// E1~E6을 모두 모은 순간 표시하는 고정 알림. 직접 닫거나 수첩으로 이동하기 전까지 유지한다.
+function maybeShowHiddenUnlockToast() {
+  if (pending > 0 || !baseUnlocked() || state.hiddenUnlockToastShown) return;
+  const root = document.getElementById('toast-root');
+  if (!root) return;
+
+  state.hiddenUnlockToastShown = true;
+  const el = document.createElement('div');
+  el.className = 'toast toast-persistent hidden-unlock-toast';
+  el.setAttribute('role', 'status');
+  el.innerHTML = `
+    <span class="toast-icon" aria-hidden="true">🔓</span>
+    <div class="toast-body">
+      <div class="toast-title">마지막 파일이 해금되었습니다.</div>
+      <a class="toast-action" href="/notebook">히든 포트폴리오 바로 보기</a>
+    </div>
+    <button type="button" class="toast-close" aria-label="알림 닫기">×</button>`;
+
+  const close = () => el.remove();
+  el.querySelector('.toast-close').addEventListener('click', close);
+  el.querySelector('.toast-action').addEventListener('click', close);
+  root.appendChild(el);
 }
 
 // ---- 외부 문서 열기: 전부 새 탭. PLACEHOLDER는 안내만 ----

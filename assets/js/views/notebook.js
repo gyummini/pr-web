@@ -1,8 +1,6 @@
 import { DB } from '../data.js';
-import { state } from '../state.js';
 import { SPRITES } from '../sprites.js';
 import { preloadNotebookFonts } from '../preload.js';
-import { navigate } from '../router.js';
 
 // E7 히든 — 클루의 수사 수첩 (/notebook). 작업지시_수첩디자인이식.md 기준 구현.
 // 페이지 구성: 표지 / 1부 / 2부(3항목) / 2부 계속(2항목) / 3부 / 접힌 페이지 = 6쪽.
@@ -48,10 +46,6 @@ function nbInline(s) {
 }
 
 export function renderNotebook(view) {
-  if (!state.endingSeen) {
-    navigate('/evidence', { replace: true });
-    return {};
-  }
   preloadNotebookFonts();
   const nb = DB.notebook;
 
