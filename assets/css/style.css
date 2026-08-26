@@ -1930,3 +1930,27 @@ body.plain-mode #view { min-height: 100vh; }
 }
 /* 날아가는 복제본 — 원본은 이미 손패에서 빠졌다 */
 .fx-ghost { box-shadow: 0 10px 24px rgba(0, 0, 0, .22); }
+
+/* ---------- 스탠딩 호흡 ----------
+   스탠딩은 정지 이미지라 가만히 있으면 화면이 굳어 보인다.
+   아주 느리게 위아래로만 움직여 '서 있는' 느낌만 준다.
+   표정이 바뀔 때의 반응 동작은 넣지 않는다 — 대사 읽기를 방해한다.
+   새 에셋 없이 transform만 쓴다 (함정 9). 발을 축으로 삼는다.
+
+   reduced-motion에서도 재생한다 — 수첩 넘김과 같은 판단이다(함정 7). */
+.dlg-sprite .spr {
+  transform-origin: 50% 100%;
+}
+.dlg-standing .dlg-sprite .spr.show {
+  animation: clue-breathe 4.2s ease-in-out infinite;
+}
+
+@keyframes clue-breathe {
+  0%,
+  100% {
+    transform: translateY(0) scaleY(1);
+  }
+  50% {
+    transform: translateY(-2px) scaleY(1.005);
+  }
+}
