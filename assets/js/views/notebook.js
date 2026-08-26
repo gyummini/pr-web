@@ -248,6 +248,17 @@ function pagePart2(p, from, to, isCont) {
         ? `<div class="nb-closing">${nbInline(p.closing)}</div>`
         : ''
     }
+    ${
+      // 관찰 메모를 뒷받침하는 외부 기록. '물증을 붙이는 사람'이라는 소견 바로 뒤에 온다.
+      isCont && p.evidence && p.evidence.url
+        ? `<div class="nb-evidence">
+             <p class="nb-evidence-line">${nbInline(p.evidence.line || '')}</p>
+             <a class="nb-evidence-link" href="${esc(p.evidence.url)}" target="_blank" rel="noopener">${esc(
+               p.evidence.label || '기록 보기 ↗'
+             )}</a>
+           </div>`
+        : ''
+    }
   ${sheetClose}`;
 }
 

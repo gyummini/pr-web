@@ -53,6 +53,24 @@ function skillsSection(list) {
       </section>`;
 }
 
+// 플레이 기록 — 자소서·수첩의 진술을 뒷받침하는 외부 기록. 비면 렌더링하지 않는다.
+function playSection(p) {
+  if (!p || !(p.url || '').trim()) return '';
+  return `
+      <section class="record-sec">
+        <h3>${esc(p.label || '플레이 기록')}</h3>
+        <table class="record-table rows">
+          <tr>
+            <th>${esc(p.summary || '')}</th>
+            <td>
+              ${p.note ? `<div class="skill-level">${esc(p.note)}</div>` : ''}
+              <a class="play-link" href="${esc(p.url)}" target="_blank" rel="noopener">기록 보기 ↗</a>
+            </td>
+          </tr>
+        </table>
+      </section>`;
+}
+
 // 기본 사항 — 인물 신상 조서 (명세서 2-2). 정적 페이지.
 export function renderBasic(view) {
   const r = DB.resume;
@@ -101,6 +119,8 @@ export function renderBasic(view) {
       </section>`
           : ''
       }
+
+      ${playSection(r.playRecord)}
 
       <div class="record-actions">
         <a class="btn accent" href="/case/01">세부 사항 보기 →</a>

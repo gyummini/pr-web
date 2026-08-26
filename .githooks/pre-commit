@@ -9,7 +9,9 @@
 
 DOC="작업진행.md"
 
-staged=$(git diff --cached --name-only --diff-filter=ACMR)
+# core.quotepath가 켜져 있으면 한글 파일명이 "ì..." 로 이스케이프되어
+# 이름 비교가 전부 어긋난다. 이 저장소는 문서도 콘텐츠도 한글 파일명이라 반드시 꺼야 한다.
+staged=$(git -c core.quotepath=false diff --cached --name-only --diff-filter=ACMR)
 
 # 문서만 고친 커밋, 되돌리기/병합 커밋은 통과시킨다
 [ -z "$staged" ] && exit 0

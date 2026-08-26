@@ -1954,3 +1954,28 @@ body.plain-mode #view { min-height: 100vh; }
     transform: translateY(-2px) scaleY(1.005);
   }
 }
+
+/* 기본 사항 — 플레이 기록 링크 */
+.play-link {
+  display: inline-block; margin-top: 6px;
+  font-size: .88rem; font-weight: 700; color: var(--accent);
+}
+.play-link:hover { text-decoration: underline; }
+
+/* 수첩 2부 — 관찰 메모를 뒷받침하는 외부 기록.
+   내지는 손글씨 독백체이므로 종합 소견과 같은 서체·색을 쓴다. */
+.nb-evidence {
+  margin-top: 18px; padding: 14px 18px;
+  border: 1px dashed var(--nb-rule); border-radius: 4px;
+  background: rgba(178, 58, 47, .04);
+}
+.nb-evidence-line {
+  margin: 0 0 8px;
+  font-family: var(--nb-font-hand); font-size: 1.18rem; line-height: 34px;
+  color: var(--nb-ink-soft);
+}
+.nb-evidence-link {
+  font-family: var(--nb-font-hand); font-size: 1.15rem; font-weight: 700;
+  color: var(--nb-navy);
+}
+.nb-evidence-link:hover { color: #1d3450; text-decoration: underline; }
