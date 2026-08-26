@@ -118,6 +118,13 @@ function maybeShowHiddenUnlockToast() {
   if (!root) return;
 
   state.hiddenUnlockToastShown = true;
+  // 엔딩 대화를 아직 안 봤다면 그쪽을 거쳐 간다 — 마지막 클루 대사가 여기서만 나오고,
+  // E7 수집(7/7)도 엔딩이 끝나는 시점에 일어난다. 곧장 /notebook으로 보내면 둘 다 건너뛴다.
+  // 토스트는 닫기 전까지 남아 있으므로 목적지는 누르는 시점에 다시 판단한다.
+  // (router.js는 순환 참조라 import하지 않는다 — 내부 링크는 라우터가 <a href>를 가로챈다)
+  const dest = () => (state.endingSeen ? '/notebook' : '/ending');
+  const destLabel = () => (state.endingSeen ? '히든 포트폴리오 보기' : '엔딩과 함께 열기');
+
   const el = document.createElement('div');
   el.className = 'toast toast-persistent hidden-unlock-toast';
   el.setAttribute('role', 'status');
@@ -125,13 +132,19 @@ function maybeShowHiddenUnlockToast() {
     <span class="toast-icon" aria-hidden="true">🔓</span>
     <div class="toast-body">
       <div class="toast-title">마지막 파일이 해금되었습니다.</div>
-      <a class="toast-action" href="/notebook">히든 포트폴리오 바로 보기</a>
+      <a class="toast-action" href="${dest()}"></a>
     </div>
     <button type="button" class="toast-close" aria-label="알림 닫기">×</button>`;
 
   const close = () => el.remove();
+  const action = el.querySelector('.toast-action');
+  action.textContent = destLabel();
   el.querySelector('.toast-close').addEventListener('click', close);
-  el.querySelector('.toast-action').addEventListener('click', close);
+  action.addEventListener('click', (e) => {
+    // 라우터는 document에서 버블 단계로 받으므로, 여기서 갱신한 href를 그대로 읽는다
+    e.currentTarget.setAttribute('href', dest());
+    close();
+  });
   root.appendChild(el);
 }
 

@@ -283,6 +283,29 @@ button { font-family: inherit; }
 }
 .dlg-sd .dlg-text { font-size: .92rem; line-height: 1.6; min-height: 3em; }
 
+/* 팝업 안의 스탠딩 — 전체화면 장면용 .dlg-standing 치수를 좁은 칸에 맞게 덮는다.
+   .dlg-scene은 absolute이므로 왼쪽 칸 자신이 기준 상자가 되어야 한다.
+   (sd 모드에서는 .dlg-sd가 그 역할을 했다 — 모드를 바꾸면 함께 잃는다) */
+.popup-sd .dlg-scene {
+  position: relative; height: 100%; min-height: 300px;
+}
+.popup-sd .dlg-standing .dlg-sprite {
+  left: 50%; bottom: 20px; transform: translateX(-50%);
+  /* 폭을 묶지 않으면 좁은 화면에서 cover 배율이 튀어 머리만 보인다 */
+  width: min(100%, 230px); height: calc(100% - 40px);
+  min-height: 0; max-height: none;
+}
+/* 좁은 칸에서 전신(311×1100)을 contain하면 136px 폭으로 쪼그라든다.
+   상반신으로 채우고, 잘린 아래쪽 끝은 대사창 뒤로 숨긴다. */
+.popup-sd .dlg-sprite .spr {
+  object-fit: cover; object-position: top center;
+}
+.popup-sd .dlg-box {
+  bottom: 12px; width: calc(100% - 20px); min-height: 96px;
+  padding: 20px 16px 18px;
+}
+.popup-sd .dlg-text { font-size: .92rem; line-height: 1.6; min-height: 3em; }
+
 /* ---------- 세부 사항 (진술 기록) ---------- */
 .dossier {
   max-width: 1120px; margin: 0 auto; padding: 32px 20px;
@@ -521,7 +544,11 @@ button { font-family: inherit; }
   font-size: .82rem; padding: 6px 12px; cursor: pointer;
 }
 .att-chip:hover { border-color: var(--accent); color: var(--accent); }
-.popup-actions { display: flex; gap: 10px; }
+/* 주 행동 하나 + 보조들. 좁은 화면에서 줄바꿈되며 primary가 항상 첫 줄에 온다. */
+.popup-actions { display: flex; flex-wrap: wrap; gap: 9px; margin-top: 16px; }
+.popup-actions .btn.accent { font-weight: 800; }
+.popup-actions .btn.ghost { font-size: .86rem; color: var(--ink-soft); }
+.popup-actions .btn.ghost:hover { color: var(--accent); }
 
 /* ---------- 미수집 증거 상세 / 제작기 ---------- */
 .detail-summary h3, .making-contact h3 {
@@ -1233,3 +1260,673 @@ body.plain-mode #view { min-height: 100vh; }
   .page-head { padding-right: 110px; }
   .page-lead { font-size: .86rem; }
 }
+
+/* ---------- 증거 요약 메모 (팝업) ----------
+   수사 수첩(E7)의 시각 언어를 축소해 가져온다: 괘선 종이 / 좌측 붉은 마진선 /
+   인덱스 탭 / 포스트잇. 다만 손글씨 폰트는 수첩 전용으로 남기고 본문 서체를 쓴다. */
+.ev-memo:empty { display: none; }
+.memo {
+  position: relative;
+  margin: 0 0 16px;
+  padding: 13px 18px 16px 42px;
+  background: var(--nb-paper);
+  border: 1px solid var(--nb-rule);
+  border-radius: 3px 8px 8px 3px;
+  box-shadow: 0 4px 12px rgba(38, 36, 31, .12);
+  /* 좌측 마진 붉은 세로선 — 수첩 .nb-sheet과 같은 장치 */
+  background-image: linear-gradient(90deg,
+    transparent 0 30px, rgba(178, 58, 47, .35) 30px 31px, transparent 31px);
+}
+/* 증거 코드 탭 — 위쪽은 스크랩 사진이 쓰므로 아래 모서리로 내린다 */
+.memo-tab {
+  position: absolute; right: -9px; bottom: 16px;
+  background: var(--nb-red); color: var(--nb-paper);
+  font-size: .66rem; font-weight: 700; letter-spacing: .06em;
+  padding: 3px 8px 3px 10px; border-radius: 0 4px 4px 0;
+  box-shadow: 2px 2px 3px rgba(0, 0, 0, .15);
+}
+/* 머리말 줄이 사진 높이를 그대로 떠안는다 — 사진이 본문 위로 넘칠 수 없다 */
+.memo-head {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  min-height: 56px; margin-bottom: 6px;
+}
+.memo-by {
+  font-size: .68rem; font-weight: 700; letter-spacing: .1em;
+  color: var(--nb-red); text-transform: uppercase;
+}
+/* 메모를 남긴 사람 — 수첩 .nb-polaroid의 축소판. 살짝 기울여 둔 스크랩 사진. */
+.memo-photo {
+  flex: none; width: 50px; padding: 3px 3px 4px; margin-right: 2px;
+  background: #fff; border: 1px solid var(--nb-rule);
+  box-shadow: 0 3px 8px rgba(38, 36, 31, .2);
+  transform: rotate(4deg);
+}
+.memo-photo img {
+  display: block; width: 100%; height: 40px;
+  object-fit: contain; object-position: bottom;
+  background: var(--nb-paper-dim);
+}
+
+/* 괘선 위에 얹히는 본문 — 행 리듬(28px)과 line-height를 맞춘다 */
+.memo-lines { padding-bottom: 2px; }
+.memo-row {
+  /* baseline 정렬은 라벨/본문의 글자 크기 차이만큼 행을 1px 밀어 괘선 격자를 깨뜨린다 */
+  display: flex; gap: 10px; align-items: flex-start;
+  background-image: repeating-linear-gradient(0deg,
+    transparent 0 27px, var(--nb-rule) 27px 28px);
+}
+.memo-k {
+  flex: none; width: 34px; line-height: 28px;
+  font-size: .74rem; font-weight: 700; color: var(--nb-red);
+}
+.memo-v { font-size: .92rem; line-height: 28px; color: var(--nb-ink); }
+.memo-hl {
+  background: linear-gradient(transparent 52%, var(--nb-hl) 52% 92%, transparent 92%);
+  -webkit-box-decoration-break: clone; box-decoration-break: clone;
+  font-weight: 700;
+}
+
+/* 클루의 한마디 — 수첩 포스트잇 */
+.memo-note {
+  margin: 13px 0 0 -8px; padding: 9px 13px;
+  background: var(--nb-postit); color: var(--nb-ink-soft);
+  font-size: .8rem; line-height: 1.6;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, .12);
+  transform: rotate(-.7deg);
+}
+
+/* 메모가 있는 팝업: 긴 요약문은 감춘다 (증거 상세 페이지에 그대로 남아 있다) */
+.popup.has-memo .ev-summary { display: none; }
+
+@media (max-width: 760px) {
+  .memo { padding-left: 34px; background-image: linear-gradient(90deg,
+    transparent 0 24px, rgba(178, 58, 47, .35) 24px 25px, transparent 25px); }
+}
+
+/* ---------- 메모 블록 ----------
+   모두 '수첩에 붙여둔 쪽지' 바탕(흰 종이 + 살짝 기울임)을 공유하되, 그림 자체는 증거마다 다르다.
+   여기서 정의하는 것은 바탕과 칩·화살표 같은 공용 부품까지. 그림은 각 블록 규칙이 맡는다. */
+.memo-cyc, .memo-map, .memo-red, .memo-bri, .memo-gra, .memo-spl {
+  margin: 7px 0 9px; padding: 11px 13px;
+  background: #fff; border: 1px solid var(--nb-rule); border-radius: 4px;
+  box-shadow: 0 3px 7px rgba(0, 0, 0, .1);
+}
+.memo-cyc { transform: rotate(-.3deg); }
+.memo-map { transform: rotate(.25deg); }
+.memo-red { transform: rotate(-.35deg); }
+.memo-bri { transform: rotate(-.25deg); }
+.memo-gra { transform: rotate(.3deg); }
+.memo-spl { transform: rotate(-.3deg); }
+
+/* 공용 부품 */
+.memo-chips { display: flex; align-items: center; flex-wrap: wrap; gap: 4px; }
+.memo-chip {
+  font-size: .78rem; white-space: nowrap;
+  border: 1px solid var(--nb-rule); border-radius: 3px;
+  padding: 2px 7px; background: var(--nb-paper);
+}
+.memo-sep { font-size: .72rem; color: var(--nb-muted); }
+
+/* E1 cycle — 각인 → 호출 → 입체감이 반복된다 */
+.memo-cyc-steps { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 3px; }
+.memo-cyc-step {
+  display: inline-flex; align-items: baseline; gap: 5px;
+  font-size: .74rem; white-space: nowrap;
+  border: 1px solid var(--nb-rule); border-radius: 3px;
+  padding: 3px 8px; background: var(--nb-paper);
+}
+.memo-cyc-n { font-size: .6rem; color: var(--nb-muted); }
+.memo-cyc-step.mark {
+  border-color: var(--nb-red); background: rgba(178, 58, 47, .06);
+  color: var(--nb-red-deep); font-weight: 700;
+}
+.memo-cyc-step.mark .memo-cyc-n { color: var(--nb-red); }
+.memo-cyc-foot {
+  margin-top: 8px; padding-top: 7px; border-top: 1px solid var(--nb-red);
+  font-size: .74rem; font-weight: 700; color: var(--nb-red-deep); text-align: center;
+}
+
+/* E3 reduce — 단계마다 덜어내며 좁혀진다 */
+.memo-red-line { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 8px; }
+.memo-red-label {
+  flex: none; width: 62px;
+  font-size: .66rem; color: var(--nb-muted); letter-spacing: .04em;
+}
+.memo-red-cut {
+  margin: 5px 0 5px 62px;
+  font-size: .7rem; font-weight: 700; color: var(--nb-red);
+}
+/* 아직 덜어내기 전 단계 — 흐리게 */
+.memo-red-line:not(.keep) .memo-chip { opacity: .5; }
+/* 남은 것 */
+.memo-red-line.keep .memo-red-label { color: var(--nb-red); font-weight: 700; }
+.memo-red-line.keep .memo-chip {
+  border-color: var(--nb-red); color: var(--nb-red-deep);
+  background: rgba(178, 58, 47, .06); font-weight: 700; opacity: 1;
+}
+.memo-red-kept {
+  margin-top: 9px; padding-top: 7px; border-top: 1px dashed var(--nb-rule);
+  font-size: .72rem; color: var(--nb-ink-soft); text-align: center;
+}
+
+/* E2 mapping — 화면 ↔ 판단, 그리고 한 줄로 수렴 */
+.memo-map-head { display: flex; gap: 8px; margin-bottom: 5px; }
+.memo-map-h {
+  font-size: .62rem; letter-spacing: .08em; color: var(--nb-muted);
+}
+.memo-map-h:first-child { flex: none; width: 84px; }
+.memo-map-row { display: flex; align-items: baseline; gap: 8px; line-height: 22px; }
+.memo-map-l {
+  flex: none; width: 84px; font-size: .76rem; font-weight: 700; color: var(--nb-ink);
+}
+.memo-map-r { font-size: .78rem; color: var(--nb-ink-soft); }
+.memo-map-conv {
+  margin-top: 7px; padding-top: 7px; border-top: 1px solid var(--nb-red);
+  font-size: .78rem; font-weight: 700; color: var(--nb-red-deep); text-align: center;
+}
+
+/* E4 bridge — 끊겨 있던 자리에 놓은 디딤돌 */
+.memo-bri-gap {
+  font-size: .62rem; color: var(--nb-muted); text-align: center; margin-bottom: 4px;
+}
+.memo-bri-row { display: flex; align-items: stretch; }
+.memo-bri-node {
+  flex: 1; display: flex; flex-direction: column; gap: 2px; text-align: center;
+  border: 1px solid var(--nb-rule); border-radius: 3px; padding: 5px 6px;
+  background: var(--nb-paper);
+}
+.memo-bri-node.span {
+  flex: 1.15; border-color: var(--nb-red); background: rgba(178, 58, 47, .06);
+}
+.memo-bri-name { font-size: .76rem; font-weight: 700; }
+.memo-bri-node.span .memo-bri-name { color: var(--nb-red-deep); }
+.memo-bri-note { font-size: .62rem; color: var(--nb-muted); line-height: 1.35; }
+/* 이어진 자리 — 실선으로 붙는다 */
+.memo-bri-link {
+  flex: none; width: 14px; align-self: center;
+  border-top: 2px solid var(--nb-red);
+}
+
+/* E5 graft — 아래는 손대지 않고 위에만 얹는다 */
+.memo-gra { text-align: center; }
+.memo-gra-add {
+  display: inline-flex; flex-direction: column; gap: 1px;
+  border: 1px solid var(--nb-red); border-radius: 3px;
+  background: rgba(178, 58, 47, .06); padding: 4px 12px;
+}
+.memo-gra-name { font-size: .8rem; font-weight: 700; color: var(--nb-red-deep); }
+.memo-gra-cond { font-size: .62rem; color: var(--nb-muted); }
+.memo-gra-drop { font-size: .66rem; color: var(--nb-red); line-height: 1.4; }
+.memo-gra-base {
+  display: flex; justify-content: center; flex-wrap: wrap; gap: 6px;
+  border: 1px dashed var(--nb-rule); border-radius: 3px; padding: 7px 8px;
+  background: var(--nb-paper-dim);
+}
+.memo-gra-part {
+  font-size: .76rem; color: var(--nb-muted);
+  border: 1px solid var(--nb-rule); border-radius: 3px;
+  padding: 2px 9px; background: #fff;
+}
+.memo-gra-label { font-size: .62rem; color: var(--nb-muted); margin-top: 4px; }
+
+/* E6 split — 하나의 일을 두 몫으로 */
+.memo-spl-title {
+  font-size: .76rem; font-weight: 700; text-align: center; margin-bottom: 6px;
+}
+.memo-spl-cols { display: flex; gap: 0; }
+.memo-spl-col {
+  flex: 1; display: flex; flex-direction: column; gap: 4px;
+  padding: 6px 10px; text-align: center;
+}
+.memo-spl-col + .memo-spl-col { border-left: 1px dashed var(--nb-rule); }
+.memo-spl-name { font-size: .68rem; letter-spacing: .04em; color: var(--nb-muted); }
+.memo-spl-item {
+  font-size: .76rem; border: 1px solid var(--nb-rule); border-radius: 3px;
+  padding: 3px 8px; background: var(--nb-paper); color: var(--nb-ink-soft);
+}
+.memo-spl-col.keep .memo-spl-name { color: var(--nb-red); font-weight: 700; }
+.memo-spl-col.keep .memo-spl-item {
+  border-color: var(--nb-red); background: rgba(178, 58, 47, .06);
+  color: var(--nb-red-deep); font-weight: 700;
+}
+
+@media (max-width: 760px) {
+  .memo-map-h:first-child, .memo-map-l { width: 70px; }
+  .memo-red-label { width: 100%; }
+  .memo-red-cut { margin-left: 0; }
+  .memo-bri-row { flex-direction: column; gap: 4px; }
+  .memo-bri-link { width: 2px; height: 10px; align-self: center; border-top: 0; border-left: 2px solid var(--nb-red); }
+}
+
+
+
+/* ---------- 증거 브리프 ----------
+   이 화면만은 사이트의 종이 톤을 따르지 않는다. 팔레트를 증거 문서에서 그대로
+   가져온다 — 조건=초록 마름모, 예외=노랑 마름모, 데이터 테이블=하늘, 상태 데이터=분홍.
+   흰 바탕·얇은 격자·등폭 숫자로, 도표와 수치가 가장 잘 읽히는 면을 만든다. */
+.view-brief {
+  --fx-ink: #1c1f23;
+  --fx-soft: #5b6470;
+  --fx-mute: #98a1ac;
+  --fx-line: #dde2e8;
+  --fx-bg: #ffffff;
+  --fx-panel: #f6f8fa;
+  --fx-accent: #b23a2f;
+  --fx-proc: #26282c;   /* 검정 — 단계 */
+  --fx-data: #a9d5f5;   /* 하늘 — 데이터 테이블 */
+  --fx-state: #ff77c0;  /* 분홍 — 상태 데이터 */
+  --fx-cond: #78dba4;   /* 초록 — 조건 */
+  --fx-exc: #f7dd5c;    /* 노랑 — 예외 상황 */
+  background: var(--fx-bg);
+  color: var(--fx-ink);
+  min-height: 100vh;
+}
+.brief { max-width: 1080px; margin: 0 auto; padding: 30px 20px 60px; }
+.brief-head { border-bottom: 1px solid var(--fx-line); padding-bottom: 14px; margin-bottom: 20px; }
+.brief-head .ev-kicker { color: var(--fx-accent); }
+.brief-head .ev-title { margin: 6px 0 3px; font-size: 1.4rem; }
+.brief-head .ev-sub { margin: 0; color: var(--fx-soft); font-size: .9rem; }
+.brief-lead { max-width: 720px; margin-bottom: 22px; }
+.brief-lead-title { margin: 0 0 6px; font-size: 1.16rem; }
+.brief-lead-line { margin: 0 0 12px; font-size: .96rem; line-height: 1.7; color: var(--fx-soft); }
+.brief-prompt {
+  margin: 0; font-size: .88rem; color: var(--fx-soft);
+  background: var(--fx-panel); border: 1px solid var(--fx-line);
+  border-radius: 6px; padding: 9px 13px;
+}
+.brief-foot { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 26px; }
+
+/* ---------- 층 1·2 — 원칙과 요소 ---------- */
+/* 아래에서 위로 올라가는 빛 */
+
+/* ---------- 층 3 — 구현 ---------- */
+.fx-sub {
+  display: block; margin: 16px 0 7px;
+  font-size: .68rem; font-weight: 700; letter-spacing: .1em;
+  color: var(--fx-mute); text-transform: uppercase;
+}
+
+.fx-meter-head {
+  display: flex; justify-content: space-between; align-items: baseline; gap: 10px;
+  font-size: .84rem; font-weight: 700; margin-bottom: 5px;
+  font-variant-numeric: tabular-nums;
+}
+.fx-rate { color: var(--fx-accent); }
+.fx-bar {
+  height: 10px; background: var(--fx-panel);
+  border: 1px solid var(--fx-line); border-radius: 999px; overflow: hidden;
+}
+.fx-bar-fill { height: 100%; background: var(--fx-accent); width: 0; }
+.fx-rate-note { margin: 5px 0 0; font-size: .68rem; color: var(--fx-mute); font-variant-numeric: tabular-nums; }
+
+.fx-hand { display: flex; gap: 8px; flex-wrap: wrap; }
+.fx-card {
+  flex: 1 1 145px; min-width: 132px;
+  display: flex; flex-direction: column; gap: 4px; text-align: left;
+  font: inherit; color: var(--fx-ink); cursor: pointer;
+  background: var(--fx-panel); border: 1px solid var(--fx-line); border-radius: 8px;
+  padding: 9px 11px 10px;
+  transition: border-color .15s ease, background .15s ease, box-shadow .2s ease;
+}
+.fx-card:not(.ready) { cursor: default; opacity: .6; }
+.fx-card.ready { background: var(--fx-bg); border-color: var(--fx-soft); }
+.fx-card.ready:hover { border-color: var(--fx-accent); box-shadow: 0 5px 14px rgba(178,58,47,.14); }
+.fx-card-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.fx-card-name { font-weight: 800; font-size: .9rem; }
+/* 예외 1 — 코스트가 모자라면 현재/필요 비율만큼 시계방향으로 채워진다 */
+.fx-card-cost {
+  flex: none; display: grid; place-items: center;
+  width: 28px; height: 28px; border-radius: 50%;
+  font-size: .8rem; font-weight: 800; color: var(--fx-soft);
+  border: 2px solid var(--fx-line);
+  background:
+    conic-gradient(var(--fx-accent) var(--fill, 0deg), rgba(0,0,0,0) 0) border-box,
+    var(--fx-bg) padding-box;
+}
+.fx-card.ready .fx-card-cost { color: #fff; background: var(--fx-accent); border-color: var(--fx-accent); }
+.fx-card-ex { font-size: .7rem; line-height: 1.45; color: var(--fx-soft); }
+.fx-card-wait { font-size: .66rem; color: var(--fx-mute); font-variant-numeric: tabular-nums; min-height: 1em; }
+.fx-card.ready .fx-card-wait { visibility: hidden; }
+
+.fx-deck { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+.fx-deck-item {
+  display: flex; align-items: baseline; gap: 8px;
+  font-size: .78rem; color: var(--fx-soft);
+  border: 1px dashed var(--fx-line); border-radius: 5px; padding: 4px 9px;
+}
+.fx-deck-n { flex: none; font-size: .66rem; color: var(--fx-mute); font-variant-numeric: tabular-nums; }
+.fx-deck-name { flex: 1; }
+.fx-deck-cost { flex: none; font-weight: 700; font-variant-numeric: tabular-nums; }
+
+/* ---------- 플로우 차트 ---------- */
+.fx-chart { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.fx-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; justify-content: center; }
+.fx-node {
+  display: flex; flex-direction: column; gap: 1px; text-align: center;
+  border: 2px solid var(--fx-line); border-radius: 6px;
+  padding: 7px 12px; background: var(--fx-bg);
+  font-size: .78rem; line-height: 1.35;
+  transition: box-shadow .25s ease, transform .25s ease, opacity .25s ease;
+}
+.fx-node-l { font-weight: 700; }
+.fx-node-n { font-size: .64rem; color: var(--fx-mute); }
+/* 문서의 범례를 그대로 — 단계·데이터·상태·조건·예외 */
+.fx-node[data-k="process"] { background: var(--fx-proc); border-color: var(--fx-proc); color: #fff; }
+.fx-node[data-k="process"] .fx-node-n { color: rgba(255,255,255,.6); }
+.fx-node[data-k="data"] { background: var(--fx-data); border-color: #7ebde8; }
+.fx-node[data-k="state"] { background: var(--fx-state); border-color: #ef5aa8; }
+.fx-node[data-k="cond"] { background: var(--fx-cond); border-color: #4cc283; border-radius: 4px 22px 4px 22px; }
+.fx-node[data-k="exc"] { background: var(--fx-exc); border-color: #e2c62f; border-radius: 4px 22px 4px 22px; }
+/* 아직 지나지 않은 노드는 흐리게, 지나온 노드는 또렷하게 — 반대로 두면
+   '안 간 길'이 더 선명해져 경로가 거꾸로 읽힌다 */
+.fx-node { opacity: .42; }
+.fx-node.past { opacity: 1; }
+.fx-node.on { opacity: 1; }
+.fx-node.on {
+  box-shadow: 0 0 0 4px rgba(178, 58, 47, .28), 0 6px 16px rgba(0,0,0,.14);
+  transform: translateY(-1px);
+}
+.fx-edge {
+  font-size: .64rem; color: var(--fx-mute); white-space: nowrap;
+  position: relative; padding: 0 4px;
+}
+.fx-edge::before { content: '→'; margin-right: 4px; color: var(--fx-line); }
+.fx-down { font-size: .72rem; color: var(--fx-mute); line-height: 1.3; padding: 2px 0; }
+.fx-branch { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; width: 100%; }
+/* 분기의 두 갈래는 한 줄에 나란히 — 감싸면 위아래로 흩어져 읽기 어렵다 */
+.fx-branch { flex-wrap: nowrap; align-items: flex-start; }
+.fx-arm {
+  flex: 1 1 0; min-width: 0;
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  padding: 5px 4px; border-radius: 6px;
+  transition: opacity .25s ease, background .25s ease;
+}
+.fx-arm.past, .fx-arm.on { background: rgba(178, 58, 47, .05); }
+.fx-arm .fx-node { width: 100%; }
+.fx-arm-l { font-size: .66rem; font-weight: 700; }
+.fx-arm.yes .fx-arm-l { color: #2f6fd0; }
+.fx-arm.no .fx-arm-l { color: #d0452f; }
+
+/* ---------- 데이터 테이블 ---------- */
+.fx-tables {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 14px; margin-top: 24px;
+}
+.fx-table {
+  min-width: 0; overflow: hidden;
+  border: 1px solid var(--fx-line); border-radius: 8px; background: var(--fx-bg);
+  transition: border-color .25s ease, box-shadow .25s ease;
+}
+/* 표만 가로로 스크롤한다 — 헤더 바가 함께 밀리면 배경색이 빠져나가 흰 여백이 남는다 */
+.fx-tscroll { overflow-x: auto; }
+.fx-table.on { border-color: var(--fx-accent); box-shadow: 0 0 0 3px rgba(178,58,47,.1); }
+.fx-table-h {
+  font-size: .72rem; font-weight: 700; padding: 7px 11px;
+  background: var(--fx-state); color: var(--fx-ink);
+  border-bottom: 1px solid var(--fx-line);
+}
+.fx-table[data-k="data"] .fx-table-h { background: var(--fx-data); }
+.fx-table table { width: 100%; border-collapse: collapse; font-size: .74rem; }
+.fx-table th {
+  text-align: left; padding: 5px 9px; border-bottom: 1px solid var(--fx-line);
+  vertical-align: top; white-space: nowrap;
+}
+.fx-table th b { display: block; font-size: .72rem; }
+.fx-table th span { display: block; font-size: .6rem; color: var(--fx-mute); font-family: ui-monospace, Consolas, monospace; }
+.fx-table td {
+  padding: 5px 9px; border-bottom: 1px solid var(--fx-line);
+  font-variant-numeric: tabular-nums; white-space: nowrap;
+  transition: background .25s ease, color .25s ease;
+}
+.fx-table tr:last-child td { border-bottom: 0; }
+.fx-table tr.on td { background: rgba(178, 58, 47, .07); }
+.fx-table td.on { background: var(--fx-accent); color: #fff; font-weight: 800; }
+
+.fx-foot {
+  display: flex; align-items: center; justify-content: space-between; gap: 14px;
+  flex-wrap: wrap; margin-top: 18px; border-top: 1px solid var(--fx-line); padding-top: 12px;
+}
+.fx-count { font-size: .8rem; color: var(--fx-soft); font-variant-numeric: tabular-nums; }
+.fx-legend { display: flex; gap: 12px; flex-wrap: wrap; font-size: .68rem; color: var(--fx-mute); }
+.fx-key { display: inline-flex; align-items: center; gap: 5px; }
+.fx-key-m { width: 11px; height: 11px; border-radius: 2px; display: inline-block; }
+.fx-key-m[data-k="process"] { background: var(--fx-proc); }
+.fx-key-m[data-k="data"] { background: var(--fx-data); }
+.fx-key-m[data-k="state"] { background: var(--fx-state); }
+.fx-key-m[data-k="cond"] { background: var(--fx-cond); border-radius: 2px 7px 2px 7px; }
+.fx-key-m[data-k="exc"] { background: var(--fx-exc); border-radius: 2px 7px 2px 7px; }
+
+/* ---------- 결론 ---------- */
+.brief-recap {
+  margin-top: 30px; border-top: 2px solid var(--fx-accent); padding-top: 20px;
+  opacity: 0; transform: translateY(10px);
+  transition: opacity .45s ease, transform .45s ease;
+}
+.brief-recap.on { opacity: 1; transform: none; }
+.brief-recap-title {
+  margin: 0 0 10px; font-size: .78rem; font-weight: 700; letter-spacing: .08em;
+  color: var(--fx-accent); text-transform: uppercase;
+}
+.brief-recap-line { margin: 0 0 12px; font-size: 1.06rem; font-weight: 700; line-height: 1.6; }
+.brief-closing {
+  margin: 0; font-size: .92rem; line-height: 1.75; color: var(--fx-soft);
+  border-left: 3px solid var(--fx-line); padding-left: 12px;
+}
+.brief-docs { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 20px; }
+
+/* 카드 안 원본 문서 지름길 — 본체는 브리프로 가지만 문서는 2클릭을 유지한다 */
+.ev-direct {
+  flex: none; font: inherit; font-size: .72rem; cursor: pointer;
+  color: var(--ink-soft); background: transparent;
+  border: 1px solid var(--line); border-radius: 999px; padding: 2px 9px;
+}
+.ev-direct:hover { border-color: var(--accent); color: var(--accent); }
+
+@media (max-width: 860px) {
+  .brief { padding: 22px 14px 44px; }
+      .brief-docs .btn, .brief-foot .btn { width: 100%; justify-content: center; }
+}
+.brief-notice {
+  margin: 0 0 10px; font-size: .78rem; color: var(--fx-soft);
+  border: 1px dashed var(--fx-line); border-radius: 6px; padding: 7px 12px;
+  background: var(--fx-panel);
+}
+.brief-notice::before { content: '🖥 '; }
+
+/* ---------- 브리프 3열 — 분석 | 플로우 차트 | 데이터 테이블 ----------
+   왼쪽에 분석과 조작을 몰고, 넓은 오른쪽 두 칸을 구조에 준다.
+   PC 전제 화면이므로 한 화면에 최대한 담는 것을 우선한다. */
+.view-brief .brief { max-width: 1680px; }
+.fx-grid {
+  display: grid;
+  grid-template-columns: minmax(240px, 300px) minmax(360px, 460px) minmax(320px, 1fr);
+  gap: 22px;
+  align-items: start;
+  border-top: 1px solid var(--fx-line);
+  padding-top: 18px;
+}
+.fx-side, .fx-chartcol, .fx-tablecol { min-width: 0; }
+.fx-chartcol, .fx-tablecol { border-left: 1px solid var(--fx-line); padding-left: 20px; }
+.fx-sec {
+  display: block; margin-bottom: 12px;
+  font-size: .7rem; font-weight: 700; letter-spacing: .1em;
+  color: var(--fx-accent); text-transform: uppercase;
+}
+.fx-sec-play { margin-top: 20px; padding-top: 16px; border-top: 1px dashed var(--fx-line); }
+
+/* 왼쪽 칸에서는 원칙·요소를 세로로 쌓는다 */
+.fx-side .fx-side .fx-side .fx-side .fx-side .fx-side .fx-side .fx-side 
+.fx-play .fx-sub { margin: 12px 0 6px; }
+.fx-play .fx-hand { flex-direction: column; }
+.fx-play .fx-card { flex: none; min-width: 0; }
+
+/* 차트는 좁은 칸에 맞춰 촘촘하게 */
+.fx-chartcol .fx-node { padding: 6px 10px; font-size: .74rem; }
+.fx-chartcol .fx-node-n { font-size: .62rem; }
+.fx-chartcol .fx-row { gap: 6px; }
+.fx-chartcol .fx-down { padding: 1px 0; }
+
+/* 테이블 칸은 한 줄에 하나씩 — 값이 바뀌는 것이 보여야 한다 */
+.fx-tablecol .fx-tables { display: flex; flex-direction: column; gap: 12px; margin-top: 0; }
+
+.fx-caption {
+  margin: 18px 0 0; min-height: 2.4em;
+  font-size: .92rem; line-height: 1.6;
+  border-left: 3px solid var(--fx-accent); padding-left: 12px;
+}
+
+/* 좁은 화면에서는 한 열로 — PC 전제이지만 깨지지는 않게 */
+@media (max-width: 1180px) {
+  .fx-grid { grid-template-columns: 1fr; gap: 18px; }
+  .fx-chartcol, .fx-tablecol { border-left: 0; padding-left: 0; border-top: 1px solid var(--fx-line); padding-top: 16px; }
+  .fx-side   .fx-side   .fx-play .fx-hand { flex-direction: row; flex-wrap: wrap; }
+  .fx-play .fx-card { flex: 1 1 145px; }
+  .fx-tablecol .fx-tables { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+}
+
+/* ---------- 한 화면에 담기 위한 압축 ----------
+   PC 전제 화면이므로, 스크롤 없이 분석·차트·테이블이 함께 보이는 것을 우선한다. */
+.view-brief .brief { padding-top: 22px; }
+.view-brief .brief-head { padding-bottom: 10px; margin-bottom: 14px; }
+.view-brief .brief-lead { margin-bottom: 16px; }
+.brief-lead-title { font-size: 1.08rem; margin-bottom: 4px; }
+.brief-lead-line { font-size: .9rem; line-height: 1.6; margin-bottom: 9px; }
+.brief-notice, .brief-prompt { font-size: .74rem; padding: 6px 10px; margin-bottom: 8px; }
+
+.fx-grid { padding-top: 14px; gap: 20px; }
+.fx-sec { margin-bottom: 9px; font-size: .66rem; }
+.fx-sec-play { margin-top: 14px; padding-top: 12px; }
+
+.fx-side .fx-side .fx-side .fx-side .fx-side 
+.fx-play .fx-sub { margin: 10px 0 5px; font-size: .62rem; }
+.fx-play .fx-meter-head { font-size: .78rem; }
+.fx-play .fx-rate-note { font-size: .62rem; }
+.fx-play .fx-card { padding: 7px 9px 8px; gap: 2px; }
+.fx-play .fx-card-name { font-size: .84rem; }
+.fx-play .fx-card-cost { width: 24px; height: 24px; font-size: .74rem; }
+.fx-play .fx-card-ex {
+  font-size: .64rem; line-height: 1.35;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.fx-play .fx-card-wait { font-size: .62rem; }
+.fx-play .fx-deck-item { padding: 3px 8px; font-size: .72rem; }
+
+.fx-chartcol .fx-node { padding: 5px 9px; font-size: .7rem; }
+.fx-chartcol .fx-node-n { font-size: .58rem; }
+.fx-chartcol .fx-arm { padding: 3px 4px; }
+.fx-chartcol .fx-arm-l { font-size: .6rem; }
+.fx-chartcol .fx-down { font-size: .66rem; }
+
+.fx-tablecol .fx-table-h { font-size: .68rem; padding: 5px 9px; }
+.fx-tablecol .fx-table table { font-size: .7rem; }
+.fx-tablecol .fx-table th { padding: 4px 8px; }
+.fx-tablecol .fx-table th b { font-size: .66rem; }
+.fx-tablecol .fx-table th span { font-size: .56rem; }
+.fx-tablecol .fx-table td { padding: 4px 8px; }
+
+.fx-caption { margin-top: 14px; min-height: 2.2em; font-size: .86rem; }
+.fx-foot { margin-top: 12px; padding-top: 10px; }
+
+/* 서문이 세로로 348px을 먹어 본문이 접혔다 — 제목과 도입을 좌우로 나란히 둔다 */
+.view-brief .brief {
+  display: grid;
+  grid-template-columns: minmax(280px, 400px) 1fr;
+  gap: 0 28px;
+  align-items: start;
+}
+.view-brief .brief-head { grid-column: 1; border-bottom: 0; margin-bottom: 16px; }
+.view-brief .brief-lead { grid-column: 2; max-width: none; margin-bottom: 16px; }
+.view-brief .brief-play,
+.view-brief .brief-recap,
+.view-brief .brief-foot { grid-column: 1 / -1; }
+@media (max-width: 1180px) {
+  .view-brief .brief { display: block; }
+}
+
+/* 손패는 좁은 칸에서도 2단으로 — 세로로 쌓으면 왼쪽 칸만 혼자 길어진다 */
+.fx-play .fx-hand { flex-direction: row; flex-wrap: wrap; gap: 6px; }
+.fx-play .fx-card { flex: 1 1 128px; min-width: 118px; }
+.fx-play .fx-card-ex { -webkit-line-clamp: 3; }
+/* 요소 설명은 두 줄까지만 */
+.fx-side .fx-play .fx-deck { flex-direction: row; flex-wrap: wrap; gap: 5px; }
+.fx-play .fx-deck-item { flex: 1 1 128px; }
+
+/* ---------- 분석 층 제거 후 3열 재배치 ----------
+   조작(좁게) | 플로우 차트 | 데이터(가장 넓게 — 마스터 + 상태) */
+.fx-grid {
+  grid-template-columns: minmax(230px, 270px) minmax(340px, 420px) minmax(420px, 1fr);
+}
+.fx-datacol { min-width: 0; border-left: 1px solid var(--fx-line); padding-left: 20px; }
+.fx-sec-play { margin-top: 0; padding-top: 0; border-top: 0; }
+.fx-sec-tables { margin-top: 20px; padding-top: 16px; border-top: 1px dashed var(--fx-line); }
+
+/* 마스터 데이터 — 하늘. 읽기만 하는 정적 데이터 */
+.fx-master { display: flex; flex-direction: column; gap: 9px; }
+.fx-master-note { margin: 9px 0 0; font-size: .62rem; line-height: 1.5; color: var(--fx-mute); }
+.fx-master-table { opacity: .55; transition: opacity .3s ease, border-color .3s ease, box-shadow .3s ease; }
+.fx-master-table.past { opacity: .8; }
+.fx-master-table.on { opacity: 1; border-color: #4a9fd8; box-shadow: 0 0 0 3px rgba(74, 159, 216, .18); }
+.fx-master-table .fx-table-h {
+  display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap;
+  background: var(--fx-data);
+}
+.fx-master-table .fx-table-h b { font-family: ui-monospace, Consolas, monospace; font-size: .68rem; }
+.fx-master-table .fx-table-h span { font-size: .6rem; font-weight: 400; color: #2c556f; }
+.fx-master-table tbody:empty ~ * { display: none; }
+
+/* FK로 이어지는 열은 눈에 띄게 */
+.fx-master-table td[data-c$="_id"],
+.fx-master-table td[data-c="skill_id"] { font-family: ui-monospace, Consolas, monospace; }
+
+/* 조립 결과 — 치환자에 값이 꽂힌 최종 문장 */
+.fx-assembled {
+  margin-top: 4px; padding: 9px 12px;
+  border: 1px solid var(--fx-line); border-radius: 7px;
+  background: var(--fx-panel);
+  opacity: .5; transition: opacity .35s ease, border-color .35s ease, background .35s ease;
+}
+.fx-assembled-on .fx-assembled {
+  opacity: 1; border-color: var(--fx-accent); background: rgba(178, 58, 47, .05);
+}
+.fx-assembled-l {
+  display: block; font-size: .62rem; font-weight: 700; letter-spacing: .08em;
+  color: var(--fx-mute); text-transform: uppercase; margin-bottom: 4px;
+}
+.fx-assembled-t { margin: 0; font-size: .84rem; line-height: 1.6; }
+.fx-slot {
+  font-weight: 800; color: var(--fx-accent);
+  background: rgba(178, 58, 47, .1); border-radius: 3px; padding: 0 3px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* 상태 데이터는 한 줄에 하나 */
+.fx-datacol .fx-tables { display: flex; flex-direction: column; gap: 10px; margin-top: 0; }
+
+@media (max-width: 1180px) {
+  .fx-datacol { border-left: 0; padding-left: 0; border-top: 1px solid var(--fx-line); padding-top: 16px; }
+}
+
+/* 데이터 칸 안에서 마스터(읽기)와 상태(쓰기)를 좌우로 — 세로로 쌓으면 혼자 두 배로 길어진다 */
+.fx-grid { grid-template-columns: minmax(220px, 250px) minmax(320px, 380px) minmax(460px, 1fr); }
+.fx-datacol { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; align-items: start; }
+.fx-dgroup { min-width: 0; }
+.fx-sec-tables { margin-top: 0; padding-top: 0; border-top: 0; }
+@media (max-width: 1320px) {
+  .fx-datacol { grid-template-columns: 1fr; }
+  .fx-sec-tables { margin-top: 18px; padding-top: 14px; border-top: 1px dashed var(--fx-line); }
+}
+
+/* ---------- 손패·덱의 움직임 ---------- */
+/* 덱에서 막 올라온 카드 */
+.fx-card.fresh { border-color: var(--fx-accent); box-shadow: 0 0 0 3px rgba(178, 58, 47, .12); }
+/* 방금 덱 최후미로 내려간 카드 */
+.fx-deck-item {
+  transition: border-color .3s ease, background .3s ease, color .3s ease;
+}
+.fx-deck-item.landed {
+  border-style: solid; border-color: var(--fx-accent);
+  background: rgba(178, 58, 47, .07); color: var(--fx-ink);
+}
+/* 날아가는 복제본 — 원본은 이미 손패에서 빠졌다 */
+.fx-ghost { box-shadow: 0 10px 24px rgba(0, 0, 0, .22); }

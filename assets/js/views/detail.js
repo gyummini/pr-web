@@ -3,6 +3,7 @@ import { state } from '../state.js';
 import { openDoc } from '../ui.js';
 import { fmtCase } from '../collect.js';
 import { navigate } from '../router.js';
+import { hasBrief } from './brief.js';
 
 // 미수집 증거 상세 (명세서 2-4): 처음 등장하는 챕터 + 포폴 요약.
 // 방문자가 요약만 볼지, 문서 세부를 열지 선택하게 한다.
@@ -31,6 +32,12 @@ export function renderDetail(view, eid) {
         ${
           firstChapter
             ? `<a class="btn accent" href="/case/${firstChapter.slice(4)}">진술에서 확인하기 (${fmtCase(firstChapter)}) →</a>`
+            : ''
+        }
+        ${
+          // 이미 수집한 증거를 주소로 직접 열었을 때 — 조사로 바로 갈 수 있어야 한다
+          collected && hasBrief(ev)
+            ? `<a class="btn accent" href="/evidence/${ev.id}/brief">더 자세히 살펴보기 →</a>`
             : ''
         }
         <button type="button" class="btn ghost open-doc">문서 바로 열기 ↗</button>

@@ -4,6 +4,7 @@ import { renderBasic } from './views/basic.js';
 import { renderDossier } from './views/dossier.js';
 import { renderEvidence } from './views/evidence.js';
 import { renderDetail } from './views/detail.js';
+import { renderBrief } from './views/brief.js';
 import { renderEnding } from './views/ending.js';
 import { renderMaking } from './views/making.js';
 import { renderNotebook } from './views/notebook.js';
@@ -131,7 +132,10 @@ function dispatch() {
       current = renderDossier(view, seg[1] || '01');
       break;
     case 'evidence':
-      current = seg[1] ? renderDetail(view, seg[1]) : renderEvidence(view);
+      // /evidence · /evidence/:id (요약) · /evidence/:id/brief (직접 해보기)
+      if (!seg[1]) current = renderEvidence(view);
+      else if (seg[2] === 'brief') current = renderBrief(view, seg[1]);
+      else current = renderDetail(view, seg[1]);
       break;
     case 'ending':
       current = renderEnding(view);

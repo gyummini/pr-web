@@ -2,6 +2,7 @@ import { DB } from '../data.js';
 import { BASE_EVIDENCE_IDS, state, baseUnlocked, collectedBaseCount } from '../state.js';
 import { addPending, landOne, flyFromRect, openDoc } from '../ui.js';
 import { checkChapterToasts, fmtCase } from '../collect.js';
+import { hasBrief } from './brief.js';
 import { navigate } from '../router.js';
 
 // 수집된 증거 — 증거 보관함 (명세서 2-4)
@@ -68,7 +69,12 @@ function cardHtml(ev) {
         }
         <div class="ev-foot">
           <span class="ev-code">${code}</span>
-          <span class="ev-open">${got ? '문서 열기 ↗' : '요약 확인 →'}</span>
+          <span class="ev-open">${hasBrief(ev) ? '살펴보기 →' : got ? '문서 열기 ↗' : '요약 확인 →'}</span>
+          ${
+            // 절대원칙 1(2클릭 내 도달) 유지 — 본문이 브리프로 가더라도
+            // 원본 문서로 바로 가는 길은 카드 안에 남겨둔다.
+            got ? `<button type="button" class="ev-direct" title="원본 문서 새 탭으로 열기">원본 ↗</button>` : ''
+          }
         </div>
       </div>
     </div>`;
@@ -117,11 +123,24 @@ function wireCard(el) {
     });
   });
 
+  // 수집된 증거의 원본 문서로 가는 지름길 (카드 본체 클릭과 분리)
+  const direct = el.querySelector('.ev-direct');
+  if (direct) {
+    direct.addEventListener('click', (e) => {
+      e.stopPropagation();
+      openDoc(ev.url);
+    });
+  }
+
   const act = () => {
-    if (el.classList.contains('collected')) {
-      openDoc(ev.url); // 수집됨: 외부 링크 새 탭
+    // 브리프가 있으면 수집 여부와 무관하게 그리로 간다 — 진술에서 못 만난 문서도
+    // 여기서 바로 조사할 수 있어야 한다 (절대원칙 2: 게임적 경험은 선택)
+    if (hasBrief(ev)) {
+      navigate(`/evidence/${ev.id}/brief`);
+    } else if (!el.classList.contains('collected')) {
+      navigate(`/evidence/${ev.id}`); // 브리프가 아직 없는 미수집 증거: 등장 챕터 안내 + 요약
     } else {
-      navigate(`/evidence/${ev.id}`); // 미수집: 등장 챕터+요약 화면
+      openDoc(ev.url);
     }
   };
   el.addEventListener('click', act);
