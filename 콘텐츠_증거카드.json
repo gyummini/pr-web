@@ -196,6 +196,11 @@
           }
         ],
         "match": {
+          "side": {
+            "label": "Quiz",
+            "title": "한번 맞혀보세요!",
+            "note": "셋 다 맞히면 다음으로 넘어갑니다."
+          },
           "card_order": [
             "momoha",
             "karane",

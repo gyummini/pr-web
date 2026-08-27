@@ -2107,7 +2107,20 @@ body.plain-mode #view { min-height: 100vh; }
 }
 
 /* 02 · 첫인상 — 한 줄짜리 카드를 초상에 끌어다 놓는다 */
-.cc-match { display: grid; grid-template-columns: repeat(3, 1fr); gap: 40px; margin-top: 34px; max-width: 1000px; }
+.cc-quiz { display: grid; grid-template-columns: 260px 1fr; gap: 56px; align-items: start; margin-top: 34px; }
+.cc-quiz-side { position: sticky; top: calc(var(--header-h) + 24px); }
+.cc-quiz-lab {
+  font-family: var(--cc-mono); font-size: 10.5px; letter-spacing: .2em;
+  text-transform: uppercase; color: var(--cc-mute);
+}
+.cc-quiz-t { font-size: 27px; font-weight: 800; letter-spacing: -.02em; line-height: 1.34; margin-top: 10px; }
+.cc-quiz-note { font-size: 15px; color: var(--cc-soft); margin-top: 10px; }
+.cc-quiz-count {
+  font-family: var(--cc-mono); font-size: 24px; font-weight: 700; letter-spacing: .06em;
+  margin-top: 22px; padding-top: 14px; border-top: 1px solid var(--cc-line);
+  font-variant-numeric: tabular-nums;
+}
+.cc-match { display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px; }
 .cc-slot {
   display: flex; flex-direction: column; align-items: center;
   padding: 8px; border: 1.5px solid transparent; transition: border-color .18s, background .18s;
@@ -2316,6 +2329,9 @@ body.plain-mode #view { min-height: 100vh; }
 @media (max-width: 1240px) {
   .cc-title, .cc-match-1, .cc-worry-1 { font-size: 27px; }
   .cc-grid { grid-template-columns: repeat(8, 1fr); gap: 8px; }
+  .cc-quiz { grid-template-columns: 1fr; gap: 24px; }
+  .cc-quiz-side { position: static; }
+  .cc-quiz-t { font-size: 22px; }
   .cc-match { gap: 22px; }
   .cc-plate { font-size: 16px; padding: 11px 14px; }
   .cc-rail { grid-template-columns: 1fr; gap: 10px; padding: 10px 0; }

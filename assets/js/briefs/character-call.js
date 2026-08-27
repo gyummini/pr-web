@@ -170,6 +170,19 @@ export function playCharacterCall(host, cfg, onComplete) {
 
   function buildMatch() {
     const m = cfg.match || {};
+    // 초상 셋은 지면의 왼쪽 절반만 쓴다 — 오른쪽이 비면 화면이 끝난 것처럼 보인다.
+    // 왼쪽에 '무엇을 하는 칸인지'를 세워 두고, 퀴즈는 오른쪽에 몰아 붙인다.
+    const quiz = el('div', 'cc-quiz');
+    const side = el('div', 'cc-quiz-side');
+    const s = m.side || {};
+    side.appendChild(txt('div', s.label || '', 'cc-quiz-lab'));
+    side.appendChild(lines('p', 'cc-quiz-t', s.title));
+    side.appendChild(lines('p', 'cc-quiz-note', s.note));
+    side.appendChild(txt('div', `0 / ${order.length}`, 'cc-quiz-count'));
+    const main = el('div', 'cc-quiz-main');
+    quiz.append(side, main);
+    sect(1).appendChild(quiz);
+
     const slots = el('div', 'cc-match');
     order.forEach((id) => {
       const s = el('div', 'cc-slot');
@@ -182,7 +195,7 @@ export function playCharacterCall(host, cfg, onComplete) {
       s.appendChild(z);
       slots.appendChild(s);
     });
-    sect(1).appendChild(slots);
+    main.appendChild(slots);
 
     const cards = el('div', 'cc-cards');
     (m.card_order || order).forEach((id) => {
@@ -193,13 +206,13 @@ export function playCharacterCall(host, cfg, onComplete) {
       cards.appendChild(p);
     });
     cards.addEventListener('pointerdown', onDown);
-    sect(1).appendChild(cards);
+    main.appendChild(cards);
 
     const done = el('div', 'cc-match-done');
     done.appendChild(lines('p', 'cc-match-1', m.done_title));
     done.appendChild(lines('p', 'cc-match-2', m.done_line));
     done.appendChild(next(t.to_stream, 2));
-    sect(1).appendChild(done);
+    main.appendChild(done);
   }
 
   function onDown(e) {
@@ -258,6 +271,8 @@ export function playCharacterCall(host, cfg, onComplete) {
     zone.appendChild(p);
     src.classList.add('cc-used');
     matched += 1;
+    const count = root.querySelector('.cc-quiz-count');
+    if (count) count.textContent = `${matched} / ${order.length}`;
     if (matched === order.length) {
       after(400, () => root.querySelector('.cc-match-done').classList.add('cc-on'));
     }
