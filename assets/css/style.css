@@ -1602,6 +1602,7 @@ body.plain-mode #view { min-height: 100vh; }
 .fx-chart { display: flex; flex-direction: column; align-items: center; gap: 2px; }
 .fx-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; justify-content: center; }
 .fx-node {
+  position: relative;
   display: flex; flex-direction: column; gap: 1px; text-align: center;
   border: 2px solid var(--fx-line); border-radius: 6px;
   padding: 7px 12px; background: var(--fx-bg);
@@ -1620,12 +1621,21 @@ body.plain-mode #view { min-height: 100vh; }
 /* 아직 지나지 않은 노드는 흐리게, 지나온 노드는 또렷하게 — 반대로 두면
    '안 간 길'이 더 선명해져 경로가 거꾸로 읽힌다 */
 .fx-node { opacity: .42; }
-.fx-node.past { opacity: 1; }
-.fx-node.on { opacity: 1; }
-.fx-node.on {
-  box-shadow: 0 0 0 4px rgba(178, 58, 47, .28), 0 6px 16px rgba(0,0,0,.14);
-  transform: translateY(-1px);
+/* 지나온 노드는 '끝난 일'로 물러난다. 현재와 같은 밝기로 두면
+   진행할수록 밝은 노드가 늘어나 정작 '지금 여기'가 묻힌다. */
+.fx-node.past { opacity: .72; }
+.fx-node.past::after {
+  content: '✓'; position: absolute; top: -5px; right: -5px;
+  width: 13px; height: 13px; border-radius: 50%;
+  background: var(--fx-accent); color: #fff;
+  font-size: .5rem; line-height: 13px; text-align: center; font-weight: 700;
 }
+.fx-node.on {
+  opacity: 1;
+  box-shadow: 0 0 0 4px rgba(178, 58, 47, .28), 0 6px 16px rgba(0,0,0,.14);
+  transform: translateY(-1px) scale(1.06);
+}
+.fx-node.on::after { display: none; }
 .fx-edge {
   font-size: .64rem; color: var(--fx-mute); white-space: nowrap;
   position: relative; padding: 0 4px;
@@ -1681,6 +1691,33 @@ body.plain-mode #view { min-height: 100vh; }
 .fx-table tr:last-child td { border-bottom: 0; }
 .fx-table tr.on td { background: rgba(178, 58, 47, .07); }
 .fx-table td.on { background: var(--fx-accent); color: #fff; font-weight: 800; }
+/* 방금 쓰인 칸 — 이전 값을 곁에 잠깐 남긴다.
+   상태 데이터의 분홍을 그대로 쓴다(범례 색을 모션으로 승격). */
+.fx-table td.chg { background: rgba(239, 90, 168, .16); }
+.fx-table td.chg.on { background: var(--fx-accent); }
+.fx-table td .fx-was {
+  color: var(--fx-mute); font-weight: 400; margin-right: 5px;
+  text-decoration-color: rgba(0, 0, 0, .35);
+}
+.fx-table td .fx-arw { color: var(--fx-mute); font-style: normal; margin-right: 4px; }
+.fx-table td .fx-now { font-weight: 800; color: #c2337d; }
+.fx-table td.on .fx-arw { color: rgba(255, 255, 255, .7); }
+.fx-table td.on .fx-was { color: rgba(255, 255, 255, .7); }
+.fx-table td.on .fx-now { color: #fff; }
+
+/* ---------- 추적 중 주의 집중 ----------
+   한 번의 클릭과 상관없는 영역은 물러난다. 차트 노드(.42)와 마스터 표(.55)는
+   이미 그렇게 동작하고 있었고, 나머지 두 영역만 같은 규칙에 합류시킨다. */
+.fx-side, .fx-tables .fx-table { transition: opacity .3s ease; }
+.fx-tracing .fx-side { opacity: .5; }
+.fx-tracing .fx-tables .fx-table:not(.on) { opacity: .45; }
+
+/* 추적이 끝나면 조작권이 돌아온다 — 왼쪽이 다시 살아나는 순간을 짚어준다 */
+@keyframes fx-return {
+  0%   { box-shadow: 0 0 0 0 rgba(178, 58, 47, .30); }
+  100% { box-shadow: 0 0 0 14px rgba(178, 58, 47, 0); }
+}
+.fx-returned .fx-play { animation: fx-return 1.2s ease-out 2; border-radius: 10px; }
 
 .fx-foot {
   display: flex; align-items: center; justify-content: space-between; gap: 14px;
@@ -1779,7 +1816,7 @@ body.plain-mode #view { min-height: 100vh; }
 @media (max-width: 1180px) {
   .fx-grid { grid-template-columns: 1fr; gap: 18px; }
   .fx-chartcol, .fx-tablecol { border-left: 0; padding-left: 0; border-top: 1px solid var(--fx-line); padding-top: 16px; }
-  .fx-side   .fx-side   .fx-play .fx-hand { flex-direction: row; flex-wrap: wrap; }
+  .fx-side .fx-play .fx-hand { flex-direction: row; flex-wrap: wrap; }
   .fx-play .fx-card { flex: 1 1 145px; }
   .fx-tablecol .fx-tables { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
 }
@@ -1791,7 +1828,12 @@ body.plain-mode #view { min-height: 100vh; }
 .view-brief .brief-lead { margin-bottom: 16px; }
 .brief-lead-title { font-size: 1.08rem; margin-bottom: 4px; }
 .brief-lead-line { font-size: .9rem; line-height: 1.6; margin-bottom: 9px; }
-.brief-notice, .brief-prompt { font-size: .74rem; padding: 6px 10px; margin-bottom: 8px; }
+.brief-notice, .brief-prompt { font-size: .74rem; padding: 6px 10px; margin-bottom: 0; }
+/* PC 안내와 조작 안내가 각자 한 행을 먹으면 판이 그만큼 아래로 밀린다 — 한 줄에 나란히 둔다 */
+.view-brief .brief-lead { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.view-brief .brief-lead-title,
+.view-brief .brief-lead-line { flex: 1 1 100%; margin-bottom: 0; }
+.view-brief .brief-lead-line { margin-bottom: 4px; }
 
 .fx-grid { padding-top: 14px; gap: 20px; }
 .fx-sec { margin-bottom: 9px; font-size: .66rem; }

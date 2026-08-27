@@ -4,3 +4,38 @@
 # OS
 Thumbs.db
 .DS_Store
+
+# 작업용 원본 — 배포·저장소에 들어가지 않는다.
+# 사이트가 쓰는 건 여기서 가공한 assets/img/e1_*.webp 뿐이다.
+# (.gitignore는 줄 끝 주석을 패턴의 일부로 읽는다. 주석은 반드시 별도 줄에)
+
+# 100그녀 캐릭터 아이콘 원본 89장 → e1_heroines.webp 스프라이트
+assets/aijou_rentaro_characters/
+
+# 애니 키비주얼 원본 → e1_keyvisual.webp
+assets/img/222.webp
+
+# 군상 좌표 표시용 작업 파일
+assets/img/표시.png
+
+# 증거 원본 PDF·xlsx·docx
+원본 문서/
+
+# 장면 컷 원본 PNG → e1_*_ep_*.webp / e1_*_gain_*.webp 로 가공해서 씀
+assets/img/아코대신 화.png
+assets/img/아코와의 관계성.png
+assets/img/아코와 친해짐.png
+assets/img/모모하 개그장면.png
+assets/img/쉽게 도박에 빠지는 개그장면.png
+assets/img/욕망에 솔직하지만 운이 없는 애처로움.png
+assets/img/나르시시트적인 개그장면.png
+assets/img/메메와의 관계성.png
+assets/img/츤거리는 상황.png
+assets/img/아름다움을 위한 보이지 않는 노력.png
+assets/img/의외로 믿음직한 윤리교사로써의 면모.png
+assets/img/성격이 비슷한 쿠루미에게 믿음직한 선배 캐릭터.png
+assets/img/아름다움 찾기 대결 개그소재로 호출.png
+
+# 위 컷과 같은 그림을 이름만 바꿔 둔 사본 — 사이트가 쓰는 건 e1_*.webp 쪽이다
+assets/img/모모하 측은함.webp
+assets/img/쿠루미에게 믿음직한 선배.webp

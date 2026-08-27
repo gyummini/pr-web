@@ -16,6 +16,11 @@
 
 const TICK_MS = 100;
 
+// 변화 표시를 하지 않는 칸.
+// 큐의 순번은 카드 한 장이 움직이면 모든 행이 한꺼번에 밀려서 여섯 칸이 동시에 깜빡인다.
+// 같은 사실을 왼쪽 덱이 FLIP으로 이미 보여주므로 여기서 또 말할 필요가 없다.
+const NO_DIFF = new Set(['queue|deck_order']);
+
 export function playFlow(host, cfg, onComplete) {
   const play = cfg.play || {};
   const byId = new Map((play.students || []).map((s) => [s.id, s]));
@@ -40,6 +45,8 @@ export function playFlow(host, cfg, onComplete) {
   let last = 0;
   let timer = null;
   let stepTimers = [];
+  // 표를 다시 그리기 전의 값 — 어떤 칸이 '방금' 바뀌었는지는 이전 값을 알아야 말할 수 있다
+  let prevCells = new Map();
   let revealed = false; // 결론을 이미 열었는가 (조작은 계속 가능하다)
 
   const root = document.createElement('div');
@@ -329,6 +336,8 @@ export function playFlow(host, cfg, onComplete) {
     running = false;
     last = Date.now();
     caption.textContent = '';
+    root.classList.remove('fx-tracing', 'fx-returned');
+    prevCells.clear();
     fillMaster(null);
     clearLit();
     drawHand();
@@ -380,7 +389,11 @@ export function playFlow(host, cfg, onComplete) {
     const more = used >= total && play.more_note ? ` · ${play.more_note}` : '';
     root.querySelector('.fx-count').textContent = `${used} / ${total}${more}`;
     const envCell = root.querySelector('.fx-table[data-t="env"] [data-c="current_cost"]');
-    if (envCell && !running) envCell.textContent = cost.toFixed(2);
+    if (envCell && !running) {
+      envCell.textContent = cost.toFixed(2);
+      envCell.dataset.v = cost.toFixed(2);
+      envCell.classList.remove('chg');
+    }
 
     handWrap.querySelectorAll('.fx-card').forEach((el) => {
       const need = Number(el.dataset.cost);
@@ -460,18 +473,58 @@ export function playFlow(host, cfg, onComplete) {
     const t = root.querySelector(`.fx-table[data-t="${tid}"] tbody`);
     if (!t) return;
     const spec = (cfg.tables || []).find((x) => x.id === tid) || { cols: [] };
+    // 행은 순서가 바뀌므로 sid로 짚는다. 인덱스로 잡으면 자리만 밀려도 '바뀌었다'가 된다.
+    rows.forEach((cells, ri) => {
+      const rk = (sids && sids[ri]) || `r${ri}`;
+      cells.forEach((v, ci) => {
+        const key = `${tid}|${rk}|${spec.cols[ci]}`;
+        const td = t.querySelector(
+          sids ? `tr[data-sid="${sids[ri]}"] td[data-c="${spec.cols[ci]}"]` : `tr:nth-child(${ri + 1}) td[data-c="${spec.cols[ci]}"]`
+        );
+        if (td && td.dataset.v != null) prevCells.set(key, td.dataset.v);
+      });
+    });
     t.textContent = '';
     rows.forEach((cells, ri) => {
       const tr = document.createElement('tr');
+      const rk = (sids && sids[ri]) || `r${ri}`;
       if (sids) tr.dataset.sid = sids[ri];
       cells.forEach((v, ci) => {
         const td = document.createElement('td');
         td.dataset.c = spec.cols[ci];
-        td.textContent = v;
+        td.dataset.v = v;
+        const was = prevCells.get(`${tid}|${rk}|${spec.cols[ci]}`);
+        const diffable = !NO_DIFF.has(`${tid}|${spec.cols[ci]}`);
+        if (was !== undefined && was !== v && diffable) markChanged(td, was, v);
+        else td.textContent = v;
         tr.appendChild(td);
       });
       t.appendChild(tr);
     });
+  }
+
+  // 바뀐 칸은 이전 값을 잠깐 곁에 남긴다.
+  // 새 숫자만 보여주면 원래 그 값이었는지 방금 바뀐 값인지 구분이 안 된다.
+  function markChanged(td, was, now) {
+    td.classList.add('chg');
+    const s = document.createElement('s');
+    s.className = 'fx-was';
+    s.textContent = was;
+    const arw = document.createElement('i');
+    arw.className = 'fx-arw';
+    arw.textContent = '→';
+    const b = document.createElement('b');
+    b.className = 'fx-now';
+    b.textContent = now;
+    td.append(s, arw, b);
+    // 다음 걸음이 표를 다시 그리면 이 타이머는 끊긴 노드를 만나 아무 일도 하지 않는다
+    stepTimers.push(
+      setTimeout(() => {
+        if (!td.isConnected) return;
+        td.textContent = now;
+        td.classList.remove('chg');
+      }, 1500)
+    );
   }
 
   /* ---------- 한 번의 선택이 차트를 지나간다 ---------- */
@@ -481,6 +534,8 @@ export function playFlow(host, cfg, onComplete) {
     if (running) return;
     const afford = cost >= costOf(s);
     running = true;
+    root.classList.add('fx-tracing');   // 이번 클릭과 상관없는 영역은 뒤로 물러난다
+    root.classList.remove('fx-returned');
     tick();
     clearLit();
     fillMaster(s.id);
@@ -506,6 +561,10 @@ export function playFlow(host, cfg, onComplete) {
       }
       clearInterval(walker);
       running = false;
+      // 모든 강조가 풀리고 손패가 다시 살아나는 순간이 이 시스템의 목적지다
+      root.classList.remove('fx-tracing');
+      root.classList.add('fx-returned');
+      stepTimers.push(setTimeout(() => root.classList.remove('fx-returned'), 1400));
       if (afford) {
         used += 1;
         if (!revealed && used >= total) {
