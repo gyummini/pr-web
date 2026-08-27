@@ -111,12 +111,9 @@
           }
         ],
         "key_visual": {
-          "src": "/assets/img/e1_keyvisual.webp",
-          "label": "Subject",
-          "name": [
-            "너를 너무너무너무너무",
-            "좋아하는 100명의 그녀"
-          ]
+          "src": "/assets/img/e1_crowd.webp",
+          "label": "Subject · 단행본 14–16권 표지",
+          "name": "너를 너무너무너무너무 좋아하는 100명의 그녀"
         },
         "grid": {
           "cells": 40,

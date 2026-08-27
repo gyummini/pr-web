@@ -26,6 +26,7 @@ export function renderEvidence(view) {
       ${
         DB.resume && DB.resume.fullPdf
           ? `<div class="ev-doc-actions">
+               <a class="btn ghost" href="/docs">문서만 모아보기 →</a>
                <a class="btn ghost" href="${DB.resume.fullPdf}" download>이력서·자기소개서 PDF ⬇</a>
              </div>`
           : ''

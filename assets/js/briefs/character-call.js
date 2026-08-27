@@ -49,8 +49,6 @@ export function playCharacterCall(host, cfg, onComplete) {
   document.body.appendChild(veil);
 
   build();
-  // 결론과 원본 문서는 처음부터 열어 둔다 — 인터랙션은 이해를 돕는 것이지 관문이 아니다
-  onComplete({ scroll: false });
 
   window.addEventListener('scroll', sweep, { passive: true });
   window.addEventListener('resize', sweep);
@@ -98,10 +96,6 @@ export function playCharacterCall(host, cfg, onComplete) {
     const body = el('div', 'cc-body');
     s.appendChild(body);
 
-    const foot = el('div', 'cc-foot');
-    foot.appendChild(txt('span', `${ch.no} · ${ch.name}`));
-    foot.appendChild(txt('span', ch.mark || ''));
-    s.appendChild(foot);
     return s;
   }
 
@@ -632,6 +626,9 @@ export function playCharacterCall(host, cfg, onComplete) {
       const s = chapterEl(chapterIndex);
       if (!s) return;
       s.hidden = false;
+      // 마지막 장이 열리는 순간이 이 브리프를 다 본 시점이다 — 그때 결론을 연다.
+      // 스크롤은 넘기지 않는다. 아래 scrollToY가 이미 그 장으로 데려간다.
+      if (chapterIndex === (cfg.chapters || []).length - 1) onComplete({ scroll: false });
       scrollToY(s.getBoundingClientRect().top + window.scrollY - 60, 700);
     });
     return b;

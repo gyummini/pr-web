@@ -36,6 +36,7 @@ export function renderBrief(view, eid) {
         <div class="ev-kicker"></div>
         <h2 class="ev-title"></h2>
         <p class="ev-sub"></p>
+        <div class="brief-head-doc"></div>
       </div>
       <div class="brief-lead">
         <h3 class="brief-lead-title"></h3>
@@ -58,6 +59,10 @@ export function renderBrief(view, eid) {
   const notice = view.querySelector('.brief-notice');
   if (lead.pc_notice) notice.textContent = lead.pc_notice;
   else notice.remove();
+
+  // 원본은 머리말에 상시 둔다. 결론까지 내려가야만 닿으면, 브리프를 건너뛰고
+  // 문서만 보려는 검토자에게 인터랙션이 통행료가 된다.
+  view.querySelector('.brief-head-doc').appendChild(btn('원본 문서 ↗', 'ghost', () => openDoc(ev.url)));
 
   const recapEl = view.querySelector('.brief-recap');
   const play = PLAYS[b.kind](view.querySelector('.brief-play'), b, showRecap);
