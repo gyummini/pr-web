@@ -2021,3 +2021,308 @@ body.plain-mode #view { min-height: 100vh; }
   color: var(--nb-navy);
 }
 .nb-evidence-link:hover { color: #1d3450; text-decoration: underline; }
+
+/* ---------- E1 · 캐릭터 호출 ----------
+   편집 지면의 규칙을 그대로 쓴다 — 원본 분석서(PDF)에서 잰 치수다.
+   대제목 34.5 / 강조 17.4 / 이름 16.5 / 러닝헤드 13.5 / 라벨 11.2.
+   캐릭터 색은 데이터가 --cc-ink / --cc-tint 로 심어 준다. 여기서 이름을 알 필요는 없다. */
+.view-brief .brief-play .cc {
+  --cc-fg: #0a0a0a;
+  --cc-soft: #4a4a4a;
+  --cc-mute: #888888;
+  --cc-line: #dfdfdf;
+  --cc-rule: #cfcfcf;
+  --cc-panel: #fafafa;
+  --cc-band: #f2f2f2;
+  --cc-ink: #0a0a0a;
+  --cc-tint: #f0f0f0;
+  --cc-mono: "Courier New", Courier, monospace;
+  color: var(--cc-fg);
+  background: #fff;
+  line-height: 1.62;
+  font-size: 15px;
+}
+.cc h3, .cc p { margin: 0; }
+.cc img { max-width: 100%; display: block; }
+.cc-mono {
+  font-family: var(--cc-mono); font-size: 11.2px; letter-spacing: .16em;
+  text-transform: uppercase; color: var(--cc-mute);
+}
+.cc-rule { height: 1px; background: var(--cc-rule); border: 0; margin: 0; }
+.cc-ch { margin-top: 56px; }
+.cc-ch:first-child { margin-top: 8px; }
+.cc-ch[hidden] { display: none; }
+.cc-head, .cc-foot {
+  display: flex; justify-content: space-between; align-items: baseline;
+  font-family: var(--cc-mono); font-size: 13.5px; letter-spacing: .14em; color: var(--cc-mute);
+}
+.cc-head { padding-bottom: 8px; }
+.cc-head b { font-weight: 400; color: var(--cc-soft); }
+.cc-foot { padding-top: 10px; margin-top: 30px; border-top: 1px solid var(--cc-rule); }
+.cc-title { font-size: 34.5px; font-weight: 800; letter-spacing: -.02em; line-height: 1.3; text-wrap: balance; }
+.cc-lede { font-size: 17.4px; color: var(--cc-soft); margin-top: 12px; }
+
+/* 도입 — 표지와 제목을 나란히. 가운데로 맞춰 띠처럼 읽히게 한다 */
+.cc-hero { display: grid; grid-template-columns: 1fr 200px; gap: 48px; align-items: center; margin-top: 26px; }
+.cc-hero-key { margin: 0; }
+.cc-hero-key img { width: 100%; height: auto; border: 1px solid var(--cc-line); }
+.cc-hero-key figcaption { margin-top: 9px; }
+.cc-hero-key figcaption i, .cc-cap i, .cc-vlab {
+  display: block; font-family: var(--cc-mono); font-size: 9.6px; letter-spacing: .16em;
+  color: var(--cc-mute); text-transform: uppercase; font-style: normal; margin-bottom: 2px;
+}
+.cc-hero-key figcaption b { font-size: 12.5px; font-weight: 700; line-height: 1.5; color: var(--cc-soft); }
+
+.cc-next {
+  margin-top: 28px; padding: 13px 28px; border: 1.5px solid var(--cc-fg); background: #fff;
+  font: inherit; font-size: 15px; font-weight: 700; color: inherit; cursor: pointer;
+  transition: background .2s, color .2s;
+}
+.cc-next:hover { background: var(--cc-fg); color: #fff; }
+.cc-next:focus-visible { outline: 2px solid var(--cc-ink); outline-offset: 3px; }
+.cc-next-wrap { text-align: center; margin-top: 38px; }
+
+/* 01 · 역설 — 37명을 한 화면에 */
+.cc-grid { display: grid; grid-template-columns: repeat(10, 1fr); gap: 10px; margin-top: 30px; }
+.cc-cell { aspect-ratio: 1; background: var(--cc-panel); border: 1px solid var(--cc-line); position: relative; overflow: hidden; }
+.cc-cell::after {
+  content: ""; position: absolute; left: 22%; right: 22%; top: 16%; height: 34%;
+  border-radius: 50% 50% 46% 46%; background: #e2e5e8;
+}
+.cc-cell::before {
+  content: ""; position: absolute; left: 12%; right: 12%; bottom: 0; height: 34%;
+  border-radius: 44% 44% 0 0; background: #e2e5e8;
+}
+.cc-cell.cc-face { border-color: #d6dade; }
+.cc-cell.cc-face::before, .cc-cell.cc-face::after { display: none; }
+.cc-grid-note { display: flex; justify-content: space-between; align-items: baseline; margin-top: 14px; gap: 20px; }
+.cc-grid-note .cc-next { margin-top: 0; }
+
+.cc-ph {
+  display: flex; align-items: center; justify-content: center; text-align: center;
+  background: var(--cc-panel); border: 1px dashed var(--cc-line);
+  font-family: var(--cc-mono); font-size: 10px; letter-spacing: .1em; color: var(--cc-mute);
+}
+
+/* 02 · 첫인상 — 한 줄짜리 카드를 초상에 끌어다 놓는다 */
+.cc-match { display: grid; grid-template-columns: repeat(3, 1fr); gap: 40px; margin-top: 34px; max-width: 1000px; }
+.cc-slot {
+  display: flex; flex-direction: column; align-items: center;
+  padding: 8px; border: 1.5px solid transparent; transition: border-color .18s, background .18s;
+}
+.cc-slot.cc-over { border-color: var(--cc-fg); background: var(--cc-panel); }
+.cc-slot-face { width: 100%; aspect-ratio: 1; object-fit: cover; border: 1px solid var(--cc-line); }
+.cc-slot.cc-over .cc-slot-face { outline: 2px solid var(--cc-fg); outline-offset: -2px; }
+.cc-zone {
+  margin-top: 14px; width: 100%; min-height: 62px; border: 1.5px dashed var(--cc-mute);
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--cc-mono); font-size: 10.5px; letter-spacing: .16em; color: var(--cc-mute);
+}
+.cc-zone.cc-over { border-color: var(--cc-fg); background: var(--cc-panel); color: var(--cc-fg); }
+.cc-zone.cc-done { border: 1.5px solid var(--cc-ink); background: #fff; padding: 0; }
+.cc-zone.cc-done .cc-plate { color: var(--cc-ink); transition: color .45s ease; }
+.cc-cards { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 40px; }
+.cc-plate {
+  padding: 14px 20px; border: 1.5px solid var(--cc-fg); background: #fff; color: var(--cc-fg);
+  font-size: 16.5px; font-weight: 800; letter-spacing: -.02em; text-align: center;
+}
+.cc-plate.cc-bare { border: 0; }
+.cc-cards .cc-plate { cursor: grab; touch-action: none; user-select: none; }
+.cc-cards .cc-plate.cc-used { visibility: hidden; }
+.cc-plate.cc-drag {
+  position: fixed; z-index: 300; pointer-events: none; cursor: grabbing;
+  box-shadow: 0 14px 34px rgba(10, 10, 10, .24);
+}
+@keyframes cc-nope { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
+.cc-zone.cc-nope { animation: cc-nope .3s; }
+.cc-match-done { margin-top: 34px; opacity: 0; transition: opacity .6s; }
+.cc-match-done.cc-on { opacity: 1; }
+.cc-match-1 { font-size: 34.5px; font-weight: 800; letter-spacing: -.02em; line-height: 1.34; }
+.cc-match-2 { font-size: 17.4px; color: var(--cc-soft); margin-top: 10px; }
+
+/* 03 · 호출 — 위에 고정된 레일, 아래로 흐르는 연재 */
+.cc-rail {
+  position: sticky; top: 0; z-index: 60; background: #fff; border-bottom: 1px solid var(--cc-fg);
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; padding: 14px 0; margin-top: 30px;
+}
+.cc-rl { display: flex; gap: 12px; align-items: flex-start; }
+.cc-rl-face { width: 52px; height: 52px; flex: none; object-fit: cover; border: 1px solid var(--cc-line); }
+.cc-rl-b { min-width: 0; }
+.cc-rl-plate {
+  padding: 8px 12px; border: 1.5px solid var(--cc-fg); background: #fff;
+  font-size: 16.5px; font-weight: 800; letter-spacing: -.02em; display: inline-block;
+}
+.cc-rl-facets { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 7px; min-height: 26px; }
+.cc-facet {
+  padding: 4px 9px; font-size: 12.5px; font-weight: 700;
+  background: var(--cc-tint); color: var(--cc-ink);
+  opacity: 0; transform: translateY(-5px); transition: opacity .45s, transform .45s;
+}
+.cc-facet.cc-on { opacity: 1; transform: none; }
+
+/* 마지막 회차의 슬롯도 트리거 라인까지 올라올 수 있게 아래에 여백을 준다 */
+.cc-stream { margin-top: 8px; padding-bottom: 34vh; }
+.cc-ep { padding: 34px 0; border-bottom: 1px solid var(--cc-line); }
+.cc-ep-top { display: flex; align-items: baseline; gap: 18px; flex-wrap: wrap; }
+.cc-ep-no { font-family: var(--cc-mono); font-size: 13.5px; letter-spacing: .14em; color: var(--cc-mute); }
+.cc-ep-need { font-size: 24px; font-weight: 800; letter-spacing: -.01em; }
+.cc-ep-need::before { content: "# "; color: var(--cc-mute); }
+.cc-ep-src {
+  font-family: var(--cc-mono); font-size: 9.5px; letter-spacing: .1em;
+  color: var(--cc-mute); border: 1px solid var(--cc-line); padding: 2px 6px;
+}
+/* 1회차에도 칸은 둘. 오른쪽 폭만 0으로 접어 둔다 —
+   숨기면 1열 격자의 둘째 줄로 밀려 큰 공백이 생긴다. */
+.cc-cuts {
+  display: grid; grid-template-columns: 1fr 0fr; gap: 0; margin-top: 16px; align-items: stretch;
+  transition: grid-template-columns .55s cubic-bezier(.3, .7, .3, 1), gap .55s ease;
+}
+.cc-ep.cc-revealed .cc-cuts { grid-template-columns: 1fr 1fr; gap: 16px; }
+/* 두 칸의 높이를 맞추고 이미지 칸만 늘어나게 한다 — 그래야 두 캡션이 같은 줄에 선다 */
+.cc-fig {
+  margin: 0; border: 1px solid var(--cc-line); background: #fff; min-width: 0;
+  display: flex; flex-direction: column;
+}
+.cc-fig.cc-gain { overflow: hidden; opacity: 0; transform: translateX(-14px); transition: opacity .5s ease .1s, transform .5s ease .1s; }
+.cc-ep.cc-revealed .cc-fig.cc-gain { opacity: 1; transform: none; }
+.cc-shot {
+  flex: 1; display: flex; align-items: center; justify-content: center;
+  padding: 12px; background: var(--cc-panel); border-bottom: 1px solid var(--cc-line);
+}
+/* 만화 컷은 대사가 증거다 — 자르지 않는다.
+   비율이 3.05:1부터 0.99:1까지 제각각이라 높이를 고정하면 반드시 무언가 잘린다. */
+.cc-fig img { width: auto; height: auto; max-width: 100%; max-height: 360px; }
+.cc-fig .cc-ph { width: 200px; height: 200px; }
+.cc-cap { flex: none; padding: 9px 12px 10px; }
+.cc-cap b { font-size: 15px; font-weight: 700; }
+.cc-fig.cc-gain .cc-cap b { color: var(--cc-ink); }
+
+/* 명찰은 캐릭터와 무관하게 언제나 왼쪽 — 호출 컷 바로 아래다.
+   레일 열을 따라 좌우로 옮겨 다니면 왼쪽=역할, 오른쪽=매력이라는 축이 흐트러진다. */
+.cc-lanes { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 14px; }
+.cc-ep-slot {
+  grid-column: 1; position: relative; min-height: 62px; border: 1.5px dashed var(--cc-line);
+  display: flex; align-items: center; justify-content: center; gap: 10px; padding: 6px;
+  font-family: var(--cc-mono); font-size: 10.5px; letter-spacing: .16em; color: #c3c6ca;
+  transition: border-color .3s;
+}
+.cc-ep.cc-filled .cc-ep-slot { border-style: solid; border-color: var(--cc-fg); }
+/* 날아온 복제와 같은 모양으로 남는다 — 얼굴이 사라지면 누가 불렸는지 흐려진다 */
+.cc-slot-mini {
+  width: 46px; height: 46px; flex: none; object-fit: cover; border: 1px solid var(--cc-line);
+  opacity: 0; transition: opacity .35s ease;
+}
+.cc-ep.cc-filled .cc-slot-mini { opacity: 1; }
+.cc-ep-slot .cc-plate {
+  font-size: 16.5px; padding: 11px 14px; opacity: 0; transform: scale(.86);
+  transition: opacity .35s, transform .35s;
+}
+.cc-ep.cc-filled .cc-ep-slot .cc-plate { opacity: 1; transform: none; }
+.cc-bubble {
+  position: absolute; right: -6px; top: -26px; padding: 7px 14px; background: #fff;
+  border: 1.5px solid var(--cc-ink); color: var(--cc-ink);
+  font-size: 15px; font-weight: 800; white-space: nowrap;
+  box-shadow: 0 6px 18px rgba(10, 10, 10, .14);
+  opacity: 0; transform: translateY(6px); transition: opacity .3s, transform .3s;
+}
+.cc-bubble.cc-on { opacity: 1; transform: none; }
+.cc-ep-out { display: grid; grid-template-columns: 1fr 1fr; gap: 34px; margin-top: 16px; align-items: baseline; }
+.cc-ep-role { font-size: 17.4px; font-weight: 800; opacity: 0; transition: opacity .4s, color .5s; }
+.cc-ep.cc-filled .cc-ep-role { opacity: 1; }
+.cc-ep.cc-revealed .cc-ep-role { color: var(--cc-mute); font-weight: 400; }
+.cc-ep-gain {
+  font-size: 17.4px; font-weight: 800; color: var(--cc-ink);
+  opacity: 0; transform: translateX(-8px); transition: opacity .5s, transform .5s;
+}
+.cc-ep.cc-revealed .cc-ep-gain { opacity: 1; transform: none; }
+.cc-ep-gain::before { content: "→ "; color: var(--cc-mute); }
+
+/* 날아다니는 복제는 body에 붙는다 — 스크롤해도 착지점이 따라 움직이게 문서 좌표를 쓴다 */
+.cc-flyer {
+  position: absolute; z-index: 150; pointer-events: none; box-sizing: border-box;
+  display: flex; align-items: center; justify-content: center; gap: 10px; padding: 6px;
+  border: 1.5px solid #0a0a0a; background: #fff;
+  box-shadow: 0 16px 38px rgba(10, 10, 10, .26);
+  transition: transform .58s cubic-bezier(.34, .72, .28, 1);
+}
+.cc-flyer .cc-slot-mini { width: 46px; height: 46px; flex: none; object-fit: cover; border: 1px solid #dfdfdf; opacity: 1; }
+.cc-flyer .cc-plate { font-size: 16.5px; padding: 11px 14px; opacity: 1; transform: none; }
+.cc-token {
+  position: fixed; z-index: 150; pointer-events: none; padding: 6px 11px;
+  border: 1.5px solid #0a0a0a; background: #fff; font-size: 13px; font-weight: 700;
+  box-shadow: 0 10px 26px rgba(10, 10, 10, .22);
+  transition: transform .7s cubic-bezier(.34, .72, .28, 1), opacity .7s ease;
+}
+.cc-rewinding {
+  position: fixed; inset: 0; z-index: 180; pointer-events: none; opacity: 0; transition: opacity .25s;
+  background: repeating-linear-gradient(0deg, rgba(10, 10, 10, .05) 0 2px, transparent 2px 7px);
+}
+.cc-rewinding.cc-on { opacity: 1; }
+
+.cc-worry { margin-top: 44px; padding: 34px 0 0; border-top: 2px solid var(--cc-fg); text-align: center; }
+.cc-worry-1 { font-size: 34.5px; font-weight: 800; letter-spacing: -.02em; line-height: 1.36; }
+.cc-worry-2 { font-size: 17.4px; color: var(--cc-soft); margin-top: 12px; }
+
+/* 04 · 결과 */
+.cc-result { display: grid; grid-template-columns: repeat(3, 1fr); gap: 40px; margin-top: 34px; }
+.cc-rcol { display: flex; flex-direction: column; align-items: center; text-align: center; }
+.cc-rface { width: 150px; height: 150px; object-fit: cover; border: 1px solid var(--cc-line); }
+.cc-rname { font-size: 16.5px; font-weight: 700; margin-top: 12px; }
+.cc-rcol .cc-plate { margin-top: 10px; width: 100%; font-size: 19px; }
+.cc-rcap { font-family: var(--cc-mono); font-size: 9.6px; letter-spacing: .22em; color: var(--cc-mute); margin-top: 7px; }
+.cc-rfacets { display: flex; flex-direction: column; gap: 7px; margin-top: 16px; width: 100%; }
+.cc-rfacets .cc-facet { padding: 9px 12px; font-size: 15px; }
+.cc-band { background: var(--cc-band); padding: 26px 30px; margin-top: 44px; }
+.cc-band i {
+  display: block; font-family: var(--cc-mono); font-size: 11.2px; letter-spacing: .16em;
+  color: #6f7378; font-style: normal;
+}
+.cc-band b { display: block; font-size: 24px; font-weight: 800; margin-top: 6px; letter-spacing: -.01em; line-height: 1.5; }
+
+/* 05 · 검증과 적용 */
+.cc-two { display: grid; grid-template-columns: 1fr 1fr; gap: 56px; margin-top: 32px; }
+.cc-vrole {
+  font-family: var(--cc-mono); font-size: 10.5px; letter-spacing: .18em; color: var(--cc-mute);
+  text-transform: uppercase; padding-bottom: 8px; margin-bottom: 18px; border-bottom: 1px solid var(--cc-line);
+}
+.cc-vbody { display: grid; grid-template-columns: 150px 1fr; gap: 22px; }
+.cc-vbody img { width: 150px; object-fit: cover; border: 1px solid var(--cc-line); }
+.cc-vname { font-size: 16.5px; font-weight: 700; }
+.cc-vmeta { font-family: var(--cc-mono); font-size: 9.6px; letter-spacing: .14em; color: var(--cc-mute); margin-top: 2px; }
+.cc-vplate {
+  margin-top: 10px; display: inline-block; text-align: left; font-size: 17px;
+  border-color: var(--cc-ink); color: var(--cc-ink);
+}
+.cc-vplate.cc-small { font-size: 15px; }
+.cc-vchips { display: flex; flex-direction: column; gap: 8px; margin-top: 14px; }
+.cc-vchip {
+  padding: 10px 13px; font-size: 15px; font-weight: 700; border-left: 2px solid var(--cc-ink);
+  background: var(--cc-tint); color: var(--cc-ink);
+}
+.cc-vchip.cc-opt { background: transparent; border: 1px dashed var(--cc-mute); color: var(--cc-soft); }
+.cc-stamp {
+  display: inline-block; margin-top: 16px; padding: 6px 14px; border: 1.5px solid var(--cc-fg);
+  font-family: var(--cc-mono); font-size: 10.5px; font-weight: 700; letter-spacing: .14em;
+}
+.cc-credit {
+  margin-top: 26px; padding-top: 14px; border-top: 1px solid var(--cc-line);
+  font-size: 11.5px; color: var(--cc-mute); line-height: 1.8;
+}
+
+@media (max-width: 1240px) {
+  .cc-title, .cc-match-1, .cc-worry-1 { font-size: 27px; }
+  .cc-grid { grid-template-columns: repeat(8, 1fr); gap: 8px; }
+  .cc-hero { grid-template-columns: 1fr; gap: 24px; }
+  .cc-hero-key { max-width: 180px; }
+  .cc-match { gap: 22px; }
+  .cc-plate { font-size: 16px; padding: 11px 14px; }
+  .cc-rail { grid-template-columns: 1fr; gap: 10px; padding: 10px 0; }
+  .cc-rl-face { width: 40px; height: 40px; }
+  .cc-lanes, .cc-ep-out { grid-template-columns: 1fr; }
+  .cc-ep-out { gap: 6px; }
+  .cc-ep.cc-revealed .cc-cuts { grid-template-columns: 1fr; }
+  .cc-fig img { max-height: 230px; }
+  .cc-result, .cc-two { grid-template-columns: 1fr; gap: 30px; }
+  .cc-vbody { grid-template-columns: 110px 1fr; }
+  .cc-vbody img { width: 110px; }
+}

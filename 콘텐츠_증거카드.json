@@ -58,6 +58,306 @@
             "v": "공식을 세우는 데서 그치지 않고 니케 일레그로 검증한 뒤, 신규 캐릭터 기획에 적용했음."
           }
         ]
+      },
+      "brief": {
+        "kind": "character_call",
+        "lead": {
+          "title": "한 줄로 각인시키면, 계속 꺼내 쓸 수 있습니다",
+          "line": "100명이 전원 메인 히로인인 만화에서, 독자는 어떻게 이들을 구분해 기억하는가. 분석서가 도출한 공식을 읽는 대신 직접 겪어 보실 수 있게 옮겼습니다.",
+          "prompt": "스크롤을 내리며 확인해 보세요!",
+          "pc_notice": "이 브리프는 PC 환경에 최적화되어 있습니다. 넓은 화면에서 보시길 권합니다."
+        },
+        "chapters": [
+          {
+            "no": "CHAPTER 01",
+            "mark": "01",
+            "name": "역설",
+            "title": "100명의 히로인. 전원이 메인 히로인입니다.",
+            "lede": "서브도 조연도 아닙니다. 그런데도 어떻게 구분해서 기억하는 게 가능할까요?"
+          },
+          {
+            "no": "CHAPTER 02",
+            "mark": "02",
+            "name": "첫인상",
+            "title": "설명은 드리지 않겠습니다. 그림만 보고 맞춰보세요.",
+            "lede": "아래 한 줄짜리 카드를 초상 위로 끌어다 놓으세요. 사진·이름표 어디에 놓아도 됩니다."
+          },
+          {
+            "no": "CHAPTER 03",
+            "mark": "03",
+            "name": "호출",
+            "title": [
+              "맞힐 수 있다는 건,",
+              "다시 꺼내 쓸 수 있다는 뜻입니다."
+            ],
+            "lede": "새 회차에 어떤 역할이 필요할 때, 작가는 이 셋을 재소개 없이 바로 투입할 수 있습니다. 호출 비용이 거의 0이기 때문입니다. 아래로 내려가 보세요. 연재가 흘러갑니다."
+          },
+          {
+            "no": "CHAPTER 04",
+            "mark": "04",
+            "name": "결과",
+            "title": "소모되고 있던 게 아니었습니다.",
+            "lede": "호출될 때마다, 첫인상이 못 보여준 것이 하나씩 붙고 있었습니다."
+          },
+          {
+            "no": "CHAPTER 05",
+            "mark": "05",
+            "name": "검증과 적용",
+            "title": [
+              "만화만의 작법이 아니고,",
+              "제 설계에도 그대로 씁니다."
+            ],
+            "lede": ""
+          }
+        ],
+        "key_visual": {
+          "src": "/assets/img/e1_keyvisual.webp",
+          "label": "Subject",
+          "name": [
+            "너를 너무너무너무너무",
+            "좋아하는 100명의 그녀"
+          ]
+        },
+        "grid": {
+          "cells": 40,
+          "sprite": "/assets/img/e1_heroines.webp",
+          "sprite_cols": 10,
+          "sprite_rows": 4,
+          "note": "Fig. 1 — 100 heroines · 공개된 37명 표시",
+          "names": [
+            "하나조노 하카리",
+            "인다 카라네",
+            "요시모토 시즈카",
+            "에이아이 나노",
+            "야쿠젠 쿠스리",
+            "하나조노 하하리",
+            "하라가 쿠루미",
+            "메이도 메이",
+            "스토 이쿠",
+            "우츠쿠시스기 미미미",
+            "카쿠레 메메",
+            "이인 치요",
+            "야마토 나데시코",
+            "야사시키 야마메",
+            "모미 모미지",
+            "야쿠젠 야쿠",
+            "토로토로 키시카",
+            "케다루이 아시",
+            "나카지 우토",
+            "메이도 마이",
+            "본노지 모모하",
+            "바이오 린",
+            "히후미 스우",
+            "카호 에이라",
+            "네코나리 타마",
+            "사이키 히메카",
+            "데이 마츠리",
+            "우사미 시이나",
+            "제츠보다 메루",
+            "토모가라 사키",
+            "네무이 네무",
+            "하스 하스하",
+            "모리키타 키마리",
+            "후타테 에루",
+            "지아이 치유",
+            "미시로 코고에",
+            "후시다 라나"
+          ]
+        },
+        "order": [
+          "karane",
+          "mimimi",
+          "momoha"
+        ],
+        "cast": [
+          {
+            "id": "karane",
+            "name": "인다 카라네",
+            "core": "츤데레 괴력소녀",
+            "line": "딱히… 아니거든!",
+            "img": "/assets/img/e1_karane_main.webp",
+            "ink": "#c0714a",
+            "tint": "#f7e5da"
+          },
+          {
+            "id": "mimimi",
+            "name": "우츠쿠시스기 미미미",
+            "core": "미모 출중 나르시시스트",
+            "line": "흐흥, 데스와!",
+            "img": "/assets/img/e1_mimimi_main.webp",
+            "ink": "#9c7a00",
+            "tint": "#fbf0c4"
+          },
+          {
+            "id": "momoha",
+            "name": "본노지 모모하",
+            "core": "욕망에 충실한 윤리교사",
+            "line": "나같은 인간은 되지마!",
+            "img": "/assets/img/e1_momoha_main.webp",
+            "ink": "#514531",
+            "tint": "#ece5d7"
+          }
+        ],
+        "match": {
+          "card_order": [
+            "momoha",
+            "karane",
+            "mimimi"
+          ],
+          "done_title": [
+            "방금 설명을 한 줄도 읽지 않으셨습니다.",
+            "그림 한 장으로 맞히셨습니다."
+          ],
+          "done_line": "이 작품은 캐릭터를 그렇게 설계합니다."
+        },
+        "episodes": [
+          {
+            "c": "karane",
+            "no": "제 12 화",
+            "need": "츳코미 · 폭력이 필요한 상황",
+            "src": "Doc",
+            "role": "헤실거리는 아코 대신 화를 내주는 역할",
+            "scene": "/assets/img/e1_karane_ep_anger.webp",
+            "gain": "아코와 갸루 콤비를 이루게 됐다",
+            "gain_label": "+ 갸루 콤비",
+            "gain_img": "/assets/img/e1_karane_gain_ako.webp"
+          },
+          {
+            "c": "mimimi",
+            "no": "제 18 화",
+            "need": "미모가 필요한 상황",
+            "src": "Doc",
+            "role": "미모를 뽐내는 역할",
+            "scene": "/assets/img/e1_mimimi_ep_narci.webp",
+            "gain": "남의 아름다움도 알아본다는 게 보였다",
+            "gain_label": "+ 남을 인정할 줄 안다",
+            "gain_img": "/assets/img/e1_mimimi_gain_meme.webp"
+          },
+          {
+            "c": "momoha",
+            "no": "제 24 화",
+            "need": "욕망이 얽힌 충동적 행동이 필요한 상황",
+            "src": "Doc",
+            "role": "개그 분위기를 살리는 역할",
+            "scene": "/assets/img/e1_momoha_ep_desire.webp",
+            "gain": "의외로 믿음직하다는 면모가 붙었다",
+            "gain_label": "+ 의외로 믿음직함",
+            "gain_img": "/assets/img/e1_momoha_gain_trust.webp"
+          },
+          {
+            "c": "karane",
+            "no": "제 31 화",
+            "need": "또 츳코미가 필요한 상황",
+            "src": "Doc",
+            "role": "또 화를 내주는 역할",
+            "scene": "/assets/img/e1_karane_ep_anger2.webp",
+            "gain": "쿠루미가 기대는 선배로 확장됐다",
+            "gain_label": "+ 믿음직한 선배",
+            "gain_img": "/assets/img/e1_karane_gain_senpai.webp"
+          },
+          {
+            "c": "mimimi",
+            "no": "제 33 화",
+            "need": "또 미모가 필요한 상황",
+            "src": "Doc",
+            "role": "또 미모를 뽐내는 역할",
+            "scene": "/assets/img/e1_mimimi_ep_contest.webp",
+            "gain": "그 미모가 노력의 산물임이 드러났다",
+            "gain_label": "+ 노력파",
+            "gain_img": "/assets/img/e1_mimimi_gain_effort.webp"
+          },
+          {
+            "c": "momoha",
+            "no": "제 39 화",
+            "need": "도박이 얽힌 에피소드",
+            "src": "Doc",
+            "role": "또 개그 분위기를 살리는 역할",
+            "scene": "/assets/img/e1_momoha_ep_gamble.webp",
+            "gain": "측은함이 감정적 매력으로 확장됐다",
+            "gain_label": "+ 측은함",
+            "gain_img": "/assets/img/e1_momoha_gain_pity.webp"
+          }
+        ],
+        "worry": {
+          "title": [
+            "같은 역할만 반복해서 시키고 있습니다.",
+            "이러다 그냥 소모되는 것 아닐까요?"
+          ],
+          "line": "호출은 캐릭터를 닳게 만드는 일일까요.",
+          "button": "다시 봅니다 ↑"
+        },
+        "result": {
+          "label": "단순한 속성이 활용 가능성을 높인다",
+          "text": [
+            "한 줄은 처음 맞히셨던 그대로입니다.",
+            "호출은 이미지를 소모한 게 아니라, 첫인상에서 부족했던 디테일을 채워줬습니다."
+          ]
+        },
+        "verify": [
+          {
+            "role": "검증 · 실제 서비스 게임",
+            "img": "/assets/img/e1_elegg.webp",
+            "name": "일레그",
+            "meta": "승리의 여신: NIKKE",
+            "core": "BOOM 오타쿠",
+            "ink": "#c0714a",
+            "tint": "#f7e5da",
+            "chips": [
+              {
+                "label": "Event · Boomsday",
+                "text": "+ 트로니와의 유대"
+              },
+              {
+                "label": "Event · Memories Teller",
+                "text": "+ 방주에 대한 의심"
+              }
+            ],
+            "stamp": "Same pattern ✓"
+          },
+          {
+            "role": "적용 · 신규 캐릭터 설계",
+            "img": "/assets/img/e1_yurie.webp",
+            "name": "소노다 유리에",
+            "meta": "블루 아카이브 · 지원자 기획",
+            "core": "꽃에 사람 이름을 붙여 키우는 원예부장",
+            "core_small": true,
+            "ink": "#514531",
+            "tint": "#ece5d7",
+            "chips": [
+              {
+                "label": "호감도",
+                "text": "+ 억압과 사랑"
+              },
+              {
+                "label": "라이브 · 메인",
+                "text": "+ 잔존 증오와 자각"
+              },
+              {
+                "label": "Optional",
+                "text": "+ 재건의 상징",
+                "optional": true
+              }
+            ]
+          }
+        ],
+        "labels": {
+          "call": "Call",
+          "remained": "What remained",
+          "awaiting": "Awaiting call",
+          "drop_here": "Drop here",
+          "done_mark": "✓ ",
+          "core_cap": "Core · 처음 맞히신 한 줄",
+          "no_image": "이미지 없음",
+          "to_match": "이 중 셋만 보겠습니다 →",
+          "to_stream": "그래서 어떻게 되는가 →",
+          "to_apply": "그렇다면, 이것을 적용해본다면? →"
+        },
+        "credit": "인용 이미지 — 『너를 너무너무너무너무 좋아하는 100명의 그녀』 © 中村力斗·野澤ゆき子 / 集英社 · 『승리의 여신: NIKKE』 © SHIFT UP · 『블루 아카이브』 © NEXON Games. 분석·비평 목적으로 인용했습니다.",
+        "recap": {
+          "title": "분석에서 설계로",
+          "line": "단순한 속성은 캐릭터를 설명하는 말이자, 다시 부를 이유가 된다.",
+          "closing": "필요한 순간 명확한 속성으로 호출되고, 그 호출에서 새로운 면모와 관계가 남는다. 최초의 인상은 그대로 유지되기 때문에 다시 호출할 수 있고, 이 반복이 캐릭터의 입체감을 만든다."
+        }
       }
     },
     {

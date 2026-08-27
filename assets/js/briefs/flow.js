@@ -47,7 +47,7 @@ export function playFlow(host, cfg, onComplete) {
   let stepTimers = [];
   // 표를 다시 그리기 전의 값 — 어떤 칸이 '방금' 바뀌었는지는 이전 값을 알아야 말할 수 있다
   let prevCells = new Map();
-  let revealed = false; // 결론을 이미 열었는가 (조작은 계속 가능하다)
+  let revealed = false; // 결론을 이미 열었는가 — 마운트 때 한 번 열고 다시 열지 않는다
 
   const root = document.createElement('div');
   root.className = 'fx';
@@ -108,6 +108,11 @@ export function playFlow(host, cfg, onComplete) {
   host.appendChild(root);
 
   reset();
+  // 결론과 원본 문서는 처음부터 열어 둔다. 네 번을 눌러야 원본에 닿는 구조는
+  // 검토자에게 통행료를 물리는 셈이다 — 인터랙션은 이해를 돕는 것이지 관문이 아니다.
+  // 스크롤은 넘기지 않는다. 페이지를 연 사람은 맨 위에서 시작해야 한다.
+  revealed = true;
+  onComplete({ scroll: false });
   timer = setInterval(() => {
     // 흐름이 도는 동안에는 회복을 멈춘다 — 차트를 보는 사이에 게이지가 차면
     // 무엇 때문에 쓸 수 있게 됐는지가 흐려진다
@@ -332,7 +337,6 @@ export function playFlow(host, cfg, onComplete) {
     cost = Number(play.start_cost) || 0;
     boosted = false;
     used = 0;
-    revealed = false;
     running = false;
     last = Date.now();
     caption.textContent = '';
@@ -386,6 +390,20 @@ export function playFlow(host, cfg, onComplete) {
     root.querySelector('.fx-cost').textContent = `현재 Cost ${cost.toFixed(2)} / ${max}`;
     root.querySelector('.fx-rate').textContent = `회복 ${rate().toFixed(4)} /sec`;
     root.querySelector('.fx-bar-fill').style.width = `${(cost / max) * 100}%`;
+    // 시전 가능 여부는 Cost가 차오르는 순간 뒤집힌다. 손패 카드만 반응하고 표는 굳어 있으면
+    // 이 열이 무엇을 보는 값인지 드러나지 않는다 — 표 쪽도 같이 뒤집는다.
+    // paintTables()를 부르지 않는 이유: 100ms마다 전 칸이 다시 그려져 변화 강조가 계속 터진다.
+    if (!running) {
+      root.querySelectorAll('.fx-table[data-t="runtime"] tbody tr').forEach((tr) => {
+        const s = byId.get(tr.dataset.sid);
+        const td = tr.querySelector('[data-c="ex_skill_possiblity"]');
+        if (!s || !td || td.classList.contains('chg')) return;
+        const v = hand.includes(s) && cost >= costOf(s) ? '1' : '0';
+        if (td.dataset.v === v) return;
+        td.textContent = v;
+        td.dataset.v = v;
+      });
+    }
     const more = used >= total && play.more_note ? ` · ${play.more_note}` : '';
     root.querySelector('.fx-count').textContent = `${used} / ${total}${more}`;
     const envCell = root.querySelector('.fx-table[data-t="env"] [data-c="current_cost"]');
@@ -565,13 +583,7 @@ export function playFlow(host, cfg, onComplete) {
       root.classList.remove('fx-tracing');
       root.classList.add('fx-returned');
       stepTimers.push(setTimeout(() => root.classList.remove('fx-returned'), 1400));
-      if (afford) {
-        used += 1;
-        if (!revealed && used >= total) {
-          revealed = true;
-          stepTimers.push(setTimeout(onComplete, 900));
-        }
-      }
+      if (afford) used += 1;
       paint();
     }, ms);
     stepTimers.push(walker);
@@ -787,8 +799,9 @@ export function playFlow(host, cfg, onComplete) {
   }
 
   return {
-    restart(before) {
-      if (before) before();
+    restart() {
+      // 결론을 닫지 않는다. 처음부터 열려 있는 것을 조작 한 번에 걷어내면
+      // 원본 문서로 가는 길이 도로 막힌다.
       reset();
     },
     destroy() {

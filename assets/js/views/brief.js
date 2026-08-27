@@ -2,6 +2,7 @@ import { getCard } from '../data.js';
 import { openDoc } from '../ui.js';
 import { navigate } from '../router.js';
 import { playFlow } from '../briefs/flow.js';
+import { playCharacterCall } from '../briefs/character-call.js';
 
 // 증거 상세 · Interactive Brief (/evidence/:id/brief).
 //
@@ -12,6 +13,7 @@ import { playFlow } from '../briefs/flow.js';
 // 브리프 화면은 사이트의 종이 톤을 따르지 않는다 — 팔레트를 그 증거 문서에서 가져온다.
 const PLAYS = {
   flow: playFlow, // E2 — 원칙 → 요소 → 플로우 차트 → 데이터
+  character_call: playCharacterCall, // E1 — 각인 → 호출 → 되감기 → 입체감
 };
 
 export function hasBrief(ev) {
@@ -61,7 +63,9 @@ export function renderBrief(view, eid) {
   const play = PLAYS[b.kind](view.querySelector('.brief-play'), b, showRecap);
   view.querySelector('.brief-foot').appendChild(link('← 증거 보관함', '/evidence'));
 
-  function showRecap() {
+  // opts.scroll === false — 브리프가 처음부터 결론을 열어 둘 때 쓴다.
+  // 화면을 연 사람을 결론으로 끌어내리지 않는다.
+  function showRecap(opts) {
     const r = b.recap || {};
     recapEl.innerHTML = `
       <h3 class="brief-recap-title"></h3>
@@ -84,7 +88,9 @@ export function renderBrief(view, eid) {
     recapEl.classList.remove('on');
     setTimeout(() => {
       recapEl.classList.add('on');
-      recapEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      if (!opts || opts.scroll !== false) {
+        recapEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
     }, 20);
   }
 
