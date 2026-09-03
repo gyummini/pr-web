@@ -87,9 +87,43 @@ export function renderIntro(view) {
     engine.skip();
   });
 
+  // 작업 중이라는 양해를 먼저 전한다. 표지가 열리기 전에 세우는 이유 —
+  // 오프닝이 돌기 시작하면 0.8초 뒤 대사가 이어져, 읽을 틈 없이 지나간다.
+  // 데이터에서 notice를 지우면 이 단계는 통째로 사라진다.
+  const notice = DB.intro.notice;
+  if (notice && !state.noticeSeen) {
+    const memo = buildNotice(notice);
+    view.appendChild(memo);
+    view.classList.add('notice-active');
+    const go = () => {
+      state.noticeSeen = true;
+      document.removeEventListener('keydown', onNoticeKey);
+      memo.remove();
+      view.classList.remove('notice-active');
+      begin();
+    };
+    const onNoticeKey = (e) => {
+      if (e.key === 'Enter' || e.key === 'Escape' || e.key === ' ') go();
+    };
+    memo.querySelector('.notice-ok').addEventListener('click', go);
+    document.addEventListener('keydown', onNoticeKey);
+    memo.querySelector('.notice-ok').focus();
+    return {
+      destroy: () => {
+        document.removeEventListener('keydown', onNoticeKey);
+        timers.splice(0).forEach(clearTimeout);
+        document.removeEventListener('keydown', onKey);
+        engine.destroy();
+      },
+    };
+  }
+
+  begin();
+
+  function begin() {
   if (reduced) {
     startDialogue();
-    return { destroy: () => engine.destroy() };
+    return;
   }
 
   view.appendChild(opening);
@@ -112,6 +146,7 @@ export function renderIntro(view) {
     }, DIALOGUE_AT_MS)
   );
   timers.push(setTimeout(endOpening, OPEN_HOLD_MS + OPEN_TURN_MS));
+  }
 
   return {
     destroy: () => {
@@ -120,6 +155,31 @@ export function renderIntro(view) {
       engine.destroy();
     },
   };
+}
+
+// 표지에 붙은 클루의 메모 — 수첩(2부)의 포스트잇 톤을 그대로 빌린다.
+// 새 에셋 없이 손글씨 폰트와 --nb-* 팔레트만 쓴다.
+function buildNotice(n) {
+  const el = document.createElement('div');
+  el.className = 'notice';
+  el.innerHTML = `
+    <div class="notice-memo" role="dialog" aria-modal="true">
+      <div class="notice-tape" aria-hidden="true"></div>
+      <div class="notice-stamp"></div>
+      <div class="notice-by"></div>
+      <div class="notice-body"></div>
+      <button type="button" class="notice-ok"></button>
+    </div>`;
+  el.querySelector('.notice-stamp').textContent = n.stamp || '';
+  el.querySelector('.notice-by').textContent = n.by || '';
+  const body = el.querySelector('.notice-body');
+  (n.lines || []).forEach((line) => {
+    const p = document.createElement('p');
+    p.textContent = line;
+    body.appendChild(p);
+  });
+  el.querySelector('.notice-ok').textContent = n.button || '';
+  return el;
 }
 
 // 사건 파일 표지 — 새 에셋 없이 기존 종이 톤·세리프 타이포·도장 컴포넌트만 사용
