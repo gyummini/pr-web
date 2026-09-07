@@ -1,3 +1,7 @@
+import { animate, effects, reducedMotion } from '../motion/animate.js';
+import { fromRect } from '../motion/flip.js';
+import { flowPaths } from '../motion/flow-paths.js';
+import { revealOnce } from '../motion/reveal.js';
 // E2 · Cost 스킬 시스템 — 한 번의 클릭이 읽는 데이터와 쓰는 데이터.
 //
 //   ① 읽기 — 마스터 데이터(하늘). 기획자가 정의한 정적 데이터.
@@ -47,7 +51,10 @@ export function playFlow(host, cfg, onComplete) {
   let stepTimers = [];
   // 표를 다시 그리기 전의 값 — 어떤 칸이 '방금' 바뀌었는지는 이전 값을 알아야 말할 수 있다
   let prevCells = new Map();
-  let revealed = false; // 결론을 이미 열었는가 — 마운트 때 한 번 열고 다시 열지 않는다
+  let presentation = null;
+  let graph = null;
+  let previousNode = null;
+  let finishTrace = null;
 
   const root = document.createElement('div');
   root.className = 'fx';
@@ -106,12 +113,23 @@ export function playFlow(host, cfg, onComplete) {
   const deckWrap = root.querySelector('.fx-deck');
   const caption = root.querySelector('.fx-caption');
   host.appendChild(root);
+  const concept = document.createElement('div');
+  concept.className = 'fx-concept';
+  (cfg.concept || []).forEach(({ verb, label }) => {
+    const part = document.createElement('div');
+    const word = document.createElement('b'); word.textContent = verb;
+    const name = document.createElement('span'); name.textContent = label;
+    part.append(word, name); concept.append(part);
+  });
+  root.prepend(concept);
+  const stopConcept = revealOnce(concept, () => [...concept.children].map((el, i) => ({
+    el, frames: [{ transform: `translateX(${i === 0 ? 14 : -14}px)`, opacity: .4 }, { transform: 'none', opacity: 1 }], at: i * 100, duration: 380,
+  })));
 
   reset();
   // 결론과 원본 문서는 처음부터 열어 둔다. 네 번을 눌러야 원본에 닿는 구조는
   // 검토자에게 통행료를 물리는 셈이다 — 인터랙션은 이해를 돕는 것이지 관문이 아니다.
   // 스크롤은 넘기지 않는다. 페이지를 연 사람은 맨 위에서 시작해야 한다.
-  revealed = true;
   onComplete({ scroll: false });
   timer = setInterval(() => {
     // 흐름이 도는 동안에는 회복을 멈춘다 — 차트를 보는 사이에 게이지가 차면
@@ -142,29 +160,9 @@ export function playFlow(host, cfg, onComplete) {
     const c = root.querySelector('.fx-chart');
     const yes = (cfg.chart || {}).yes || '예';
     const no = (cfg.chart || {}).no || '아니오';
-    c.append(
-      row([node('env'), edge('현재 Cost 제공'), node('runtime')]),
-      down(),
-      row([node('q_cost')]),
-      branch([
-        { label: no, nodes: [node('deny')], cls: 'no' },
-        { label: yes, nodes: [node('spend')], cls: 'yes' },
-      ]),
-      down(),
-      row([node('q_draw')]),
-      branch([
-        { label: yes, nodes: [node('to_top')], cls: 'yes' },
-        { label: no, nodes: [node('to_bottom')], cls: 'no' },
-      ]),
-      down(),
-      row([node('draw')]),
-      down(),
-      row([node('queue')]),
-      down('예외'),
-      row([node('q_change')]),
-      down(),
-      row([node('skilltable'), edge('회복력 다시 읽기'), node('reset')])
-    );
+    c.classList.add('fx-svg-chart');
+    ['env','runtime','q_cost','deny','spend','q_draw','to_top','to_bottom','draw','queue','q_change','skilltable','reset'].forEach(id => c.appendChild(node(id)));
+    graph = flowPaths(c, yes, no, cfg.chart.edge_labels);
   }
 
   function node(id) {
@@ -178,44 +176,6 @@ export function playFlow(host, cfg, onComplete) {
     const nt = el.querySelector('.fx-node-n');
     if (n.note) nt.textContent = n.note;
     else nt.remove();
-    return el;
-  }
-
-  function row(kids) {
-    const el = document.createElement('div');
-    el.className = 'fx-row';
-    kids.forEach((k) => el.appendChild(k));
-    return el;
-  }
-
-  function edge(label) {
-    const el = document.createElement('span');
-    el.className = 'fx-edge';
-    el.textContent = label;
-    return el;
-  }
-
-  function down(label) {
-    const el = document.createElement('div');
-    el.className = 'fx-down';
-    el.textContent = label ? `↓ ${label}` : '↓';
-    return el;
-  }
-
-  function branch(arms) {
-    const el = document.createElement('div');
-    el.className = 'fx-branch';
-    arms.forEach((a) => {
-      const arm = document.createElement('div');
-      arm.className = `fx-arm ${a.cls}`;
-      arm.dataset.arm = a.cls;
-      const lab = document.createElement('span');
-      lab.className = 'fx-arm-l';
-      lab.textContent = a.label;
-      arm.appendChild(lab);
-      a.nodes.forEach((n) => arm.appendChild(n));
-      el.appendChild(arm);
-    });
     return el;
   }
 
@@ -338,6 +298,8 @@ export function playFlow(host, cfg, onComplete) {
     boosted = false;
     used = 0;
     running = false;
+    presentation = null;
+    finishTrace = null;
     last = Date.now();
     caption.textContent = '';
     root.classList.remove('fx-tracing', 'fx-returned');
@@ -350,8 +312,8 @@ export function playFlow(host, cfg, onComplete) {
     paint();
   }
 
-  function costOf(s) {
-    return costs.has(s.id) ? costs.get(s.id) : Number(s.cost) || 0;
+  function costOf(s, values = costs) {
+    return values.has(s.id) ? values.get(s.id) : Number(s.cost) || 0;
   }
 
   // 사용 횟수에 따라 한 걸음의 길이를 줄인다 (speedupUses 회에서 최소값)
@@ -366,6 +328,7 @@ export function playFlow(host, cfg, onComplete) {
 
   // stepTimers에는 setTimeout·setInterval 핸들이 섞여 있다
   function clearTimers() {
+    document.querySelectorAll('.fx-ghost').forEach(el => el.remove());
     stepTimers.forEach((h) => {
       clearTimeout(h);
       clearInterval(h);
@@ -373,6 +336,7 @@ export function playFlow(host, cfg, onComplete) {
   }
 
   function onVisible() {
+    if (document.hidden) finishTrace?.();
     last = Date.now(); // 가려져 있던 시간은 버린다
     if (!document.hidden) paint();
   }
@@ -387,6 +351,8 @@ export function playFlow(host, cfg, onComplete) {
   }
 
   function paint() {
+    const { hand, cost, boosted, used, costs } = presentation || snapshot();
+    const rate = () => boosted ? boostRate : baseRate;
     root.querySelector('.fx-cost').textContent = `현재 Cost ${cost.toFixed(2)} / ${max}`;
     root.querySelector('.fx-rate').textContent = `회복 ${rate().toFixed(4)} /sec`;
     root.querySelector('.fx-bar-fill').style.width = `${(cost / max) * 100}%`;
@@ -398,7 +364,7 @@ export function playFlow(host, cfg, onComplete) {
         const s = byId.get(tr.dataset.sid);
         const td = tr.querySelector('[data-c="ex_skill_possiblity"]');
         if (!s || !td || td.classList.contains('chg')) return;
-        const v = hand.includes(s) && cost >= costOf(s) ? '1' : '0';
+        const v = hand.includes(s) && cost >= costOf(s, costs) ? '1' : '0';
         if (td.dataset.v === v) return;
         td.textContent = v;
         td.dataset.v = v;
@@ -419,22 +385,23 @@ export function playFlow(host, cfg, onComplete) {
       el.classList.toggle('ready', ok);
       el.style.setProperty('--fill', `${Math.min(1, cost / need) * 360}deg`);
       const w = el.querySelector('.fx-card-wait');
-      if (w) w.textContent = ok ? '' : `${((need - cost) / rate()).toFixed(1)}s`;
+      if (w) w.textContent = running || ok ? '' : rate() > 0 ? `${(Math.max(0, need - cost) / rate()).toFixed(1)}s` : '';
     });
   }
 
   function drawHand() {
+    const { hand, costs } = presentation || snapshot();
     handWrap.textContent = '';
     hand.forEach((s) => {
       const b = document.createElement('button');
       b.type = 'button';
       b.className = 'fx-card';
-      b.dataset.cost = costOf(s);
+      b.dataset.cost = costOf(s, costs);
       b.dataset.sid = s.id;
       b.innerHTML = `<span class="fx-card-top"><span class="fx-card-name"></span><span class="fx-card-cost"></span></span>
         <span class="fx-card-ex"></span><span class="fx-card-wait" aria-hidden="true"></span>`;
       b.querySelector('.fx-card-name').textContent = s.name;
-      b.querySelector('.fx-card-cost').textContent = costOf(s);
+      b.querySelector('.fx-card-cost').textContent = costOf(s, costs);
       b.querySelector('.fx-card-ex').textContent = s.ex || '';
       b.addEventListener('click', () => use(s));
       handWrap.appendChild(b);
@@ -442,6 +409,7 @@ export function playFlow(host, cfg, onComplete) {
   }
 
   function drawDeck() {
+    const { hand, deck, costs } = presentation || snapshot();
     deckWrap.textContent = '';
     deck.forEach((s, i) => {
       const li = document.createElement('li');
@@ -450,7 +418,7 @@ export function playFlow(host, cfg, onComplete) {
       li.innerHTML = `<span class="fx-deck-n"></span><span class="fx-deck-name"></span><span class="fx-deck-cost"></span>`;
       li.querySelector('.fx-deck-n').textContent = hand.length + i + 1;
       li.querySelector('.fx-deck-name').textContent = s.name;
-      li.querySelector('.fx-deck-cost').textContent = costOf(s);
+      li.querySelector('.fx-deck-cost').textContent = costOf(s, costs);
       deckWrap.appendChild(li);
     });
   }
@@ -459,6 +427,8 @@ export function playFlow(host, cfg, onComplete) {
   // 회복력 합계는 호시노 EX가 지속되는 동안 boost_add 만큼 올라가고,
   // 그 값이 곧바로 회복 속도로 계산된다 (문서 예외 1).
   function paintTables() {
+    const { hand, deck, cost, boosted, costs } = presentation || snapshot();
+    const rate = () => boosted ? boostRate : baseRate;
     const sum = Number(play.recovery_sum) || 0;
     const ratio = Number(play.recovery_ratio) || 0;
     const order = [...hand, ...deck];
@@ -474,9 +444,9 @@ export function playFlow(host, cfg, onComplete) {
       'runtime',
       order.map((s) => [
         s.name,
-        String(costOf(s)),
+        String(costOf(s, costs)),
         hand.includes(s) ? '1' : '0',
-        hand.includes(s) && cost >= costOf(s) ? '1' : '0',
+        hand.includes(s) && cost >= costOf(s, costs) ? '1' : '0',
       ]),
       order.map((s) => s.id)
     );
@@ -549,12 +519,15 @@ export function playFlow(host, cfg, onComplete) {
 
   function use(s) {
     // 네 번을 채운 뒤에도 계속 눌러볼 수 있다 — 결론만 한 번 열리고 판은 살아 있다
-    if (running) return;
-    const afford = cost >= costOf(s);
+    finishTrace?.();
+    if (!hand.includes(s)) return;
+    clearTimers();
+    stepTimers = [];
+    tick();
+    const afford = cost >= costOf(s, costs);
     running = true;
     root.classList.add('fx-tracing');   // 이번 클릭과 상관없는 영역은 뒤로 물러난다
     root.classList.remove('fx-returned');
-    tick();
     clearLit();
     fillMaster(s.id);
     paint();
@@ -563,31 +536,41 @@ export function playFlow(host, cfg, onComplete) {
     if (!scrolled) {
       scrolled = true;
       const top = root.getBoundingClientRect().top + window.scrollY - 70;
-      window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
+      window.scrollTo({ top: Math.max(0, top), behavior: reducedMotion() ? 'instant' : 'smooth' });
     }
 
-    // 한 걸음씩 나아가는 것을 타이머 하나가 몬다. 단계마다 setTimeout을 새로 거는
-    // 사슬은 중간에 한 칸만 끊겨도 영영 멈추므로, 종료 조건을 매 틱 직접 확인한다.
-    const path = afford ? okPath(s) : denyPath(s);
-    let i = 0;
-    step(path[i++]);
+    // Commit every mutation synchronously; the walker only reads immutable snapshots.
     const ms = stepMs();
-    const walker = setInterval(() => {
-      if (i < path.length) {
-        step(path[i++]);
-        return;
-      }
-      clearInterval(walker);
+    const path = afford ? okPath(s) : denyPath(s);
+    path.forEach(st => { st.do?.(); st.snapshot = snapshot(); delete st.do; });
+    if (afford) used += 1;
+    let i = 0;
+    const finish = () => {
+      clearTimers(); stepTimers = [];
+      finishTrace = null;
+      presentation = null;
       running = false;
-      // 모든 강조가 풀리고 손패가 다시 살아나는 순간이 이 시스템의 목적지다
       root.classList.remove('fx-tracing');
-      root.classList.add('fx-returned');
-      stepTimers.push(setTimeout(() => root.classList.remove('fx-returned'), 1400));
-      if (afford) used += 1;
-      paint();
+      graph.end();
+      drawHand(); drawDeck(); paintTables(); paint();
+      last = Date.now();
+      caption.textContent = (cfg.captions || {})[afford ? 'complete' : 'deny'] || caption.textContent;
+    };
+    finishTrace = finish;
+    if (reducedMotion() || document.hidden) {
+      path.forEach(st => step(st, 0));
+      finish();
+      return;
+    }
+    step(path[i++], ms);
+    const walker = setInterval(() => {
+      if (i < path.length) { step(path[i++], ms); return; }
+      finish();
     }, ms);
     stepTimers.push(walker);
   }
+
+  function snapshot() { return { hand: [...hand], deck: [...deck], costs: new Map(costs), cost, boosted, used }; }
 
   function okPath(s) {
     const p = [
@@ -623,7 +606,8 @@ export function playFlow(host, cfg, onComplete) {
     return [
       { m: 'student' },
       { m: 'skill' },
-      { m: 'detail', assembled: true },
+      { m: 'detail' },
+      { m: 'string', assembled: true },
       { n: 'env' },
       { n: 'runtime', sid: s.id, t: 'runtime' },
       { n: 'q_cost', arm: 'no', t: 'env', c: 'current_cost' },
@@ -650,7 +634,9 @@ export function playFlow(host, cfg, onComplete) {
     deck.push(s);
   }
 
-  function step(st) {
+  function step(st, ms) {
+    presentation = st.snapshot;
+    if (st.n) { graph.trace(previousNode, st.n, ms); previousNode = st.n; }
     root.querySelectorAll('.fx-node.on, .fx-arm.on').forEach((el) => {
       el.classList.remove('on');
       el.classList.add('past');
@@ -662,7 +648,6 @@ export function playFlow(host, cfg, onComplete) {
     const preDeck = rectsOf(deckWrap, '.fx-deck-item');
     const ghost = st.fly ? ghostOf(handWrap.querySelector(`.fx-card[data-sid="${st.fly}"]`)) : null;
 
-    if (st.do) st.do();
 
     root.querySelectorAll('.fx-master-table.on').forEach((e) => {
       e.classList.remove('on');
@@ -681,10 +666,6 @@ export function playFlow(host, cfg, onComplete) {
     if (n) {
       n.classList.add('on');
       n.classList.remove('past');
-    }
-    if (st.arm) {
-      const arm = root.querySelector(`.fx-arm[data-arm="${st.arm}"]`);
-      if (arm) arm.classList.add('on');
     }
 
     drawHand();
@@ -730,11 +711,12 @@ export function playFlow(host, cfg, onComplete) {
 
   // 쓴 카드의 복제본을 원래 자리에 띄운다 (원본은 곧바로 손패에서 사라진다)
   function ghostOf(node) {
-    if (!node) return null;
+    if (!node || reducedMotion() || document.hidden) return null;
     const r = node.getBoundingClientRect();
     const g = node.cloneNode(true);
     g.className = 'fx-card ready fx-ghost';
     g.disabled = true;
+    g.setAttribute('aria-hidden', 'true');
     g.style.cssText = `position:fixed;left:${r.left}px;top:${r.top}px;width:${r.width}px;height:${r.height}px;margin:0;z-index:60;pointer-events:none`;
     document.body.appendChild(g);
     return { el: g, rect: r };
@@ -746,8 +728,8 @@ export function playFlow(host, cfg, onComplete) {
     const to = deckWrap.getBoundingClientRect();
     const dx = to.left + to.width / 2 - (rect.left + rect.width / 2);
     const dy = to.bottom - rect.bottom;
-    if (el.animate) {
-      el.animate(
+    if (!reducedMotion() && el.animate) {
+      animate(el,
         [
           { transform: 'translate(0,0) scale(1)', opacity: 1 },
           { transform: `translate(${dx}px, ${dy}px) scale(.5)`, opacity: 0 },
@@ -769,32 +751,20 @@ export function playFlow(host, cfg, onComplete) {
         return;
       }
       const was = prev.get(id);
-      if (!was || !el.animate) return;
-      const dy = was.top - el.getBoundingClientRect().top;
-      if (!dy) return;
-      el.animate([{ transform: `translateY(${dy}px)` }, { transform: 'translateY(0)' }], {
-        duration: 300,
-        easing: 'cubic-bezier(.22,.61,.36,1)',
-      });
+      if (was) fromRect(el, was, { duration: 300 });
     });
   }
 
   // 덱에서 올라온 새 카드 — 손패가 바뀌었다는 것을 알아채게 한다
   function enterCard(el) {
     el.classList.add('fresh');
-    if (el.animate) {
-      el.animate(
-        [
-          { opacity: 0, transform: 'translateY(-14px) scale(.96)' },
-          { opacity: 1, transform: 'translateY(0) scale(1)' },
-        ],
-        { duration: 340, easing: 'cubic-bezier(.22,.61,.36,1)', fill: 'backwards' }
-      );
-    }
+    animate(el, effects.slide, { duration: 340 });
     stepTimers.push(setTimeout(() => el.classList.remove('fresh'), 1300));
   }
 
   function clearLit() {
+    previousNode = null;
+    graph?.reset();
     root.querySelectorAll('.on, .past').forEach((el) => el.classList.remove('on', 'past'));
   }
 
@@ -805,6 +775,8 @@ export function playFlow(host, cfg, onComplete) {
       reset();
     },
     destroy() {
+      stopConcept();
+      graph.destroy();
       clearInterval(timer);
       clearTimers();
       document.removeEventListener('visibilitychange', onVisible);

@@ -3,6 +3,8 @@ import { openDoc } from '../ui.js';
 import { navigate } from '../router.js';
 import { playFlow } from '../briefs/flow.js';
 import { playCharacterCall } from '../briefs/character-call.js';
+import { evidenceHeader } from '../motion/evidence-header.js';
+import { animate, effects, reducedMotion } from '../motion/animate.js';
 
 // 증거 상세 · Interactive Brief (/evidence/:id/brief).
 //
@@ -52,6 +54,7 @@ export function renderBrief(view, eid) {
   view.querySelector('.ev-kicker').textContent = `증거 ${ev.id} · ${ev.doc_type || ''}`;
   view.querySelector('.ev-title').textContent = ev.title;
   view.querySelector('.ev-sub').textContent = ev.subtitle || '';
+  const stopCover = evidenceHeader(view.querySelector('.brief-head'), ev);
   view.querySelector('.brief-lead-title').textContent = lead.title || '';
   view.querySelector('.brief-lead-line').textContent = lead.line || '';
   view.querySelector('.brief-prompt').textContent = lead.prompt || '';
@@ -90,13 +93,11 @@ export function renderBrief(view, eid) {
     docs.appendChild(btn('다시 해보기', 'ghost', () => play.restart(hideRecap)));
 
     recapEl.hidden = false;
-    recapEl.classList.remove('on');
-    setTimeout(() => {
-      recapEl.classList.add('on');
-      if (!opts || opts.scroll !== false) {
-        recapEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-      }
-    }, 20);
+    recapEl.classList.add('on');
+    animate(recapEl, effects.slide);
+    if (!opts || opts.scroll !== false) {
+      recapEl.scrollIntoView({ behavior: reducedMotion() ? 'instant' : 'smooth', block: 'nearest' });
+    }
   }
 
   function hideRecap() {
@@ -122,5 +123,5 @@ export function renderBrief(view, eid) {
     return a;
   }
 
-  return { destroy: () => play.destroy() };
+  return { destroy: () => { stopCover(); play.destroy(); } };
 }

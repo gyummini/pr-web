@@ -4,6 +4,7 @@ import { openDoc } from '../ui.js';
 import { fmtCase } from '../collect.js';
 import { navigate } from '../router.js';
 import { hasBrief } from './brief.js';
+import { evidenceHeader } from '../motion/evidence-header.js';
 
 // 미수집 증거 상세 (명세서 2-4): 처음 등장하는 챕터 + 포폴 요약.
 // 방문자가 요약만 볼지, 문서 세부를 열지 선택하게 한다.
@@ -48,6 +49,7 @@ export function renderDetail(view, eid) {
   view.querySelector('.ev-title').textContent = ev.title;
   view.querySelector('.ev-sub').textContent = ev.subtitle || '';
   view.querySelector('.ev-summary').textContent = ev.summary || '';
+  const stopCover = evidenceHeader(view.querySelector('.detail'), ev);
 
   const attWrap = view.querySelector('.ev-attachments');
   (ev.attachments || []).forEach((att) => {
@@ -60,5 +62,5 @@ export function renderDetail(view, eid) {
   });
 
   view.querySelector('.open-doc').addEventListener('click', () => openDoc(ev.url));
-  return {};
+  return { destroy: stopCover };
 }

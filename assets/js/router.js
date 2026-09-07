@@ -1,4 +1,5 @@
 import { syncBadge } from './ui.js';
+import { transitionRoute } from './motion/transition.js';
 import { renderIntro } from './views/intro.js';
 import { renderBasic } from './views/basic.js';
 import { renderDossier } from './views/dossier.js';
@@ -18,6 +19,7 @@ import { renderNotFound } from './views/notfound.js';
 let current = null;
 let currentPath = '/';
 let lastNotified = null;
+const scrollPositions = new Map();
 
 // 렌더 도중 뷰가 호출한 리다이렉트를 모아뒀다가 렌더가 끝난 뒤 처리한다.
 // (해시 시절에는 hashchange가 비동기라 자연히 분리됐지만, pushState는 동기라
@@ -56,7 +58,8 @@ export function navigate(to, { replace = false } = {}) {
     return;
   }
   const path = normalize(to);
-  if (path === currentPath && !replace) return;
+  // location includes an in-flight transition; currentPath may still be its source.
+  if (path === normalize(location.pathname) && !replace) return;
   if (replace) history.replaceState(null, '', path);
   else history.pushState(null, '', path);
   dispatch();
@@ -72,6 +75,7 @@ function normalize(to) {
 }
 
 export function startRouter() {
+  history.scrollRestoration = 'manual';
   // 기존에 공유된 '/#/basic' 형태의 외부 링크 호환 — 진입 시 1회만 실경로로 치환한다
   const legacy = location.hash.match(/^#(\/.*)$/);
   if (legacy) {
@@ -98,14 +102,19 @@ function onLinkClick(e) {
   navigate(href);
 }
 
-function dispatch() {
+function dispatch(event) {
   const path = normalize(location.pathname);
+  transitionRoute(document.getElementById('view'), currentPath, path, () => renderRoute(path, event?.type === 'popstate'));
+}
+
+function renderRoute(path, restoreScroll) {
   const seg = path.replace(/^\//, '').split('/'); // ['case','01'] 등
 
   dispatching = true;
   pendingRedirect = null;
 
   if (current) {
+    scrollPositions.set(currentPath, window.scrollY);
     if (current.onLeave) current.onLeave(path);
     if (current.destroy) current.destroy();
     current = null;
@@ -116,9 +125,6 @@ function dispatch() {
   view.className = '';
   view.innerHTML = '';
   window.scrollTo(0, 0);
-  // 콘텐츠가 붙기 전 빈 화면이 스치지 않도록 짧은 페이드 인 (스피너는 쓰지 않는다)
-  view.classList.add('view-enter');
-  setTimeout(() => view.classList.remove('view-enter'), 20);
 
   switch (seg[0]) {
     case '':
@@ -160,6 +166,13 @@ function dispatch() {
     pendingRedirect = null;
     navigate(r.to, { replace: r.replace });
     return; // 최종 경로의 dispatch가 탭 갱신과 구독자 통지를 마저 수행한다
+  }
+
+  if (restoreScroll || path === '/evidence') window.scrollTo(0, scrollPositions.get(path) || 0);
+  const heading = view.querySelector('h2');
+  if (heading && lastNotified !== null) {
+    heading.tabIndex = -1;
+    heading.focus({ preventScroll: true });
   }
 
   // 문서 목록은 컨셉 없는 열람용 — 상단 탭 바(사건 파일 UI)를 노출하지 않는다

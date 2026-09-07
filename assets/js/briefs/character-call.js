@@ -1,3 +1,6 @@
+import { animate, sequence, effects, reducedMotion } from '../motion/animate.js';
+import { fromRect, moveFrom } from '../motion/flip.js';
+import { revealOnce } from '../motion/reveal.js';
 // E1 · 캐릭터 호출 — 각인된 한 줄이 어떻게 입체감이 되는가.
 //
 // 다섯 장을 스크롤로 지난다. 버튼으로 넘기는 단계가 아니라, 내려가는 동안 벌어진다.
@@ -15,8 +18,6 @@
 
 const TRIGGER = 0.78; // 슬롯이 화면 이 높이까지 올라오면 그 회차가 발화한다
 const STAGGER = 180; // 같은 화면에 여러 회차가 걸릴 때 서로 밀어 주는 간격
-const LAND_MS = 560; // 명찰이 내려앉기까지
-const TOKEN_MS = 700; // 매력 조각이 레일 칩에 닿기까지
 
 export function playCharacterCall(host, cfg, onComplete) {
   const cast = new Map((cfg.cast || []).map((c) => [c.id, c]));
@@ -36,6 +37,9 @@ export function playCharacterCall(host, cfg, onComplete) {
   let suspend = false; // 자동 스크롤이 도는 동안 sweep을 멈춘다
   let worryShown = false;
   let drag = null;
+  let selected = null;
+  let stopScroll = null;
+  let stopResult = null;
   let timers = [];
   let scrollIv = null;
   let dead = false;
@@ -54,6 +58,8 @@ export function playCharacterCall(host, cfg, onComplete) {
   window.addEventListener('resize', sweep);
   window.addEventListener('pointermove', onMove);
   window.addEventListener('pointerup', onUp);
+  window.addEventListener('pointercancel', cancelDrag);
+  window.addEventListener('blur', cancelDrag);
   document.addEventListener('visibilitychange', onVisible);
 
   /* ---------- 뼈대 ---------- */
@@ -179,13 +185,17 @@ export function playCharacterCall(host, cfg, onComplete) {
     side.appendChild(lines('p', 'cc-quiz-t', s.title));
     side.appendChild(lines('p', 'cc-quiz-note', s.note));
     side.appendChild(txt('div', `0 / ${order.length}`, 'cc-quiz-count'));
+    side.querySelector('.cc-quiz-count').setAttribute('aria-live', 'polite');
     const main = el('div', 'cc-quiz-main');
     quiz.append(side, main);
     sect(1).appendChild(quiz);
 
     const slots = el('div', 'cc-match');
     order.forEach((id) => {
-      const s = el('div', 'cc-slot');
+      const s = el('button', 'cc-slot');
+      s.type = 'button';
+      s.setAttribute('aria-label', cast.get(id).name);
+      s.addEventListener('click', () => { if (selected) matchPlate(selected, s, selected.getBoundingClientRect()); });
       s.dataset.id = id;
       tint(s, id);
       s.appendChild(faceOf(id, 'cc-slot-face'));
@@ -200,15 +210,26 @@ export function playCharacterCall(host, cfg, onComplete) {
     const cards = el('div', 'cc-cards');
     (m.card_order || order).forEach((id) => {
       if (!cast.has(id)) return;
-      const p = el('div', 'cc-plate');
+      const p = el('button', 'cc-plate');
+      p.type = 'button';
+      p.setAttribute('aria-pressed', 'false');
+      p.addEventListener('click', () => {
+        selected = p;
+        cards.querySelectorAll('.cc-plate').forEach(card => card.setAttribute('aria-pressed', String(card === p)));
+      });
       p.dataset.id = id;
       p.textContent = cast.get(id).core;
       cards.appendChild(p);
     });
     cards.addEventListener('pointerdown', onDown);
     main.appendChild(cards);
+    main.appendChild(txt('p', t.match_help, 'cc-match-help'));
+    const skip = next(t.skip_match, 2);
+    skip.classList.add('cc-skip');
+    main.appendChild(skip);
 
     const done = el('div', 'cc-match-done');
+    done.hidden = true;
     done.appendChild(lines('p', 'cc-match-1', m.done_title));
     done.appendChild(lines('p', 'cc-match-2', m.done_line));
     done.appendChild(next(t.to_stream, 2));
@@ -217,17 +238,20 @@ export function playCharacterCall(host, cfg, onComplete) {
 
   function onDown(e) {
     const p = e.target.closest('.cc-plate');
-    if (!p || p.classList.contains('cc-used')) return;
+    if (!p || p.classList.contains('cc-used') || drag || e.button !== 0) return;
     e.preventDefault();
     const r = p.getBoundingClientRect();
     const ghost = p.cloneNode(true);
     ghost.classList.add('cc-drag');
+    ghost.setAttribute('aria-hidden', 'true');
+    ghost.tabIndex = -1;
     ghost.style.left = `${r.left}px`;
     ghost.style.top = `${r.top}px`;
     ghost.style.width = `${r.width}px`;
     document.body.appendChild(ghost);
     p.style.opacity = '.25';
-    drag = { src: p, ghost, dx: e.clientX - r.left, dy: e.clientY - r.top };
+    drag = { src: p, ghost, pointer: e.pointerId, dx: e.clientX - r.left, dy: e.clientY - r.top };
+    p.setPointerCapture?.(e.pointerId);
   }
 
   // 사진·이름표·드롭박스 어디에 놓아도 받는다 — 카드 전체가 대상이다
@@ -237,45 +261,67 @@ export function playCharacterCall(host, cfg, onComplete) {
   }
 
   function onMove(e) {
-    if (!drag) return;
-    drag.ghost.style.left = `${e.clientX - drag.dx}px`;
-    drag.ghost.style.top = `${e.clientY - drag.dy}px`;
+    if (!drag || e.pointerId !== drag.pointer) return;
+    let x = e.clientX - drag.dx, y = e.clientY - drag.dy;
+    const target = root.querySelector('.cc-slot[data-id="' + drag.src.dataset.id + '"]');
+    const r = target.getBoundingClientRect();
+    const distance = Math.hypot(Math.max(r.left - e.clientX, 0, e.clientX - r.right), Math.max(r.top - e.clientY, 0, e.clientY - r.bottom));
+    const near = !target.querySelector('.cc-done') && distance < 44;
+    if (near && !reducedMotion()) {
+      const pull = .1 * (1 - distance / 44);
+      x += Math.max(-70, Math.min(70, r.left + r.width / 2 - e.clientX)) * pull;
+      y += Math.max(-70, Math.min(70, r.top + r.height / 2 - e.clientY)) * pull;
+    }
+    drag.ghost.style.left = x + 'px'; drag.ghost.style.top = y + 'px';
     const over = slotAt(e.clientX, e.clientY);
-    root.querySelectorAll('.cc-slot').forEach((sl) => {
-      const zone = sl.querySelector('.cc-zone');
-      const on = sl === over && !zone.classList.contains('cc-done');
-      sl.classList.toggle('cc-over', on);
-      zone.classList.toggle('cc-over', on);
+    root.querySelectorAll('.cc-slot').forEach(sl => {
+      sl.classList.toggle('cc-near', sl === target && near);
+      sl.classList.toggle('cc-over', sl === over && !sl.querySelector('.cc-done'));
     });
   }
 
-  function onUp(e) {
+  function cancelDrag() {
     if (!drag) return;
+    drag.src.style.opacity = '';
+    if (drag.src.hasPointerCapture?.(drag.pointer)) drag.src.releasePointerCapture(drag.pointer);
+    drag.ghost.remove(); drag = null;
+    root.querySelectorAll('.cc-slot').forEach(n => n.classList.remove('cc-near', 'cc-over'));
+  }
+
+  function onUp(e) {
+    if (!drag || e.pointerId !== drag.pointer) return;
     const { src, ghost } = drag;
+    const from = ghost.getBoundingClientRect();
     const slot = slotAt(e.clientX, e.clientY);
-    const zone = slot ? slot.querySelector('.cc-zone') : null;
-    ghost.remove();
-    src.style.opacity = '';
-    root.querySelectorAll('.cc-slot, .cc-zone').forEach((n) => n.classList.remove('cc-over'));
-    drag = null;
-    if (!zone || zone.classList.contains('cc-done')) return;
+    cancelDrag();
+    if (slot) matchPlate(src, slot, from);
+    else fromRect(src, from, { duration: 260 });
+  }
+
+  function matchPlate(src, slot, from) {
+    const zone = slot.querySelector('.cc-zone');
+    if (src.classList.contains('cc-used') || zone.classList.contains('cc-done')) return;
     if (slot.dataset.id !== src.dataset.id) {
-      zone.classList.add('cc-nope');
-      after(320, () => zone.classList.remove('cc-nope'));
+      animate(slot, [{ transform: 'translateY(0) rotate(0)' }, { transform: 'translateY(3px) rotate(.8deg)', offset: .4 }, { transform: 'none' }], { duration: 280 });
+      fromRect(src, from, { duration: 280 });
       return;
     }
-    zone.classList.add('cc-done');
-    zone.textContent = '';
-    const p = el('div', 'cc-plate cc-bare');
-    p.textContent = cast.get(src.dataset.id).core;
+    zone.classList.add('cc-done'); zone.textContent = '';
+    const p = txt('div', cast.get(src.dataset.id).core, 'cc-plate cc-bare');
     zone.appendChild(p);
-    src.classList.add('cc-used');
+    src.classList.add('cc-used'); src.disabled = true;
+    if (selected === src) selected = null;
+    src.setAttribute('aria-pressed', 'false');
     matched += 1;
-    const count = root.querySelector('.cc-quiz-count');
-    if (count) count.textContent = `${matched} / ${order.length}`;
+    root.querySelector('.cc-quiz-count').textContent = matched + ' / ' + order.length;
+    fromRect(p, from, { duration: 360 });
     if (matched === order.length) {
-      after(400, () => root.querySelector('.cc-match-done').classList.add('cc-on'));
+      const done = root.querySelector('.cc-match-done');
+      done.hidden = false;
+      done.classList.add('cc-on');
+      animate(done, effects.fade);
     }
+    slot.focus({ preventScroll: true });
   }
 
   /* ---------- 03 · 호출 ---------- */
@@ -296,6 +342,9 @@ export function playCharacterCall(host, cfg, onComplete) {
       w.appendChild(b);
       rail.appendChild(w);
     });
+    const status = txt('div', t.pass_call, 'cc-pass');
+    status.setAttribute('aria-live', 'polite');
+    rail.prepend(status);
     sect(2).appendChild(rail);
     sect(2).appendChild(el('div', 'cc-stream'));
 
@@ -393,96 +442,58 @@ export function playCharacterCall(host, cfg, onComplete) {
       if (row.dataset[key]) return;
       row.dataset[key] = '1'; // 논리 상태는 즉시 확정한다 — 연출이 늦어도 두 번 세지 않는다
       const withGain = mode !== 'call';
-      after(batch * STAGGER, () => playRow(row, withGain));
+      playRow(row, withGain, batch * STAGGER);
       batch += 1;
       if (withGain) {
         revealed += 1;
-        if (revealed >= all.length) after(1400, showResult);
+        if (revealed >= all.length) showResult();
       } else {
         filled += 1;
-        if (filled >= all.length) after(1600, showWorry);
+        if (filled >= all.length) showWorry();
       }
     });
   }
 
   // 두 패스 모두 같은 동작이다 — 명찰이 내려와 붙는다.
   // 다른 점은 2회차에만 '남은 것'과 레일의 입체화 재료가 뒤따른다는 것뿐.
-  function playRow(row, withGain) {
-    callInto(row);
+  function playRow(row, withGain, delay = 0) {
+    callInto(row, delay);
     if (!withGain) return;
-    after(900, () => row.classList.add('cc-revealed')); // 매력 컷이 자리를 얻는다
-    after(1500, () => flyToRail(row)); // 그 컷에서 축이 레일로 올라간다
+    row.classList.add('cc-revealed');
+    animate(row.querySelector('.cc-gain'), effects.slide, { delay: delay + 220, fill: 'backwards', duration: 380 });
+    flyToRail(row, delay + 420);
   }
 
-  function callInto(row) {
-    const id = row.dataset.c;
-    const c = cast.get(id);
+  function callInto(row, delay) {
+    const id = row.dataset.c, c = cast.get(id);
     const slot = row.querySelector('.cc-ep-slot');
-    slot.textContent = ''; // 이전 패스의 잔재를 지우고 다시 받는다
-    row.classList.remove('cc-filled');
+    slot.textContent = '';
+    row.classList.add('cc-filled');
     slot.appendChild(faceOf(id, 'cc-slot-mini'));
-    slot.appendChild(txt('div', c.core, 'cc-plate'));
-    const bub = txt('span', c.line || '', 'cc-bubble');
+    const plate = txt('div', c.core, 'cc-plate');
+    slot.appendChild(plate);
+    const source = root.querySelector('.cc-rl[data-id="' + id + '"] .cc-rl-plate');
+    // Animate the actual destination label from its source, with no floating duplicate.
+    moveFrom(plate, source, { duration: 420, delay, fill: 'backwards' });
+    const bub = txt('span', c.line || '', 'cc-bubble cc-on');
     slot.appendChild(bub);
-
-    // 레일의 이미지 칸에서 복제가 출발한다. 원본 명찰은 그대로 남는다.
-    const src = root.querySelector(`.cc-rl[data-id="${id}"]`);
-    const from = src.getBoundingClientRect();
-    const to = slot.getBoundingClientRect();
-    const f = el('div', 'cc-flyer');
-    tint(f, id);
-    // 착지할 슬롯과 똑같은 크기로 출발한다 — 크기가 다르면 닿는 순간 명찰이 한 번 튄다
-    f.style.width = `${to.width}px`;
-    f.style.height = `${to.height}px`;
-    f.appendChild(faceOf(id, 'cc-slot-mini'));
-    f.appendChild(txt('div', c.core, 'cc-plate'));
-    // 뷰포트 좌표를 문서 좌표로 옮긴다. 날아가는 0.58초 동안 스크롤해도 착지점이 따라 움직인다.
-    const ox = window.pageXOffset;
-    const oy = window.pageYOffset;
-    const sx = from.left + (from.width - to.width) / 2 + ox;
-    const sy = from.top + oy;
-    f.style.left = `${sx}px`;
-    f.style.top = `${sy}px`;
-    document.body.appendChild(f);
-    void f.offsetWidth; // 출발 위치를 먼저 커밋한다
-    // 슬롯의 왼쪽 위에 겹치게 보낸다 — 가운데 맞춤이 아니라 자리 맞춤
-    f.style.transform = `translate(${to.left + ox - sx}px,${to.top + oy - sy}px)`;
-
-    after(LAND_MS, () => {
-      row.classList.add('cc-filled');
-      f.remove();
-    });
-    after(LAND_MS + 100, () => bub.classList.add('cc-on'));
-    after(LAND_MS + 2040, () => bub.classList.remove('cc-on'));
+    after(delay + 2100, () => bub.classList.remove('cc-on'));
   }
 
-  // 매력 컷에서 조각 하나가 위쪽 고정 레일의 칩으로 날아가 붙는다
-  function flyToRail(row) {
+  function flyToRail(row, delay) {
     const id = row.dataset.c;
-    const n = Number(row.dataset.n);
-    // 어느 칩을 쓸지는 즉시 확정한다. 점등을 도착 시점으로 미루면 같은 캐릭터의
-    // 다음 회차가 180ms 뒤에 같은 칩을 또 집어 하나가 영영 안 켜진다.
-    const chips = [...root.querySelectorAll(`.cc-rl[data-id="${id}"] .cc-facet`)];
-    const chip = chips.find((x) => !x.classList.contains('cc-on') && !x.dataset.claimed);
+    const chips = [...root.querySelectorAll('.cc-rl[data-id="' + id + '"] .cc-facet')];
+    const chip = chips.find(x => !x.dataset.claimed);
     if (!chip) return;
     chip.dataset.claimed = '1';
-
-    const from = row.querySelector('.cc-fig.cc-gain').getBoundingClientRect();
-    const to = chip.getBoundingClientRect();
-    const tok = el('div', 'cc-token');
-    tint(tok, id);
-    tok.textContent = (eps[n] || {}).gain_label || '';
-    const sx = from.left + from.width / 2 - 60;
-    const sy = from.top + 12;
-    tok.style.left = `${sx}px`;
-    tok.style.top = `${sy}px`;
-    document.body.appendChild(tok);
-    void tok.offsetWidth;
-    tok.style.transform = `translate(${to.left - sx}px,${to.top - sy}px) scale(.86)`;
-    after(TOKEN_MS, () => {
-      chip.classList.add('cc-on');
-      tok.remove();
-    });
+    chip.classList.add('cc-on');
+    const source = row.querySelector('.cc-gain .cc-cap b');
+    // Offscreen sources do not fly across the whole document.
+    const r = source.getBoundingClientRect();
+    if (r.bottom > 0 && r.top < innerHeight) moveFrom(chip, source, { duration: 460, delay, fill: 'backwards' });
+    else animate(chip, effects.scale, { duration: 280, delay });
+    const rail = chip.closest('.cc-rl');
+    rail.dataset.facets = String(chips.filter(x => x.dataset.claimed).length);
   }
 
   function showWorry() {
@@ -494,7 +505,12 @@ export function playCharacterCall(host, cfg, onComplete) {
   /* ---------- 되감기 ---------- */
 
   function rewind() {
+    if (mode !== 'call') return;
+    timers.forEach(clearTimeout); timers = [];
     mode = 'reveal'; // 상태를 먼저 확정한다
+    root.classList.add('cc-second-pass');
+    root.querySelector('.cc-pass').textContent = t.pass_reveal;
+    root.querySelector('.cc-worry').hidden = true;
     revealed = 0;
     // 무대를 비운다 — 두 번째로 내려갈 때 캐릭터가 '다시' 붙어야 한다
     rows().forEach((row) => {
@@ -507,33 +523,41 @@ export function playCharacterCall(host, cfg, onComplete) {
       delete f.dataset.claimed;
     });
     clearFlying();
+    sequence(rows().reverse().map((el, i) => ({ el, frames: [{ backgroundColor: 'rgba(85,120,150,.13)', transform: 'translateY(6px)' }, { backgroundColor: 'transparent', transform: 'none' }], at: i * 45, duration: 260 })));
     veil.classList.add('cc-on');
     // 스트림 첫 행이 아직 트리거 라인 아래에 있도록 넉넉히 올라간다.
     // 덜 올라가면 착지하자마자 첫 행들이 한꺼번에 걸려 버린다.
     const stream = root.querySelector('.cc-stream');
     const top = Math.max(0, stream.getBoundingClientRect().top + window.scrollY - window.innerHeight * TRIGGER);
-    scrollToY(top, 1200, () => after(200, () => veil.classList.remove('cc-on')));
+    scrollToY(top, 650, () => after(200, () => veil.classList.remove('cc-on')));
   }
 
   // rAF는 가려진 탭에서 멈춘다 — setInterval로 민다
   function scrollToY(target, dur, done) {
+    stopScroll?.();
     const start = window.scrollY;
     const delta = target - start;
     const t0 = Date.now();
     let cancelled = false;
     suspend = true;
     const finish = () => {
+      clearInterval(scrollIv);
+      ['wheel', 'touchstart', 'keydown'].forEach(ev => window.removeEventListener(ev, stop));
+      stopScroll = null;
+      if (dead) return;
       suspend = false;
       if (done) done();
       sweep();
     };
     const stop = () => {
       cancelled = true;
+      finish();
     };
     ['wheel', 'touchstart', 'keydown'].forEach((ev) => {
       window.addEventListener(ev, stop, { once: true, passive: true });
     });
-    if (matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    stopScroll = stop;
+    if (reducedMotion()) {
       window.scrollTo(0, target);
       finish();
       return;
@@ -593,6 +617,10 @@ export function playCharacterCall(host, cfg, onComplete) {
     // 답이 나온 자리에 질문을 남겨두지 않는다
     root.querySelector('.cc-worry').hidden = true;
     chapterEl(3).hidden = false;
+    stopResult = revealOnce(res, () => [...res.querySelectorAll('.cc-rcol')].flatMap(col => [
+      { el: col.querySelector('.cc-plate'), effect: 'scale', duration: 300 },
+      ...[...col.querySelectorAll('.cc-facet')].map((el, i) => ({ el, effect: 'slide', at: 160 + i * 90, duration: 320 })),
+    ]));
   }
 
   /* ---------- 05 · 검증과 적용 ---------- */
@@ -710,16 +738,22 @@ export function playCharacterCall(host, cfg, onComplete) {
   }
 
   function onVisible() {
-    if (!document.hidden) sweep();
+    if (document.hidden) { cancelDrag(); stopScroll?.(); veil.classList.remove('cc-on'); }
+    else sweep();
   }
 
   return {
     restart(before) {
+      stopResult?.();
       if (before) before();
       timers.forEach(clearTimeout);
       timers = [];
       clearInterval(scrollIv);
       clearFlying();
+      stopScroll?.();
+      root.classList.remove('cc-second-pass');
+      veil.classList.remove('cc-on');
+      selected = null;
       mode = 'call';
       filled = 0;
       revealed = 0;
@@ -731,7 +765,10 @@ export function playCharacterCall(host, cfg, onComplete) {
       window.scrollTo(0, root.getBoundingClientRect().top + window.scrollY - 60);
     },
     destroy() {
+      stopResult?.();
       dead = true;
+      stopScroll?.();
+      cancelDrag();
       timers.forEach(clearTimeout);
       clearInterval(scrollIv);
       clearFlying();
@@ -740,6 +777,8 @@ export function playCharacterCall(host, cfg, onComplete) {
       window.removeEventListener('resize', sweep);
       window.removeEventListener('pointermove', onMove);
       window.removeEventListener('pointerup', onUp);
+      window.removeEventListener('pointercancel', cancelDrag);
+      window.removeEventListener('blur', cancelDrag);
       document.removeEventListener('visibilitychange', onVisible);
     },
   };

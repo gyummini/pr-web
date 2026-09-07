@@ -349,6 +349,10 @@
           "drop_here": "Drop here",
           "done_mark": "✓ ",
           "core_cap": "Core · 처음 맞히신 한 줄",
+            "pass_call": "01 · 호출 — 같은 한 줄이 반복된다",
+            "pass_reveal": "02 · 다시 호출 — 이번에는 남은 특성을 본다",
+            "match_help": "카드를 끌어 놓거나, 한 줄을 선택한 뒤 캐릭터를 누르세요. 키보드로도 선택할 수 있습니다.",
+            "skip_match": "맞추기 건너뛰고 호출 보기 →",
           "no_image": "이미지 없음",
           "to_match": "이 중 셋만 보겠습니다 →",
           "to_stream": "그래서 어떻게 되는가 →",
@@ -423,6 +427,10 @@
       },
       "brief": {
         "kind": "flow",
+        "concept": [
+          { "verb": "READ", "label": "Master Data · 정의를 읽는다" },
+          { "verb": "WRITE", "label": "Runtime State · 결과를 기록한다" }
+        ],
         "lead": {
           "title": "스킬 하나를 누르면, 표 네 개가 움직인다",
           "line": "역기획서가 그린 플로우 차트와 데이터 테이블을 그대로 옮겼습니다. 버튼 하나가 어떤 표를 읽고 어떤 값을 바꾸는지 따라가 볼 수 있습니다.",
@@ -522,6 +530,7 @@
               "label": "전투 환경 설정, 재설정"
             }
           ],
+          "edge_labels": { "cost": "현재 Cost 제공", "exception": "예외", "recovery": "회복력 다시 읽기" },
           "yes": "예",
           "no": "아니오"
         },
@@ -577,7 +586,9 @@
         "captions": {
           "runtime": "이 스킬을 쓰겠다고 런타임 상태에 요청한다.",
           "q_cost_yes": "현재 Cost가 필요 Cost 이상 — 통과.",
-          "q_cost_no": "현재 Cost가 모자란다. 버튼은 비활성, 게이지만 채워진다.",
+          "q_cost_no": "현재 Cost가 모자란다. 소모 없이 사용 불가 경로로 끝난다.",
+            "deny": "Cost 부족 — 상태는 바뀌지 않았다. Cost가 회복되면 다시 사용할 수 있다.",
+            "complete": "실행 완료 — 소모한 Cost와 바뀐 손패·덱 순서가 Runtime State에 남았다.",
           "spend": "current_cost에서 명시된 Cost를 뺀다.",
           "q_draw_no": "즉시 드로우 효과 없음 — 기본 경로.",
           "to_bottom": "쓴 스킬의 deck_order가 최후미로 밀린다.",
