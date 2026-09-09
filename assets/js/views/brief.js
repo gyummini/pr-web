@@ -3,6 +3,7 @@ import { openDoc } from '../ui.js';
 import { navigate } from '../router.js';
 import { playFlow } from '../briefs/flow.js';
 import { playCharacterCall } from '../briefs/character-call.js';
+import { playReduction } from '../briefs/reduction.js';
 import { evidenceHeader } from '../motion/evidence-header.js';
 import { animate, effects, reducedMotion } from '../motion/animate.js';
 
@@ -16,6 +17,7 @@ import { animate, effects, reducedMotion } from '../motion/animate.js';
 const PLAYS = {
   flow: playFlow, // E2 — 원칙 → 요소 → 플로우 차트 → 데이터
   character_call: playCharacterCall, // E1 — 각인 → 호출 → 되감기 → 입체감
+  reduction: playReduction, // E3 — 경제 CUT → 채굴 CUT → 맥락 전환
 };
 
 export function hasBrief(ev) {
@@ -32,6 +34,7 @@ export function renderBrief(view, eid) {
   const lead = b.lead || {};
 
   view.className = 'view-brief';
+  if (b.kind === 'reduction') view.classList.add('view-reduction');
   view.innerHTML = `
     <div class="brief">
       <div class="brief-head">
@@ -74,6 +77,7 @@ export function renderBrief(view, eid) {
   // opts.scroll === false — 브리프가 처음부터 결론을 열어 둘 때 쓴다.
   // 화면을 연 사람을 결론으로 끌어내리지 않는다.
   function showRecap(opts) {
+    if (opts?.hide) { hideRecap(); return; }
     const r = b.recap || {};
     recapEl.innerHTML = `
       <h3 class="brief-recap-title"></h3>
