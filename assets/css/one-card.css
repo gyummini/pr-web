@@ -1,0 +1,122 @@
+/* E5 — the same Journey twice, one card apart. Palette from the interactive proposal (greens on warm paper). */
+.view-one-card { --oc-ink: #202b28; --oc-mute: #5d7164; --oc-paper: #f7f8f3; --oc-line: #cfd8cd; --oc-green: #285f4b; --oc-deep: #173b32; --oc-lime: #d5e9a8; --oc-wash: #eef4e6; --oc-off: #c5cec1; }
+.view-one-card .brief { background: var(--oc-paper); color: var(--oc-ink); }
+.oc { color: var(--oc-ink); }
+.oc *, .oc *::before, .oc *::after { box-sizing: border-box; }
+.oc [hidden] { display: none !important; }
+.oc button { font: inherit; cursor: pointer; }
+.oc button:focus-visible { outline: 3px solid var(--oc-green); outline-offset: 3px; }
+
+/* controls: one run button, three relations to swap in */
+.oc-controls { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 24px; margin-bottom: 10px; }
+.oc-run { background: var(--oc-green); color: #fff; border: 1px solid var(--oc-deep); border-radius: 6px; padding: 11px 20px; font-weight: 700; box-shadow: 0 3px 0 var(--oc-deep); }
+.oc-run:hover:not(:disabled) { background: #317259; }
+.oc-run:disabled { opacity: .65; cursor: default; box-shadow: none; }
+.oc-choose { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; }
+.oc-choose-label { font-size: .78rem; color: var(--oc-mute); }
+.oc-choose-group { display: flex; flex-wrap: wrap; gap: 6px; }
+.oc-set { border: 1px solid #a9b9aa; background: #fff; color: var(--oc-deep); border-radius: 999px; padding: 6px 13px; font-size: .82rem; }
+.oc-set[aria-pressed="true"] { background: var(--oc-deep); border-color: var(--oc-deep); color: #fff; box-shadow: inset 0 -2px 0 var(--oc-lime); }
+.oc-legend { display: flex; gap: 16px; margin: 0 0 10px; font-size: .74rem; color: var(--oc-mute); }
+.oc-key::before { content: ''; display: inline-block; width: 9px; height: 9px; border-radius: 2px; margin-right: 6px; vertical-align: -1px; }
+.oc-key.is-same::before { background: #fff; border: 1px solid #a9b9aa; }
+.oc-key.is-new::before { background: var(--oc-green); box-shadow: 0 0 0 2px var(--oc-lime); }
+
+/* two lanes share one column template, so the same moment sits in the same column */
+.oc-lanes { display: grid; gap: 12px; }
+.oc-lane { display: grid; grid-template-columns: 250px minmax(0, 1fr); gap: 18px; background: #fff; border: 1px solid var(--oc-line); border-radius: 6px; padding: 16px 18px 18px; }
+.oc-lane.is-after { border-color: #9fbc8f; border-top: 3px solid var(--oc-green); }
+.oc-lane-head { display: flex; flex-direction: column; gap: 9px; min-width: 0; }
+.oc-lane-tag { font-size: .74rem; font-weight: 700; letter-spacing: .02em; color: var(--oc-mute); }
+.oc-lane.is-after .oc-lane-tag { color: var(--oc-green); }
+.oc-cards { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 5px; }
+.oc-card { position: relative; margin: 0; min-width: 0; }
+.oc-card img { display: block; width: 100%; aspect-ratio: 200 / 373; object-fit: cover; border-radius: 3px; border: 1px solid #d6ddd4; }
+.oc-card figcaption { font-size: .62rem; line-height: 1.3; margin-top: 3px; color: var(--oc-mute); word-break: keep-all; }
+.oc-card.is-member img { border-color: var(--oc-green); }
+.oc-card.is-swapped img { outline: 2px solid var(--oc-green); outline-offset: 1px; box-shadow: 0 0 0 5px var(--oc-lime); }
+.oc-card.is-swapped figcaption { color: var(--oc-deep); font-weight: 700; }
+.oc-one { position: absolute; left: 50%; top: -9px; transform: translateX(-50%); white-space: nowrap; font-style: normal; font-size: .58rem; font-weight: 700; color: #fff; background: var(--oc-green); border-radius: 3px; padding: 1px 5px; }
+.oc-counts { display: flex; flex-wrap: wrap; gap: 4px 10px; margin: 0; font-size: .7rem; color: var(--oc-mute); }
+.oc-counts .is-on { color: var(--oc-green); font-weight: 700; }
+.oc-trait { margin: 0; padding: 7px 9px; border-radius: 4px; font-size: .78rem; line-height: 1.4; }
+.oc-trait small { display: block; font-size: .64rem; margin-bottom: 2px; }
+.oc-trait.is-new { background: var(--oc-wash); border: 1px solid #b7d38f; color: var(--oc-deep); }
+.oc-trait.is-new small { color: var(--oc-green); }
+.oc-trait.is-none { background: #f3f4f1; border: 1px dashed #c6ceC4; color: var(--oc-mute); }
+
+/* the route: five fixed stops, three gaps of arcana events, one empty event time */
+.oc-route { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(76px, .55fr) minmax(0, 1.45fr)) minmax(76px, .55fr); align-items: start; position: relative; min-width: 0; }
+.oc-route::before { content: ''; position: absolute; left: 0; right: 0; top: 8px; border-top: 1px solid #c2ccbf; }
+.oc-stop { position: relative; padding-top: 20px; min-width: 0; }
+.oc-dot { position: absolute; top: 3px; left: 0; width: 11px; height: 11px; border-radius: 50%; background: var(--oc-off); border: 2px solid #fff; transition: background .35s, box-shadow .35s; }
+.oc-stop strong { display: block; font-size: .78rem; line-height: 1.3; color: #7c877b; word-break: keep-all; transition: color .35s; }
+.oc-stop small { display: block; font-size: .62rem; color: var(--oc-mute); margin-top: 2px; }
+.oc-stop.is-lit .oc-dot { background: var(--oc-green); box-shadow: 0 0 0 3px var(--oc-lime); }
+.oc-stop.is-lit strong { color: var(--oc-ink); }
+.oc-stop.is-next .oc-dot { background: #fff; border-color: #a9b9aa; }
+.oc-gap { display: flex; flex-direction: column; gap: 5px; padding: 22px 8px 0; min-width: 0; }
+.oc-chip { display: flex; align-items: center; gap: 6px; padding: 4px 6px; border: 1px dashed #b8c6ba; border-radius: 4px; background: #fbfcf8; font-size: .72rem; line-height: 1.3; opacity: .45; transition: opacity .35s, border-color .35s, background .35s; min-width: 0; }
+.oc-chip img { flex: none; width: 20px; height: 34px; object-fit: cover; border-radius: 2px; }
+.oc-chip > span { min-width: 0; word-break: keep-all; }
+.oc-chip small { display: block; font-size: .6rem; color: var(--oc-mute); }
+.oc-gap.is-lit .oc-chip { opacity: 1; border-style: solid; border-color: #c9d3c6; background: #fff; }
+.oc-gap.is-lit .oc-chip.is-other { opacity: .55; }
+.oc-chip.is-member { box-shadow: inset 3px 0 0 var(--oc-green); }
+.oc-ready { margin: 4px 0 0; padding: 5px 7px; border-radius: 3px; font-size: .68rem; line-height: 1.4; color: var(--oc-deep); background: var(--oc-wash); border-left: 2px solid var(--oc-green); opacity: 0; transform: translateY(4px); transition: opacity .35s, transform .35s; }
+.oc-ready.is-lit { opacity: 1; transform: none; }
+.oc-gap.is-slot { border: 1px dashed #b8c6ba; border-radius: 5px; margin: 16px 6px 0; padding: 8px; gap: 6px; }
+.oc-slot-label { font-size: .64rem; color: var(--oc-mute); }
+.oc-slot-same { font-size: .68rem; color: #8a968c; opacity: 0; transition: opacity .35s; }
+.oc-gap.is-empty.is-lit .oc-slot-same { opacity: 1; }
+.oc-insert { padding: 8px 9px; border-radius: 4px; background: var(--oc-deep); color: #f1f7e9; opacity: 0; transform: translateY(6px); transition: opacity .4s, transform .4s; }
+.oc-insert small { display: block; font-size: .6rem; color: var(--oc-lime); }
+.oc-insert strong { display: block; font-size: .8rem; line-height: 1.35; word-break: keep-all; }
+.oc-insert.is-lit { opacity: 1; transform: none; }
+.oc-reward { margin: 0; padding: 7px 9px; border-radius: 4px; background: var(--oc-lime); color: var(--oc-deep); font-size: .7rem; line-height: 1.4; opacity: 0; transform: translateY(6px); transition: opacity .4s, transform .4s; }
+.oc-reward strong { display: block; font-size: .82rem; }
+.oc-reward span { display: block; font-weight: 600; }
+.oc-reward small { display: block; font-size: .62rem; margin-top: 2px; color: #3e5a44; word-break: keep-all; }
+.oc-reward.is-lit { opacity: 1; transform: none; }
+.oc-status { min-height: 1.2em; margin: 10px 0 0; font-size: .74rem; color: var(--oc-mute); }
+
+/* after the run: what was added, what moved with the card, what stayed */
+.oc-diff { margin-top: 18px; padding: 18px 20px; background: #fff; border: 1px solid var(--oc-line); border-radius: 6px; }
+.oc-diff-title, .oc-summary-title { margin: 0 0 12px; font-size: .95rem; }
+.oc-diff-cols { display: grid; grid-template-columns: 1.15fr 1fr 1fr; gap: 12px; }
+.oc-diff-col { border-radius: 5px; padding: 12px 14px; min-width: 0; }
+.oc-diff-col h5 { margin: 0 0 8px; font-size: .74rem; letter-spacing: .02em; }
+.oc-diff-col ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 7px; }
+.oc-diff-col li strong { display: block; font-size: .84rem; line-height: 1.4; word-break: keep-all; }
+.oc-diff-col li span { display: block; font-size: .72rem; color: var(--oc-mute); line-height: 1.45; word-break: keep-all; }
+.oc-diff-col.is-new { background: var(--oc-wash); border: 1px solid #b7d38f; }
+.oc-diff-col.is-new h5 { color: var(--oc-green); }
+.oc-diff-col.is-moved { border: 1px dashed #b8c6ba; }
+.oc-diff-col.is-moved h5, .oc-diff-col.is-same h5 { color: var(--oc-mute); }
+.oc-diff-col.is-same { background: #f3f4f1; }
+.oc-diff-col.is-same li strong { font-weight: 500; color: #4c5d54; }
+.oc-summary { margin-top: 14px; padding: 18px 20px; border-top: 3px solid var(--oc-green); background: #fff; border-radius: 0 0 6px 6px; }
+.oc-summary-list { margin: 0; display: grid; gap: 8px; }
+.oc-summary-list div { display: grid; grid-template-columns: 56px 1fr; gap: 10px; align-items: baseline; }
+.oc-summary-list dt { font-size: .74rem; font-weight: 700; color: var(--oc-green); }
+.oc-summary-list dd { margin: 0; font-size: .88rem; line-height: 1.6; word-break: keep-all; }
+.oc-limit { margin: 12px 0 0; font-size: .8rem; color: var(--oc-deep); }
+.oc-note { margin: 6px 0 0; font-size: .7rem; color: var(--oc-mute); line-height: 1.6; }
+
+@media (max-width: 1100px) {
+  .oc-lane { grid-template-columns: 1fr; }
+  .oc-cards { max-width: 300px; }
+}
+@media (max-width: 760px) {
+  .oc-lane { padding: 14px; }
+  .oc-route { grid-template-columns: 1fr; padding-left: 16px; }
+  .oc-route::before { left: 5px; right: auto; top: 0; bottom: 0; border-top: 0; border-left: 1px solid #c2ccbf; }
+  .oc-stop { padding: 0 0 0 4px; display: flex; align-items: baseline; gap: 8px; }
+  .oc-dot { top: 3px; left: -16px; }
+  .oc-gap { padding: 8px 0 12px 4px; }
+  .oc-gap.is-slot { margin: 4px 0 12px 4px; }
+  .oc-diff-cols { grid-template-columns: 1fr; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .oc-dot, .oc-stop strong, .oc-chip, .oc-ready, .oc-insert, .oc-reward, .oc-slot-same { transition: none; }
+}

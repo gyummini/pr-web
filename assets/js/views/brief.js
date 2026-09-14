@@ -4,6 +4,7 @@ import { navigate } from '../router.js';
 import { playFlow } from '../briefs/flow.js';
 import { playCharacterCall } from '../briefs/character-call.js';
 import { playReduction } from '../briefs/reduction.js';
+import { playOneCard } from '../briefs/one-card.js';
 import { evidenceHeader } from '../motion/evidence-header.js';
 import { animate, effects, reducedMotion } from '../motion/animate.js';
 
@@ -18,6 +19,7 @@ const PLAYS = {
   flow: playFlow, // E2 — 원칙 → 요소 → 플로우 차트 → 데이터
   character_call: playCharacterCall, // E1 — 각인 → 호출 → 되감기 → 입체감
   reduction: playReduction, // E3 — 경제 CUT → 채굴 CUT → 맥락 전환
+  one_card: playOneCard, // E5 — 같은 여정 두 개, 카드 한 장 차이
 };
 
 export function hasBrief(ev) {
@@ -35,6 +37,7 @@ export function renderBrief(view, eid) {
 
   view.className = 'view-brief';
   if (b.kind === 'reduction') view.classList.add('view-reduction');
+  if (b.kind === 'one_card') view.classList.add('view-one-card');
   view.innerHTML = `
     <div class="brief">
       <div class="brief-head">
