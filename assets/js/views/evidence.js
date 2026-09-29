@@ -1,4 +1,4 @@
-import { DB } from '../data.js';
+import { DB, groupCards } from '../data.js';
 import { BASE_EVIDENCE_IDS, state, baseUnlocked, collectedBaseCount } from '../state.js';
 import { addPending, landOne, flyFromRect, openDoc } from '../ui.js';
 import { checkChapterToasts, fmtCase } from '../collect.js';
@@ -11,17 +11,18 @@ export function renderEvidence(view) {
 
   const cards = DB.cards.filter((c) => !c.hidden);
   const hidden = DB.cards.find((c) => c.hidden);
+  const groups = groupCards(cards);
 
   view.innerHTML = `
     <div class="evidence-page">
       <div class="page-head">
         <div class="stamp">증거 보관함</div>
         <h2>수집된 증거</h2>
-        <p class="page-lead">포트폴리오 ${BASE_EVIDENCE_IDS.length}건 — 자기소개서의 각 진술을 뒷받침하는 실제 작업 문서</p>
+        <p class="page-lead">${leadCount(groups)} — 자기소개서의 각 진술을 뒷받침하는 실제 작업물</p>
       </div>
       <div class="hidden-slot-wrap"></div>
       <div class="ev-grid">
-        ${cards.map((ev) => cardHtml(ev)).join('')}
+        ${groups.map(groupHtml).join('')}
       </div>
       ${
         DB.resume && DB.resume.fullPdf
@@ -44,6 +45,27 @@ export function renderEvidence(view) {
 }
 
 // 카드 정보 위계: 썸네일 → 문서 유형 → 제목 → 부제 → 증거코드·챕터 → 액션
+// 문서 · 게임 · 추가 포트폴리오. .ev-grid는 바깥 틀 하나로 남긴다 — 회귀 테스트가
+// '보관함 화면에 돌아왔다'를 .ev-grid 개수로 판정한다.
+function groupHtml(g) {
+  const head = g.label
+    ? `<h3 class="ev-group-h">${esc(g.label)} <span class="ev-group-n">${g.cards.length}</span></h3>`
+    : '';
+  return `<section class="ev-group${g.minor ? ' minor' : ''}" data-group="${esc(g.id)}">${head}
+    <div class="ev-cards">${g.cards.map((ev) => cardHtml(ev)).join('')}</div></section>`;
+}
+
+// '추가'로 내린 묶음은 따로 센다 — 수집·엔딩 조건과는 별개인 표시일 뿐이다
+function leadCount(groups) {
+  const main = groups.filter((g) => !g.minor).reduce((n, g) => n + g.cards.length, 0);
+  const minor = groups.filter((g) => g.minor).reduce((n, g) => n + g.cards.length, 0);
+  return `포트폴리오 ${main}건${minor ? ` · 추가 ${minor}건` : ''}`;
+}
+
+function esc(s) {
+  return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
 function cardHtml(ev) {
   const got = state.collected.has(ev.id);
   const thumb = ev.thumb
@@ -137,7 +159,7 @@ function wireCard(el) {
     // 브리프가 있으면 수집 여부와 무관하게 그리로 간다 — 진술에서 못 만난 문서도
     // 여기서 바로 조사할 수 있어야 한다 (절대원칙 2: 게임적 경험은 선택)
     if (hasBrief(ev)) {
-      navigate(`/evidence/${ev.id}/brief`);
+      navigate(`/evidence/${ev.id}/interactive`);
     } else if (!el.classList.contains('collected')) {
       navigate(`/evidence/${ev.id}`); // 브리프가 아직 없는 미수집 증거: 등장 챕터 안내 + 요약
     } else {

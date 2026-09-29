@@ -143,9 +143,14 @@ function renderRoute(path, restoreScroll) {
         current = renderDossier(view, seg[1] || '01');
         break;
       case 'evidence':
-        // /evidence · /evidence/:id (요약) · /evidence/:id/brief (직접 해보기)
+        // /evidence · /evidence/:id (요약) · /evidence/:id/interactive (인터랙티브 페이지)
+        // 옛 주소 /brief는 새 주소로 바꿔 끼운다 — 이미 보낸 링크가 죽지 않게.
+        // '브리프'는 거의 안 쓰는 말이라 9/30에 화면·주소에서 뺐다(코드·데이터 키는 brief 그대로).
         if (!seg[1]) current = renderEvidence(view);
-        else if (seg[2] === 'brief') current = renderBrief(view, seg[1]);
+        else if (seg[2] === 'brief') {
+          navigate(`/evidence/${seg[1]}/interactive`, { replace: true });
+          current = {};
+        } else if (seg[2] === 'interactive') current = renderBrief(view, seg[1]);
         else current = renderDetail(view, seg[1]);
         break;
       case 'ending':

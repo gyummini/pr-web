@@ -62,7 +62,7 @@
   "skills": [
     {
       "name": "Python",
-      "level": "데이터 가공·자동화 스크립트를 작성하고 외부 JSON을 파싱할 수 있는 수준",
+      "level": "API·웹 스크래핑으로 데이터를 수집·가공하고, 자동화 스크립트로 서버에 저장할 수 있는 수준",
       "notes": [
         "외부 JSON 파싱 → 데이터 변환",
         "두 번의 팀 프로젝트에서 Python 서버 프로그래밍 담당"
@@ -99,7 +99,7 @@
   "playRecord": {
     "label": "플레이 기록",
     "summary": "274개 · 플레이 시간순",
-    "note": "분석·기획한 게임들을 실제로 얼마나 플레이했는지 기록해 둔 공개 라이브러리.",
+    "note": "플레이한 게임들 기록(플레이 타임 순)",
     "url": "https://minimap.net/user/gyummini/library?vm=LIST&ipp=s&sort=PLAYTIME&l=kr"
   },
   "pdf": "/이력서.pdf",

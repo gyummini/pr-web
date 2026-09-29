@@ -103,7 +103,7 @@ export function openEvidencePopup(eid) {
   const deeper = hasBrief(ev)
     ? action('더 자세히 살펴보기 →', wasNew ? 'ghost' : 'accent', () => {
         close();
-        navigate(`/evidence/${ev.id}/brief`);
+        navigate(`/evidence/${ev.id}/interactive`);
       })
     : null;
 

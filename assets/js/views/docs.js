@@ -1,10 +1,16 @@
-import { DB } from '../data.js';
+import { DB, groupCards } from '../data.js';
 import { openDoc } from '../ui.js';
 import { navigate } from '../router.js';
 
 // 포트폴리오 문서 목록 (/docs).
 // 컨셉 없는 열람용 페이지 — 수사 어휘·캐릭터·수집 UI를 일절 쓰지 않는다.
 // 문서 데이터는 콘텐츠_증거카드.json을 그대로 참조한다(복제 금지).
+
+function docsCount(groups) {
+  const main = groups.filter((g) => !g.minor).reduce((n, g) => n + g.cards.length, 0);
+  const minor = groups.filter((g) => g.minor).reduce((n, g) => n + g.cards.length, 0);
+  return `포트폴리오 ${main}건${minor ? ` · 추가 ${minor}건` : ''}`;
+}
 
 function esc(s) {
   return String(s == null ? '' : s)
@@ -16,6 +22,9 @@ function esc(s) {
 export function renderDocs(view) {
   // 히든(E7)은 목록에서 제외. chapters·클루 대사는 사용하지 않는다.
   const docs = (DB.cards || []).filter((c) => !c.hidden);
+  // 보관함과 같은 묶음(문서 · 게임 · 추가). 번호는 묶음을 건너 이어 붙인다.
+  const groups = groupCards(docs);
+  const order = new Map(groups.flatMap((g) => g.cards).map((d, i) => [d.id, i + 1]));
   const r = DB.resume || {};
 
   view.className = 'view-docs';
@@ -23,12 +32,17 @@ export function renderDocs(view) {
     <div class="docs-page">
       <header class="docs-head">
         <h1>${esc(r.name || '')} — 게임 기획 포트폴리오</h1>
-        <p class="docs-sub">포트폴리오 문서 ${docs.length}건</p>
+        <p class="docs-sub">${docsCount(groups)}</p>
       </header>
 
-      <div class="docs-grid">
-        ${docs.map((d, i) => docCard(d, i + 1)).join('')}
-      </div>
+      ${groups
+        .map(
+          (g) => `<section class="docs-group${g.minor ? ' minor' : ''}">
+        ${g.label ? `<h2 class="docs-group-h">${esc(g.label)}</h2>` : ''}
+        <div class="docs-grid">${g.cards.map((d) => docCard(d, order.get(d.id))).join('')}</div>
+      </section>`
+        )
+        .join('')}
 
       <footer class="docs-foot">
         <div class="docs-foot-block">
@@ -71,7 +85,7 @@ export function renderDocs(view) {
     if (img) img.addEventListener('error', () => img.remove(), { once: true });
 
     // 브리프가 곧 원문인 증거(E8)는 그 브리프를 연다
-    el.querySelector('.docs-open').addEventListener('click', () => (d.url ? openDoc(d.url) : navigate(`/evidence/${d.id}/brief`)));
+    el.querySelector('.docs-open').addEventListener('click', () => (d.url ? openDoc(d.url) : navigate(`/evidence/${d.id}/interactive`)));
     el.querySelectorAll('.docs-att').forEach((btn) => {
       const att = (d.attachments || [])[Number(btn.dataset.att)];
       if (!att) {

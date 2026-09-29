@@ -6,7 +6,7 @@ const origin = process.env.TEST_ORIGIN || 'http://127.0.0.1:4173';
   const page = await browser.newPage({ viewport: { width: 1440, height: 1000 }, reducedMotion: 'reduce' });
   const errors = []; page.on('pageerror', e => errors.push(e.message));
   try {
-    await page.goto(origin + '/evidence/E3/brief');
+    await page.goto(origin + '/evidence/E3/interactive');
     await page.locator('.rd').waitFor();
     await page.evaluate(() => { window.originalCore = document.querySelector('.rd-core'); window.originalButton = document.querySelector('.rd-enhance'); });
     assert.equal(await page.locator('.rd-system').count(), 3);

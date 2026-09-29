@@ -1,6 +1,7 @@
 // 모든 콘텐츠는 데이터 파일에서 로드한다. 코드에 텍스트 하드코딩 금지 (명세서 8).
 export const DB = {
   cards: null,     // 콘텐츠_증거카드.json → evidences 배열
+  groups: null,    // 콘텐츠_증거카드.json → groups (보관함·/docs의 묶음 순서)
   intro: null,     // 스크립트_인트로.json
   ending: null,    // 스크립트_엔딩.json
   chapters: null,  // 콘텐츠_자기소개서.md 파싱 결과 (CASE01~04 + EPILOGUE)
@@ -32,6 +33,7 @@ export async function loadAll() {
     fetchJSON('/콘텐츠_수사수첩.json'),
   ]);
   DB.cards = cardsJson.evidences;
+  DB.groups = cardsJson.groups || [];
   DB.intro = intro;
   DB.ending = ending;
   DB.chapters = parseEssay(essayMd);
@@ -39,6 +41,16 @@ export async function loadAll() {
   DB.making = parseMaking(makingMd);
   DB.notebook = notebook;
   return DB;
+}
+
+// 묶음마다 카드를 나눈다. 묶음을 정하지 않은 카드는 맨 끝에 이름 없는 묶음으로 남긴다 —
+// 데이터를 하나 빠뜨려도 카드가 화면에서 사라지지는 않게.
+export function groupCards(cards) {
+  const groups = (DB.groups || []).map((g) => ({ ...g, cards: cards.filter((c) => c.group === g.id) }));
+  const known = new Set(groups.map((g) => g.id));
+  const rest = cards.filter((c) => !known.has(c.group));
+  if (rest.length) groups.push({ id: 'rest', label: '', cards: rest });
+  return groups.filter((g) => g.cards.length);
 }
 
 export function getCard(eid) {

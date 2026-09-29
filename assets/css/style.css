@@ -397,8 +397,18 @@ button { font-family: inherit; }
 .page-head h2 { margin: 0; }
 .page-lead { margin: 6px 0 0; font-size: .92rem; color: var(--ink-soft); }
 
+/* 보관함은 묶음(문서 · 게임 · 추가 포트폴리오)을 위아래로 쌓고, 묶음 안에서 카드 그리드를 편다.
+   .ev-grid는 바깥 틀 하나로 둔다 — 회귀 테스트가 보관함 화면 여부를 이것의 개수로 판정한다. */
+.ev-grid { display: flex; flex-direction: column; gap: 34px; }
+.ev-group-h {
+  margin: 0 0 12px; font-size: 1rem;
+  border-left: 4px solid var(--accent); padding-left: 10px;   /* 기본 사항의 섹션 제목과 같은 모양 */
+}
+.ev-group-n { margin-left: 4px; font-weight: 400; font-size: .86rem; color: var(--ink-soft); }
+/* '추가'로 내린 묶음 — 맨 아래에 두고 제목을 한 톤 낮춘다. 카드는 똑같이 열린다 */
+.ev-group.minor .ev-group-h { border-left-color: var(--line); color: var(--ink-soft); }
 /* 포트폴리오 카드 그리드: 데스크톱 3열 / 태블릿 2열 / 모바일 1열 */
-.ev-grid {
+.ev-cards {
   display: grid; grid-template-columns: repeat(3, 1fr);
   gap: 20px; align-items: stretch;
 }
@@ -463,10 +473,10 @@ button { font-family: inherit; }
 
 /* 태블릿 2열 → 좁은 화면 1열 (아래 820px 블록보다 구체적이도록 여기서 함께 선언) */
 @media (max-width: 900px) {
-  .ev-grid { grid-template-columns: repeat(2, 1fr); }
+  .ev-cards { grid-template-columns: repeat(2, 1fr); }
 }
 @media (max-width: 620px) {
-  .ev-grid { grid-template-columns: 1fr; gap: 14px; }
+  .ev-cards { grid-template-columns: 1fr; gap: 14px; }
 }
 
 .hidden-slot-wrap { margin: 0 0 26px; }
@@ -824,6 +834,9 @@ body.plain-mode #view { min-height: 100vh; }
 .docs-head h1 { margin: 0; font-size: 1.7rem; letter-spacing: -.01em; }
 .docs-sub { margin: 6px 0 0; color: var(--ink-soft); font-size: .94rem; }
 
+.docs-group + .docs-group { margin-top: 34px; }
+.docs-group-h { margin: 0 0 14px; font-size: 1.05rem; }
+.docs-group.minor .docs-group-h { color: var(--ink-soft); }
 .docs-grid {
   display: grid; grid-template-columns: repeat(2, 1fr);
   gap: 22px; align-items: stretch;

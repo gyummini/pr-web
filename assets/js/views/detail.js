@@ -38,7 +38,7 @@ export function renderDetail(view, eid) {
         ${
           // 이미 수집한 증거를 주소로 직접 열었을 때 — 조사로 바로 갈 수 있어야 한다
           collected && hasBrief(ev)
-            ? `<a class="btn accent" href="/evidence/${ev.id}/brief">더 자세히 살펴보기 →</a>`
+            ? `<a class="btn accent" href="/evidence/${ev.id}/interactive">더 자세히 살펴보기 →</a>`
             : ''
         }
         <button type="button" class="btn ghost open-doc">문서 바로 열기 ↗</button>
@@ -62,6 +62,6 @@ export function renderDetail(view, eid) {
   });
 
   // 브리프가 곧 원문인 증거(E8)는 브리프를 연다
-  view.querySelector('.open-doc').addEventListener('click', () => (ev.url || !hasBrief(ev) ? openDoc(ev.url) : navigate(`/evidence/${ev.id}/brief`)));
+  view.querySelector('.open-doc').addEventListener('click', () => (ev.url || !hasBrief(ev) ? openDoc(ev.url) : navigate(`/evidence/${ev.id}/interactive`)));
   return { destroy: stopCover };
 }

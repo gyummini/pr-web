@@ -12,7 +12,7 @@ const origin = process.env.TEST_ORIGIN || 'http://127.0.0.1:4173';
     await page.locator('.ev-grid').waitFor();
     await page.evaluate(async () => {
       const { navigate } = await import('/assets/js/router.js');
-      navigate('/evidence/E1/brief'); navigate('/evidence');
+      navigate('/evidence/E1/interactive'); navigate('/evidence');
     });
     await page.waitForTimeout(600);
     assert.equal(await page.locator('.ev-grid').count(), 1, 'Cancel pending route back to source');
@@ -76,8 +76,13 @@ const origin = process.env.TEST_ORIGIN || 'http://127.0.0.1:4173';
     assert.match(await test.locator('.fx-cost').innerText(), /7\.00/);
     await page.evaluate(() => { window.testFlow.destroy(); document.getElementById('regression-host').remove(); });
 
-    // E1: real pointer input, wrong answer return, cancellation, keyboard alternative, both passes.
+    // 옛 주소(/brief)로 이미 보낸 링크도 인터랙티브 페이지에 닿아야 한다
     await page.goto(origin + '/evidence/E1/brief');
+    await page.waitForURL('**/evidence/E1/interactive');
+    await page.locator('.cc').waitFor();
+
+    // E1: real pointer input, wrong answer return, cancellation, keyboard alternative, both passes.
+    await page.goto(origin + '/evidence/E1/interactive');
     await page.locator('.cc-ch[data-n="0"] .cc-next').click();
     await page.waitForTimeout(800);
     const ids = await page.locator('.cc-cards .cc-plate').evaluateAll(es => es.map(e => e.dataset.id));

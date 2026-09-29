@@ -9,7 +9,7 @@ const ORIGINAL = 'https://arcana-test-nine.vercel.app/';
     // Reduced motion settles a run at once; the timed run is checked in a second page below.
     const page = await browser.newPage({ viewport: { width: 1440, height: 1000 }, reducedMotion: 'reduce' });
     page.on('pageerror', e => errors.push(e.message));
-    await page.goto(origin + '/evidence/E5/brief');
+    await page.goto(origin + '/evidence/E5/interactive');
     await page.locator('.oc').waitFor();
     assert.equal(await page.locator('.oc-lane').count(), 2);
     assert.equal(await page.locator('.oc-card img').count(), 10);
@@ -59,7 +59,7 @@ const ORIGINAL = 'https://arcana-test-nine.vercel.app/';
     // Timed run: the step follows elapsed time; a hidden tab settles it instead of freezing it.
     const timed = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
     timed.on('pageerror', e => errors.push(e.message));
-    await timed.goto(origin + '/evidence/E5/brief');
+    await timed.goto(origin + '/evidence/E5/interactive');
     await timed.locator('.oc').waitFor();
     await timed.locator('.oc-run').click();
     await timed.waitForTimeout(1200);
