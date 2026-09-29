@@ -78,7 +78,16 @@ export function renderBrief(view, eid) {
   if (ev.url) view.querySelector('.brief-head-doc').appendChild(btn('원본 문서 ↗', 'ghost', () => openDoc(ev.url)));
 
   const recapEl = view.querySelector('.brief-recap');
-  const play = PLAYS[b.kind](view.querySelector('.brief-play'), b, showRecap);
+  // 마운트 도중에 결론을 여는 브리프가 있다(E2 — 처음부터 열어 둔다). 그때는 play가 아직 없어
+  // 다시 해보기를 둘지 모르므로, 요청만 받아 두었다가 play가 생긴 직후에 연다.
+  // play를 바로 보면 초기화 전 접근(TDZ)으로 렌더가 중간에 끊기고 라우터가 렌더 중 상태로 굳는다.
+  let play = null;
+  let pendingRecap = null;
+  play = PLAYS[b.kind](view.querySelector('.brief-play'), b, (opts) => {
+    if (play) showRecap(opts);
+    else pendingRecap = opts || {};
+  });
+  if (pendingRecap) showRecap(pendingRecap);
   view.querySelector('.brief-foot').appendChild(link('← 증거 보관함', '/evidence'));
 
   // opts.scroll === false — 브리프가 처음부터 결론을 열어 둘 때 쓴다.
