@@ -1,6 +1,15 @@
 # Interactive brief regression
 
-Run `node tests/serve.cjs` from the repository, then run `node tests/brief-regression.cjs` in another terminal. The test requires Playwright and its Chromium browser. If Playwright is supplied by an external runtime, set `NODE_PATH` to that runtime's `node_modules` directory. `TEST_ORIGIN` optionally replaces `http://127.0.0.1:4173`.
+Run everything with two commands from `tests/`:
+
+```bash
+cd tests && npm run setup   # 처음 한 번 — playwright + chromium
+npm test                    # 서버를 직접 띄우고 네 스위트를 돌린 뒤 내린다
+```
+
+`npm test` runs `run-all.cjs`, which starts `serve.cjs` on 4173, waits for it to answer, runs the four suites and always stops the server. Individual suites: `npm run test:brief`, `test:e3`, `test:e5`, `test:play`. `TEST_ORIGIN` replaces `http://127.0.0.1:4173` and then the server is not started.
+
+`package.json` lives in `tests/`, not at the repository root — Vercel treats a root `package.json` as a Node project and would turn the static deploy into a build. The site itself has no dependencies and no build step.
 
 The browser test checks route interruption and history navigation, source document access, accepted/rejected casts, queue order, cost reduction and recovery boost, hidden-tab interruption, pointer cancellation, drag and keyboard matching, both E1 passes, facet counts, restart, mobile layout, reduced motion and missing View Transition support.
 

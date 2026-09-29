@@ -126,40 +126,62 @@ function renderRoute(path, restoreScroll) {
   view.innerHTML = '';
   window.scrollTo(0, 0);
 
-  switch (seg[0]) {
-    case '':
-    case 'intro':
-      current = renderIntro(view);
-      break;
-    case 'basic':
-      current = renderBasic(view);
-      break;
-    case 'case':
-      current = renderDossier(view, seg[1] || '01');
-      break;
-    case 'evidence':
-      // /evidence · /evidence/:id (요약) · /evidence/:id/brief (직접 해보기)
-      if (!seg[1]) current = renderEvidence(view);
-      else if (seg[2] === 'brief') current = renderBrief(view, seg[1]);
-      else current = renderDetail(view, seg[1]);
-      break;
-    case 'ending':
-      current = renderEnding(view);
-      break;
-    case 'making':
-      current = renderMaking(view);
-      break;
-    case 'notebook':
-      current = renderNotebook(view);
-      break;
-    case 'docs':
-      current = renderDocs(view);
-      break;
-    default:
-      current = renderNotFound(view, path);
+  // 한 화면이 터져도 사이트 전체가 멈추지는 않게 한다.
+  // dispatching이 true로 남으면 이후의 navigate()가 전부 pendingRedirect로 보류되고,
+  // 뒤로가기나 새로고침 전까지 상단 탭까지 죽는다 — 9/29에 E2 하나 때문에 실제로 그렇게 됐다.
+  // finally로 반드시 풀고, 나머지(탭·배지·구독자)는 평소대로 이어간다.
+  try {
+    switch (seg[0]) {
+      case '':
+      case 'intro':
+        current = renderIntro(view);
+        break;
+      case 'basic':
+        current = renderBasic(view);
+        break;
+      case 'case':
+        current = renderDossier(view, seg[1] || '01');
+        break;
+      case 'evidence':
+        // /evidence · /evidence/:id (요약) · /evidence/:id/brief (직접 해보기)
+        if (!seg[1]) current = renderEvidence(view);
+        else if (seg[2] === 'brief') current = renderBrief(view, seg[1]);
+        else current = renderDetail(view, seg[1]);
+        break;
+      case 'ending':
+        current = renderEnding(view);
+        break;
+      case 'making':
+        current = renderMaking(view);
+        break;
+      case 'notebook':
+        current = renderNotebook(view);
+        break;
+      case 'docs':
+        current = renderDocs(view);
+        break;
+      default:
+        current = renderNotFound(view, path);
+    }
+  } catch (err) {
+    // 반쯤 그려진 DOM을 남기면 무엇이 살아 있는지 알 수 없다 — 지우고 안내만 놓는다
+    console.error(err);
+    current = null;
+    view.className = '';
+    view.innerHTML = '';
+    const box = document.createElement('div');
+    box.className = 'paper load-error';
+    const h = document.createElement('h2');
+    h.textContent = '이 화면을 여는 데 실패했습니다';
+    const p1 = document.createElement('p');
+    p1.textContent = String((err && err.message) || err);
+    const p2 = document.createElement('p');
+    p2.textContent = '다른 메뉴는 그대로 쓰실 수 있습니다.';
+    box.append(h, p1, p2);
+    view.appendChild(box);
+  } finally {
+    dispatching = false;
   }
-
-  dispatching = false;
 
   if (pendingRedirect) {
     const r = pendingRedirect;

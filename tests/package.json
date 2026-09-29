@@ -1,0 +1,17 @@
+{
+  "name": "pr-web-tests",
+  "private": true,
+  "description": "회귀 테스트 전용. 저장소 루트에 두지 않는 이유는 Vercel이 루트의 package.json을 보면 정적 배포를 Node 빌드로 바꾸기 때문이다 — 사이트는 빌드도 의존성도 없이 그대로 동작한다.",
+  "scripts": {
+    "setup": "npm install && npx playwright install chromium",
+    "serve": "node serve.cjs",
+    "test": "node run-all.cjs",
+    "test:brief": "node brief-regression.cjs",
+    "test:e3": "node e3-regression.cjs",
+    "test:e5": "node e5-regression.cjs",
+    "test:play": "node --test play.test.mjs"
+  },
+  "devDependencies": {
+    "playwright": "^1.56.0"
+  }
+}
