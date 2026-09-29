@@ -20,8 +20,22 @@
 .view-retro .brief-lead-line, .view-retro .brief-head { word-break: keep-all; }
 .view-retro .brief-prompt:empty { display: none; }
 
-.rt { max-width: 760px; margin: 0 auto; word-break: keep-all; }
+.rt { position: relative; max-width: 760px; margin: 0 auto; word-break: keep-all; }
 .rt p { margin: 0; }
+
+/* ---------- 옆 목차 (PC) ----------
+   본문 칸(760px) 왼쪽 여백 140px 안에 둔다. 종이(.brief)가 1040px로 다 펴지는 폭부터 보이고, 그때는 위의 알약 목록을 숨긴다 */
+.rt-rail { display: none; }
+@media (min-width: 1100px) {
+  .rt > .rt-toc { display: none; }
+  .rt-rail { display: block; position: absolute; top: 0; bottom: 0; right: calc(100% + 18px); width: 112px; }
+  .rt-rail-list { position: sticky; top: calc(var(--header-h) + 28px); margin: 0; padding: 0; list-style: none; border-left: 1px solid var(--rt-line); }
+  .rt-rail-end { margin-top: 10px; }
+  .rt-rail-item { display: flex; gap: 6px; align-items: baseline; width: 100%; margin-left: -1px; padding: 5px 0 5px 12px; font: inherit; font-size: .8rem; line-height: 1.35; text-align: left; color: var(--rt-muted); background: none; border: 0; border-left: 2px solid transparent; cursor: pointer; }
+  .rt-rail-item:hover { color: var(--rt-ink); }
+  .rt-rail-item.on { color: var(--rt-ink); font-weight: 700; border-left-color: var(--rt-red); }
+  .rt-rail-no { font-weight: 700; color: var(--rt-red); font-variant-numeric: tabular-nums; }
+}
 
 /* ---------- 표지 ---------- */
 .rt-cover { margin-bottom: 34px; }

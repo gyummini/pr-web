@@ -5,6 +5,7 @@
 // 블록 종류: verdict(결정과 이유), p(본문), h(소제목), list(글머리표), figure(그림 한 장), pair(참고 | 결과),
 // roles(제가 한 일 | AI가 한 일), table(표), sources(출처 링크).
 // 문서의 끝 줄은 '직접 플레이하기' 버튼이다(/api/play → 개인 키 발급). 새 탭으로 열어 라우터를 거치지 않는다.
+// 넓은 화면(PC)에서는 본문 왼쪽 여백에 장 목록이 따라 내려오고, 지금 읽는 장을 표시한다(좁은 화면은 위의 장 목록).
 import { track } from '../analytics.js';
 
 export function playRetro(host, b) {
@@ -14,8 +15,10 @@ export function playRetro(host, b) {
   (b.chapters || []).forEach((ch) => root.appendChild(chapter(ch)));
   if (b.credits) root.appendChild(credits(b.credits));
   if (b.play) root.appendChild(play(b.play));
+  const side = (b.chapters || []).length > 1 ? rail(b, root) : null;
+  if (side) root.appendChild(side.nav);
   host.appendChild(root);
-  return { restart: null, destroy() {} };
+  return { restart: null, destroy() { side?.stop(); } };
 }
 
 // ---------------------------------------------------------------- 표지
@@ -60,6 +63,62 @@ function contents(chapters, root) {
   return nav;
 }
 
+// PC의 옆 목차. 본문 칸 왼쪽에 붙어 스크롤을 따라 내려오고(CSS sticky), 화면 위쪽 40% 선을 지난 마지막 장을 표시한다.
+// 좁은 화면에서는 CSS가 숨기므로 그동안은 계산하지 않는다. 브리프를 떠나면 destroy가 리스너를 푼다
+function rail(b, root) {
+  const nav = el('nav', 'rt-rail');
+  nav.setAttribute('aria-label', '장 바로가기');
+  const list = el('ol', 'rt-rail-list');
+  const marks = [];
+  const add = (no, word, find, cls) => {
+    const li = el('li', cls);
+    const button = el('button', 'rt-rail-item');
+    button.type = 'button';
+    if (no) button.appendChild(el('span', 'rt-rail-no', no));
+    button.appendChild(el('span', null, word));
+    button.addEventListener('click', () => find()?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+    li.appendChild(button);
+    list.appendChild(li);
+    marks.push({ button, find });
+  };
+  b.chapters.forEach((ch) => add(ch.no, ch.word, () => root.querySelector(`[data-chapter="${ch.no}"]`)));
+  if (b.credits) add(null, '저작권과 출처', () => root.querySelector('.rt-credits'), 'rt-rail-end');
+  if (b.play) add(null, '직접 플레이', () => root.querySelector('.rt-play'), b.credits ? null : 'rt-rail-end');
+  nav.appendChild(list);
+
+  let frame = 0;
+  const update = () => {
+    frame = 0;
+    if (!nav.isConnected || !nav.offsetParent) return;
+    const line = window.innerHeight * 0.4;
+    const page = document.scrollingElement || document.documentElement;
+    const atEnd = page.scrollTop + window.innerHeight >= page.scrollHeight - 4;
+    let on = -1;
+    marks.forEach((m, i) => {
+      const target = m.find();
+      if (target && target.getBoundingClientRect().top <= line) on = i;
+    });
+    if (atEnd && on >= 0) on = marks.length - 1;
+    marks.forEach((m, i) => {
+      m.button.classList.toggle('on', i === on);
+      if (i === on) m.button.setAttribute('aria-current', 'true');
+      else m.button.removeAttribute('aria-current');
+    });
+  };
+  const soon = () => { if (!frame) frame = requestAnimationFrame(update); };
+  document.addEventListener('scroll', soon, { passive: true, capture: true });
+  window.addEventListener('resize', soon, { passive: true });
+  soon();
+  return {
+    nav,
+    stop() {
+      document.removeEventListener('scroll', soon, { capture: true });
+      window.removeEventListener('resize', soon);
+      if (frame) cancelAnimationFrame(frame);
+    },
+  };
+}
+
 // ---------------------------------------------------------------- 장
 
 function chapter(ch) {
@@ -91,12 +150,13 @@ function list(items) {
   return ul;
 }
 
-// 그림 한 장. 움짤(gif)도 같은 <img>로 둔다. 크기를 미리 알려 불러오는 동안 자리가 흔들리지 않게 한다
+// 그림 한 장. 움짤(gif)도 같은 <img>로 둔다. 크기를 미리 알려 불러오는 동안 자리가 흔들리지 않게 한다.
+// 캡션이 그림을 설명하므로 alt는 비운다(같은 문장이 두 번 읽히거나 복사되지 않게)
 function figure(f) {
   const fig = el('figure', 'rt-fig');
   const img = document.createElement('img');
   img.src = f.src;
-  img.alt = f.caption || '';
+  img.alt = f.caption ? '' : (f.alt || '');
   img.loading = 'lazy';
   img.decoding = 'async';
   if (f.w && f.h) {
