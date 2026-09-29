@@ -8,7 +8,7 @@
       "title": "서브컬처 캐릭터 매력 분석서",
       "subtitle": "『100명의 그녀』로 분석한 미소녀 게임 캐릭터 디자인 방법론",
       "chapters": [
-        "CASE03"
+        "CASE01"
       ],
       "summary": "가챠 게임 캐릭터의 이중 과제(단기 각인 × 장기 잔존)를 푸는 설계 공식을 『100명의 그녀』에서 도출하고, 니케의 일레그로 실전 검증한 뒤, 오리지널 캐릭터 기획에 적용한 3단 구성의 분석서.",
       "url": "https://drive.google.com/file/d/18rImezDf4Znq7pyR330o5G_gTh_bUeVh/view?usp=sharing",
@@ -1371,7 +1371,7 @@
         }
       },
       "chapters": [
-        "CASE01"
+        "CASE04"
       ],
       "summary": "채굴 게임에서 브레인롯 강화 게임으로 — '이 게임의 재미는 어디서 오는가'를 되물으며 시스템을 덜어낸 끝에 하나의 코어 루프를 찾아 실제 출시까지 간 개인 프로젝트 회고. MCP 기반 AI 개발 파이프라인 사용.",
       "url": "https://docs.google.com/document/d/1eqXiLJeAdRR7NuultVD4wbd-a65xVbrYCL1-4aQWsQo/edit?usp=sharing",
@@ -1496,7 +1496,7 @@
       "title": "아르카나 세트 시스템 제안서",
       "subtitle": "기존 구조를 지키며 캐릭터 매력을 증폭하는 신규 시스템",
       "chapters": [
-        "CASE03"
+        "CASE02"
       ],
       "summary": "서비스 게임의 본질적 매력(캐릭터)이 가장 깊이 체험되는 콘텐츠를 분석하고, 기존 편성·여정 구조를 해치지 않으면서 그 매력을 극대화하는 세트 시스템을 설계한 제안서.",
       "url": "https://arcana-test-nine.vercel.app/",
@@ -1803,7 +1803,7 @@
       "title": "AI 문서 작성 효율화 보고서",
       "subtitle": "AI를 기획 워크플로우에 접목하기",
       "chapters": [
-        "CASE04"
+        "CASE03"
       ],
       "summary": "AI 도구를 기획 문서 작성 파이프라인에 적용해 효율을 분석한 보고서. 'AI는 속도를 높이지만, 무엇을 만들지는 기획자의 몫'이라는 결론까지.",
       "url": "https://app.notion.com/p/AI-36caa7a78d1180dd8382f1bb96896b76?source=copy_link",
@@ -1860,7 +1860,8 @@
       "title": "PokeCollect 개발 회고",
       "subtitle": "스킨 하나가 바꾼 재미를 게임으로 옮기기까지",
       "chapters": [
-        "CASE04"
+        "CASE02",
+        "CASE03"
       ],
       "summary": "포켓몬 스킨 하나로 달라진 보드게임의 재미에서 출발해, 카드팩을 뜯고 도감을 채우는 수집 게임을 2주 만에 웹으로 낸 개발 회고입니다. 구현과 검증은 AI 도구에 맡기고, 갈림길마다 '팩을 뜯는 재미'로 돌아와 판단한 과정을 담았습니다.",
       "url": null,
