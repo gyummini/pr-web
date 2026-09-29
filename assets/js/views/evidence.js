@@ -74,7 +74,7 @@ function cardHtml(ev) {
           ${
             // 절대원칙 1(2클릭 내 도달) 유지 — 본문이 브리프로 가더라도
             // 원본 문서로 바로 가는 길은 카드 안에 남겨둔다.
-            got ? `<button type="button" class="ev-direct" title="원본 문서 새 탭으로 열기">원본 ↗</button>` : ''
+            got && ev.url ? `<button type="button" class="ev-direct" title="원본 문서 새 탭으로 열기">원본 ↗</button>` : ''
           }
         </div>
       </div>

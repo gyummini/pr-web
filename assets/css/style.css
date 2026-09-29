@@ -1346,7 +1346,7 @@ body.plain-mode #view { min-height: 100vh; }
 /* ---------- 메모 블록 ----------
    모두 '수첩에 붙여둔 쪽지' 바탕(흰 종이 + 살짝 기울임)을 공유하되, 그림 자체는 증거마다 다르다.
    여기서 정의하는 것은 바탕과 칩·화살표 같은 공용 부품까지. 그림은 각 블록 규칙이 맡는다. */
-.memo-cyc, .memo-map, .memo-red, .memo-bri, .memo-gra, .memo-spl {
+.memo-cyc, .memo-map, .memo-red, .memo-bri, .memo-gra, .memo-spl, .memo-cmp {
   margin: 7px 0 9px; padding: 11px 13px;
   background: #fff; border: 1px solid var(--nb-rule); border-radius: 4px;
   box-shadow: 0 3px 7px rgba(0, 0, 0, .1);
@@ -1357,6 +1357,7 @@ body.plain-mode #view { min-height: 100vh; }
 .memo-bri { transform: rotate(-.25deg); }
 .memo-gra { transform: rotate(.3deg); }
 .memo-spl { transform: rotate(-.3deg); }
+.memo-cmp { transform: rotate(.2deg); }
 
 /* 공용 부품 */
 .memo-chips { display: flex; align-items: center; flex-wrap: wrap; gap: 4px; }
@@ -1408,6 +1409,17 @@ body.plain-mode #view { min-height: 100vh; }
   margin-top: 9px; padding-top: 7px; border-top: 1px dashed var(--nb-rule);
   font-size: .72rem; color: var(--nb-ink-soft); text-align: center;
 }
+
+/* E8 compass — 가운데 기준 하나, 갈림길마다 그리로 돌아온 결정 */
+.memo-cmp-core {
+  margin: 0 auto 9px; width: fit-content; padding: 4px 12px;
+  border: 1.5px solid var(--nb-red); border-radius: 999px;
+  font-size: .74rem; font-weight: 700; color: var(--nb-red-deep); background: rgba(178, 58, 47, .06);
+}
+.memo-cmp-list { display: grid; gap: 5px; }
+.memo-cmp-row { display: flex; align-items: baseline; gap: 6px; font-size: .72rem; line-height: 1.45; }
+.memo-cmp-q { flex: none; width: 92px; color: var(--nb-muted); }
+.memo-cmp-a { color: var(--nb-ink-soft); font-weight: 600; }
 
 /* E2 mapping — 화면 ↔ 판단, 그리고 한 줄로 수렴 */
 .memo-map-head { display: flex; gap: 8px; margin-bottom: 5px; }

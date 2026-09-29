@@ -74,6 +74,13 @@ function send(name, data) {
   window.va('event', { name, data });
 }
 
+// 버튼 하나의 커스텀 이벤트(E8의 play_click 등). 값은 다른 이벤트처럼 전부 문자열로, 각 255자까지.
+export function track(name, data = {}) {
+  const clean = {};
+  for (const [k, v] of Object.entries(data)) clean[String(k).slice(0, 255)] = String(v).slice(0, 255);
+  send(String(name).slice(0, 255), clean);
+}
+
 // 개인 식별 정보 차단: 쿼리스트링·해시는 절대 싣지 않고 라우트 경로만 보낸다.
 function safePath(p) {
   const only = String(p == null ? '/' : p).split('?')[0].split('#')[0];

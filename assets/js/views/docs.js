@@ -1,5 +1,6 @@
 import { DB } from '../data.js';
 import { openDoc } from '../ui.js';
+import { navigate } from '../router.js';
 
 // 포트폴리오 문서 목록 (/docs).
 // 컨셉 없는 열람용 페이지 — 수사 어휘·캐릭터·수집 UI를 일절 쓰지 않는다.
@@ -69,7 +70,8 @@ export function renderDocs(view) {
     const img = el.querySelector('.docs-thumb-img');
     if (img) img.addEventListener('error', () => img.remove(), { once: true });
 
-    el.querySelector('.docs-open').addEventListener('click', () => openDoc(d.url));
+    // 브리프가 곧 원문인 증거(E8)는 그 브리프를 연다
+    el.querySelector('.docs-open').addEventListener('click', () => (d.url ? openDoc(d.url) : navigate(`/evidence/${d.id}/brief`)));
     el.querySelectorAll('.docs-att').forEach((btn) => {
       const att = (d.attachments || [])[Number(btn.dataset.att)];
       if (!att) {

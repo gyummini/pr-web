@@ -28,6 +28,7 @@ const BLOCKS = {
   bridge: blockBridge,   // E4: 끊긴 두 콘텐츠와 그 사이 징검다리
   graft: blockGraft,     // E5: 손대지 않은 기존 구조 위에 얹히는 조각
   split: blockSplit,     // E6: 같은 일의 두 단계와 그 사이 무게 이동
+  compass: blockCompass, // E8: 갈림길마다 처음의 재미로 돌아와 정한 방향
 };
 
 export function hasMemo(ev) {
@@ -146,6 +147,21 @@ function blockReduce(cfg) {
     box.appendChild(line);
   });
   if (cfg.kept) box.appendChild(el('div', 'memo-red-kept', cfg.kept));
+  return box;
+}
+
+/* ---------- 블록: 갈림길마다 돌아오는 기준 ---------- */
+
+function blockCompass(cfg) {
+  const box = el('div', 'memo-cmp');
+  box.appendChild(el('div', 'memo-cmp-core', cfg.core));
+  const list = el('div', 'memo-cmp-list');
+  (cfg.turns || []).forEach((t) => {
+    const row = el('div', 'memo-cmp-row');
+    row.append(el('span', 'memo-cmp-q', t.q), el('span', 'memo-sep', '→'), el('span', 'memo-cmp-a', t.a));
+    list.appendChild(row);
+  });
+  box.appendChild(list);
   return box;
 }
 

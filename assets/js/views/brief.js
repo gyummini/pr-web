@@ -5,6 +5,7 @@ import { playFlow } from '../briefs/flow.js';
 import { playCharacterCall } from '../briefs/character-call.js';
 import { playReduction } from '../briefs/reduction.js';
 import { playOneCard } from '../briefs/one-card.js';
+import { playRetro } from '../briefs/retro.js';
 import { evidenceHeader } from '../motion/evidence-header.js';
 import { animate, effects, reducedMotion } from '../motion/animate.js';
 
@@ -20,6 +21,7 @@ const PLAYS = {
   character_call: playCharacterCall, // E1 — 각인 → 호출 → 되감기 → 입체감
   reduction: playReduction, // E3 — 경제 CUT → 채굴 CUT → 맥락 전환
   one_card: playOneCard, // E5 — 같은 여정 두 개, 카드 한 장 차이
+  retro: playRetro, // E8 — 인터랙션 없이 읽는 개발 회고. 브리프가 곧 원문이다
 };
 
 export function hasBrief(ev) {
@@ -38,6 +40,7 @@ export function renderBrief(view, eid) {
   view.className = 'view-brief';
   if (b.kind === 'reduction') view.classList.add('view-reduction');
   if (b.kind === 'one_card') view.classList.add('view-one-card');
+  if (b.kind === 'retro') view.classList.add('view-retro');
   view.innerHTML = `
     <div class="brief">
       <div class="brief-head">
@@ -71,7 +74,8 @@ export function renderBrief(view, eid) {
 
   // 원본은 머리말에 상시 둔다. 결론까지 내려가야만 닿으면, 브리프를 건너뛰고
   // 문서만 보려는 검토자에게 인터랙션이 통행료가 된다.
-  view.querySelector('.brief-head-doc').appendChild(btn('원본 문서 ↗', 'ghost', () => openDoc(ev.url)));
+  // 브리프가 곧 원문인 증거(E8)는 따로 열 원본이 없다
+  if (ev.url) view.querySelector('.brief-head-doc').appendChild(btn('원본 문서 ↗', 'ghost', () => openDoc(ev.url)));
 
   const recapEl = view.querySelector('.brief-recap');
   const play = PLAYS[b.kind](view.querySelector('.brief-play'), b, showRecap);
@@ -93,11 +97,11 @@ export function renderBrief(view, eid) {
 
     // 원본 문서는 브리프의 끝에서만 연다
     const docs = recapEl.querySelector('.brief-docs');
-    docs.appendChild(btn('원본 문서 ↗', 'accent', () => openDoc(ev.url)));
+    if (ev.url) docs.appendChild(btn('원본 문서 ↗', 'accent', () => openDoc(ev.url)));
     (ev.attachments || []).forEach((att) => {
       docs.appendChild(btn(att.label, 'ghost', () => openDoc(att.url)));
     });
-    docs.appendChild(btn('다시 해보기', 'ghost', () => play.restart(hideRecap)));
+    if (play.restart) docs.appendChild(btn('다시 해보기', 'ghost', () => play.restart(hideRecap)));
 
     recapEl.hidden = false;
     recapEl.classList.add('on');

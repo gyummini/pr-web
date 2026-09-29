@@ -61,6 +61,7 @@ export function renderDetail(view, eid) {
     attWrap.appendChild(a);
   });
 
-  view.querySelector('.open-doc').addEventListener('click', () => openDoc(ev.url));
+  // 브리프가 곧 원문인 증거(E8)는 브리프를 연다
+  view.querySelector('.open-doc').addEventListener('click', () => (ev.url || !hasBrief(ev) ? openDoc(ev.url) : navigate(`/evidence/${ev.id}/brief`)));
   return { destroy: stopCover };
 }

@@ -1,0 +1,100 @@
+/* E8 — PokeCollect 개발 회고. 팔레트는 게임에서 가져온다: 종이색 바탕, 먹색 글자, 게임의 빨강.
+   인터랙션 없이 읽는 문서라 한 단 폭(글 760px, 그림은 그보다 넓게)으로 둔다. */
+.view-retro {
+  --rt-ink: #1b1b1b;
+  --rt-ink2: #52514e;
+  --rt-muted: #8a8882;
+  --rt-line: #e1e0d9;
+  --rt-red: #c8372d;
+  --rt-pink: #fbf1ef;
+  --rt-box: #f5f4ef;
+  --rt-paper: #fffdf8;
+  --fx-accent: var(--rt-red);
+  --fx-line: var(--rt-line);
+  --fx-soft: var(--rt-ink2);
+  --fx-panel: var(--rt-box);
+}
+.view-retro .brief { background: var(--rt-paper); color: var(--rt-ink); max-width: 1040px; padding: 30px clamp(18px, 4vw, 48px) 60px; }
+.view-retro .brief-lead { max-width: 760px; margin-inline: auto; }
+.view-retro .brief-lead-title { font-size: clamp(1.3rem, 2.6vw, 1.7rem); letter-spacing: -.02em; word-break: keep-all; }
+.view-retro .brief-lead-line, .view-retro .brief-head { word-break: keep-all; }
+.view-retro .brief-prompt:empty { display: none; }
+
+.rt { max-width: 760px; margin: 0 auto; word-break: keep-all; }
+.rt p { margin: 0; }
+
+/* ---------- 표지 ---------- */
+.rt-cover { margin-bottom: 34px; }
+.rt-meta { display: grid; grid-template-columns: max-content 1fr; gap: 4px 16px; margin: 0 0 20px; font-size: .9rem; }
+.rt-meta dt { color: var(--rt-red); font-weight: 700; }
+.rt-meta dd { margin: 0; color: var(--rt-ink2); }
+.rt-glance { margin: 22px 0; padding: 18px 22px 14px; background: var(--rt-box); border-radius: 8px; }
+.rt-glance-title { margin: 0 0 8px; font-size: 1rem; }
+.rt-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px 10px; margin-top: 20px; }
+.rt-stat { text-align: center; }
+.rt-stat strong { display: block; font-size: 1.45rem; color: var(--rt-red); letter-spacing: -.02em; }
+.rt-stat span { font-size: .8rem; color: var(--rt-ink2); }
+
+/* ---------- 장 목록 ---------- */
+.rt-toc { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 36px; padding: 12px 0; border-block: 1px solid var(--rt-line); }
+.rt-toc-item { display: inline-flex; gap: 6px; align-items: baseline; padding: 5px 11px; font: inherit; font-size: .82rem; color: var(--rt-ink2); background: transparent; border: 1px solid var(--rt-line); border-radius: 999px; cursor: pointer; }
+.rt-toc-item:hover { border-color: var(--rt-red); color: var(--rt-red); }
+.rt-toc-no { font-weight: 700; color: var(--rt-red); font-variant-numeric: tabular-nums; }
+
+/* ---------- 장 ---------- */
+.rt-chapter { padding-top: 26px; margin-top: 34px; border-top: 1px solid var(--rt-line); scroll-margin-top: calc(var(--header-h) + 14px); }
+.rt-label { display: flex; gap: 10px; align-items: baseline; color: var(--rt-red); font-size: .9rem; }
+.rt-no { font-weight: 800; }
+.rt-title { margin: 4px 0 16px; font-size: clamp(1.35rem, 2.4vw, 1.75rem); letter-spacing: -.02em; line-height: 1.35; }
+.rt-verdict { margin: 0 0 18px !important; padding: 14px 18px; font-weight: 700; font-size: 1.04rem; line-height: 1.75; background: var(--rt-pink); border-left: 4px solid var(--rt-red); border-radius: 0 6px 6px 0; }
+.rt-p { margin: 0 0 14px !important; line-height: 1.85; color: var(--rt-ink); }
+.rt-h { margin: 22px 0 8px; font-size: 1.05rem; }
+.rt-list { margin: 4px 0 16px; padding-left: 20px; line-height: 1.8; }
+.rt-list li::marker { color: var(--rt-red); }
+
+/* 그림: 글보다 조금 넓게 나가도 되지만 화면을 넘지 않는다 */
+.rt-fig { margin: 16px auto 22px; max-width: min(var(--rt-max, 760px), 100%); text-align: center; }
+.rt-fig img { display: block; width: 100%; height: auto; margin: 0 auto; border-radius: 6px; background: var(--rt-box); }
+.rt-fig figcaption { margin-top: 8px; font-size: .82rem; color: var(--rt-muted); line-height: 1.55; }
+.rt-tag { display: inline-block; margin-right: 6px; font-weight: 700; color: var(--rt-muted); }
+.rt-tag.result { color: var(--rt-red); }
+.rt-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; align-items: end; margin: 8px 0 12px; }
+.rt-pair .rt-fig { margin: 8px auto; }
+
+.rt-roles { display: grid; grid-template-columns: 1fr 1fr; gap: 0; margin: 18px 0 8px; border-block: 1px solid var(--rt-line); }
+.rt-role { padding: 12px 16px; font-size: .88rem; line-height: 1.7; color: var(--rt-ink2); }
+.rt-role strong { display: block; margin-bottom: 4px; font-size: .82rem; color: var(--rt-ink); }
+.rt-role.mine { background: var(--rt-pink); }
+.rt-role.mine strong { color: var(--rt-red); }
+.rt-role.ai { background: var(--rt-box); }
+
+.rt-table-wrap { overflow-x: auto; margin: 12px 0 18px; }
+.rt-table { width: 100%; border-collapse: collapse; font-size: .86rem; line-height: 1.6; }
+.rt-table caption { text-align: left; font-weight: 700; margin-bottom: 6px; }
+.rt-table th { text-align: left; padding: 8px 10px; background: var(--rt-box); border-block: 1px solid var(--rt-line); white-space: nowrap; }
+.rt-table td { padding: 8px 10px; border-bottom: 1px solid var(--rt-line); color: var(--rt-ink2); vertical-align: top; }
+.rt-table td:first-child { color: var(--rt-ink); font-weight: 600; white-space: nowrap; }
+
+.rt-sources { margin: 6px 0 16px; font-size: .8rem; color: var(--rt-muted); }
+.rt-sources-head { font-weight: 700; }
+.rt-sources ol { margin: 4px 0 0; padding-left: 18px; }
+.rt-sources a { color: var(--rt-ink2); }
+
+/* ---------- 저작권 전문과 끝 줄 ---------- */
+.rt-credits { margin-top: 48px; padding: 22px 24px 18px; background: var(--rt-box); border-radius: 8px; font-size: .84rem; line-height: 1.7; color: var(--rt-ink2); }
+.rt-credits-title { margin: 0 0 12px; font-size: 1.05rem; color: var(--rt-ink); }
+.rt-credit-group { margin-bottom: 12px; }
+.rt-credit-group h4 { margin: 0 0 2px; font-size: .86rem; color: var(--rt-ink); }
+.rt-notice { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--rt-line); }
+.rt-notice strong { display: block; color: var(--rt-ink); margin-bottom: 2px; }
+.rt-play { margin: 36px 0 6px; text-align: center; }
+.rt-play-btn { display: inline-block; padding: 14px 30px; font-size: 1.05rem; font-weight: 700; text-decoration: none; background: var(--rt-red); border-color: var(--rt-red); color: #fff; }
+.rt-play-btn:hover { filter: brightness(1.06); }
+.rt-play-note { margin-top: 10px !important; font-size: .84rem; color: var(--rt-ink2); }
+
+@media (max-width: 640px) {
+  .rt-pair, .rt-roles { grid-template-columns: 1fr; }
+  .rt-stats { grid-template-columns: repeat(2, 1fr); }
+  .rt-meta { grid-template-columns: 1fr; gap: 0; }
+  .rt-meta dd { margin-bottom: 6px; }
+}
