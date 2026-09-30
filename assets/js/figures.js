@@ -13,7 +13,7 @@ const FIGURES = {
         </div>
         <div class="fig-goal">
           <span class="fig-goal-no">목표 ③</span>
-          웹사이트 자체에서 <strong>캐릭터</strong>가 드러난다
+          웹사이트에서도 <strong>어떤 사람인지</strong> 드러난다
         </div>
       </div>
       <div class="fig-goals-clash">⚡ 연출·인터랙션이 늘수록 읽기는 불편해진다 — 충돌</div>
@@ -54,7 +54,7 @@ const FIGURES = {
     const rows = [
       ['첫 로딩 속도', false, true],
       ['URL 딥링크 · 뒤로가기', false, true],
-      ['텍스트 스킴 (읽기 모드)', false, true],
+      ['텍스트 훑어 읽기', false, true],
       ['외부 문서 링크와의 공존', false, true],
       ['대사창 연출 (손맛)', true, true],
     ];
@@ -66,7 +66,7 @@ const FIGURES = {
           ${rows.map((r) => `<tr><th>${r[0]}</th><td>${ox(r[1])}</td><td>${ox(r[2])}</td></tr>`).join('')}
         </tbody>
       </table>
-      <div class="fig-note">기각 근거: 심사는 '플레이 모드'가 아니라 '읽기 모드'로 이루어진다</div>`;
+      <div class="fig-note">선택 기준: 방문자가 문서를 읽고 검토하기에 편한가</div>`;
   },
 
   // 3-2: 대사 스크립트 JSON ↔ 렌더링 결과 (사이트 CSS 컴포넌트 재현)
@@ -91,7 +91,7 @@ const FIGURES = {
         </div>
       </div>
     </div>
-    <div class="fig-note">JSON 한 줄이 그대로 화면 연출이 된다 — 대사 데이터와 렌더러의 완전 분리 (진행 표시 ▼는 지금도 깜빡이는 실제 컴포넌트)</div>`,
+    <div class="fig-note">JSON에 적은 대사가 화면에 표시된다 — 대사와 화면을 그리는 코드를 분리 (▼는 실제로 깜빡이는 진행 표시)</div>`,
 
   // 4-1: 클루 표정 시트 (스탠딩 4종)
   '4-1': () => {
@@ -120,7 +120,7 @@ const FIGURES = {
     const rows = [
       ['이름', "클루 (Clue)", "이름이 곧 '단서(clue)'"],
       ['생일', '1월 12일', '112 — 수사 모티프'],
-      ['외형', '돋보기 머리핀 · 머리에 꽂은 펜 · 항상 안고 있는 서류 파일', "어느 진입로로 봐도 '기록하는 사람'"],
+      ['외형', '돋보기 머리핀 · 머리에 꽂은 펜 · 항상 안고 있는 서류 파일', "어떤 정보를 봐도 '기록하는 사람'"],
       ['말버릇', '"기록해둘게요!", "요약하자면—"', '대사 단위 각인'],
       ['호칭', '방문자를 항상 "탐정님"', '방문자에게 역할 부여'],
     ];
@@ -131,16 +131,16 @@ const FIGURES = {
           ${rows.map((r) => `<tr><th>${r[0]}</th><td>${r[1]}</td><td>${r[2]}</td></tr>`).join('')}
         </tbody>
       </table>
-      <div class="fig-note">모든 정보가 <strong>'기록광 조수'</strong> 한 속성으로 귀결되도록 설계</div>`;
+      <div class="fig-note">어떤 정보를 봐도 <strong>'기록광 조수'</strong>라는 인상이 남도록 설계</div>`;
   },
 
   // 4-3: 분석서의 공식(이론) ↔ 클루(실전 적용) 대응
   '4-3': () => {
     const rows = [
       ['① 한 단어로 압축', "'기록광 조수'"],
-      ['② 속성과 관련된 부작용 짝짓기', "'요약에 과하게 진심' — 수집 리액션의 톤 근거"],
+      ['② 속성과 관련된 부작용 짝짓기', "'요약에 과하게 진심' — 수집할 때의 반응을 결정"],
       ['③ 모든 정보를 속성으로 귀결 (정보 도배)', "이름·생일·소품·말버릇이 전부 '기록/단서'로"],
-      ['④ 호출을 통한 입체화', '인트로 각인 → 팝업·수집 알림 호출 → 엔딩에서 코어 공개'],
+      ['④ 호출을 통한 입체화', '인트로에서 첫인상 → 팝업·수집 알림에서 새 면모 → 엔딩에서 속마음 공개'],
     ];
     return `
       <table class="fig-table fig-dobae">
@@ -192,12 +192,12 @@ const FIGURES = {
     <div class="fig-ba">
       <figure class="fig-ba-item">
         <img src="/assets/img/making_before.jpg" alt="초기 시안 — 세부 프롬프트 없이 생성" loading="lazy">
-        <figcaption><strong>Before — 초기 시안.</strong> 프롬프트를 세세하게 지정하지 않고 생성한 결과물. 배경·소품·복장이 통제되지 않아 디테일이 확정되지 못했고, 그대로 활용하기는 어려웠습니다.</figcaption>
+        <figcaption><strong>Before — 초기 시안.</strong> 세부 조건을 정하지 않고 생성한 이미지. 배경·소품·복장이 일정하지 않아 그대로 쓰기는 어려웠습니다.</figcaption>
       </figure>
       <div class="fig-ba-arrow">→</div>
       <figure class="fig-ba-item after">
         <img src="${SPRITES.standing.normal}" alt="확정 스탠딩" loading="lazy">
-        <figcaption><strong>After — 확정 기본 스탠딩.</strong> 외형 설정을 상세 프롬프트로 고정해 확정한 이미지. 나머지 표정 3종은 이 이미지를 참조한 편집 파생으로 제작했습니다.</figcaption>
+        <figcaption><strong>After — 확정 기본 스탠딩.</strong> 외형을 프롬프트에 구체적으로 적어 완성한 이미지. 이 이미지를 편집해 나머지 표정 3종을 만들었습니다.</figcaption>
       </figure>
     </div>`,
 };

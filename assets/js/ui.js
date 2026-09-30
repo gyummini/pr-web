@@ -131,7 +131,7 @@ function maybeShowHiddenUnlockToast() {
   el.innerHTML = `
     <span class="toast-icon" aria-hidden="true">🔓</span>
     <div class="toast-body">
-      <div class="toast-title">마지막 파일이 해금되었습니다.</div>
+      <div class="toast-title">이제 마지막 파일을 열어볼 수 있습니다.</div>
       <a class="toast-action" href="${dest()}"></a>
     </div>
     <button type="button" class="toast-close" aria-label="알림 닫기">×</button>`;

@@ -38,7 +38,7 @@
       "period": "2021 ~ 2023",
       "name": "대학 팀 프로젝트 3건",
       "role": "팀장",
-      "detail": "방향성 공유·중간 점검 프로세스를 정착시켜 결합 단계 재작업 없이 완수. 그중 1건 과 대회 출품."
+      "detail": "팀의 작업 방향을 공유하고 중간 점검을 정례화해, 결과물을 합치는 단계에서 재작업 없이 완료. 그중 1건은 학과 대회에 출품."
     },
     {
       "period": "2021",
@@ -99,7 +99,7 @@
   "playRecord": {
     "label": "플레이 기록",
     "summary": "274개 · 플레이 시간순",
-    "note": "플레이한 게임들 기록(플레이 타임 순)",
+    "note": "플레이한 게임 기록(플레이 시간순)",
     "url": "https://minimap.net/user/gyummini/library?vm=LIST&ipp=s&sort=PLAYTIME&l=kr"
   },
   "pdf": "/이력서.pdf",

@@ -24,7 +24,7 @@ export default function handler(req, res) {
     // 설정 전에는 게임으로 보내지 않는다(게이트가 서명을 확인할 수 없다)
     res.statusCode = 503;
     res.setHeader('Content-Type', 'text/plain; charset=utf-8');
-    res.end('플레이 입장 설정이 아직 끝나지 않았습니다. 잠시 뒤에 다시 눌러 주세요.');
+    res.end('아직 게임 입장을 준비하고 있습니다. 잠시 후 다시 시도해 주세요.');
     return;
   }
   res.statusCode = 302;

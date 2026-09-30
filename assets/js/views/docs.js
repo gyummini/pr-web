@@ -62,7 +62,7 @@ export function renderDocs(view) {
         </div>
 
         <p class="docs-alt">
-          <a href="/intro">자기소개서와 각 문서를 연결해 열람할 수 있는 버전도 있습니다 →</a>
+          <a href="/intro">자기소개서를 읽으며 관련 포트폴리오도 함께 살펴보세요 →</a>
         </p>
       </footer>
     </div>`;
