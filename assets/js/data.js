@@ -8,6 +8,7 @@ export const DB = {
   resume: null,    // data/resume.json
   making: null,    // 콘텐츠_제작기.md 파싱 결과 (구 E7 제작기 페이지)
   notebook: null,  // 콘텐츠_수사수첩.json (E7 히든 — 클루의 수사 수첩)
+  ui: null,        // 콘텐츠_화면문구.json (버튼·안내 같은 화면 공통 문구 — text.js의 T로 읽는다)
 };
 
 async function fetchJSON(path) {
@@ -23,7 +24,7 @@ async function fetchText(path) {
 }
 
 export async function loadAll() {
-  const [cardsJson, intro, ending, essayMd, resume, makingMd, notebook] = await Promise.all([
+  const [cardsJson, intro, ending, essayMd, resume, makingMd, notebook, ui] = await Promise.all([
     fetchJSON('/콘텐츠_증거카드.json'),
     fetchJSON('/스크립트_인트로.json'),
     fetchJSON('/스크립트_엔딩.json'),
@@ -31,6 +32,7 @@ export async function loadAll() {
     fetchJSON('/data/resume.json'),
     fetchText('/콘텐츠_제작기.md'),
     fetchJSON('/콘텐츠_수사수첩.json'),
+    fetchJSON('/콘텐츠_화면문구.json'),
   ]);
   DB.cards = cardsJson.evidences;
   DB.groups = cardsJson.groups || [];
@@ -40,6 +42,7 @@ export async function loadAll() {
   DB.resume = resume;
   DB.making = parseMaking(makingMd);
   DB.notebook = notebook;
+  DB.ui = ui;
   return DB;
 }
 

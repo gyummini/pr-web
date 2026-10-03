@@ -1,0 +1,1 @@
+E2.attachments.0.label = 첨부: 스킬 데이터 테이블 (xlsx)

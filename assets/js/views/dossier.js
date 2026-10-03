@@ -3,6 +3,7 @@ import { state } from '../state.js';
 import { openEvidencePopup } from '../popup.js';
 import { autoCollectChapter } from '../collect.js';
 import { navigate } from '../router.js';
+import { T, TH } from '../text.js';
 
 // 세부 사항 — 진술 기록 (CASE 01~04 + EPILOGUE)
 export function renderDossier(view, routePart) {
@@ -23,7 +24,7 @@ export function renderDossier(view, routePart) {
   view.innerHTML = `
     <div class="dossier">
       <article class="paper essay">
-        <div class="stamp">진술 기록</div>
+        <div class="stamp">${TH('dossier.stamp')}</div>
         <div class="case-no">${chapterLabel(ch)}</div>
         <h2>${ch.concept}</h2>
         <p class="chapter-sub">${ch.subtitle}</p>
@@ -33,12 +34,12 @@ export function renderDossier(view, routePart) {
           ${
             next
               ? `<a class="btn accent" href="${chapterPath(next)}">${next.concept} →</a>`
-              : `<a class="btn accent" href="/evidence">수집된 증거 확인하기 →</a>`
+              : `<a class="btn accent" href="/evidence">${TH('dossier.to_evidence')}</a>`
           }
         </div>
       </article>
       <aside class="chapter-index">
-        <div class="index-title">진술 기록 목차</div>
+        <div class="index-title">${TH('dossier.index_title')}</div>
         ${DB.chapters
           .map(
             (c) => `
@@ -76,5 +77,5 @@ function chapterPath(ch) {
 }
 
 function chapterLabel(ch) {
-  return ch.id === 'EPILOGUE' ? 'EPILOGUE' : `CASE ${ch.id.slice(4)}`;
+  return ch.id === 'EPILOGUE' ? T('common.epilogue_label') : T('common.case_label', { n: ch.id.slice(4) });
 }

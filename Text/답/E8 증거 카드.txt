@@ -1,0 +1,4 @@
+E8.doc_type = 개발 회고
+E8.sd_dialogue = 요약해뒀어요! 직접 플레이해 보실 수도 있어요. 버튼을 누르면 탐정님만의 입장 키가 나와요!
+E8.subtitle = 스킨 하나가 바꾼 재미를 게임으로 옮기기까지
+E8.title = PokeCollect 개발 회고

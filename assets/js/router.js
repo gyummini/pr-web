@@ -11,6 +11,7 @@ import { renderMaking } from './views/making.js';
 import { renderNotebook } from './views/notebook.js';
 import { renderDocs } from './views/docs.js';
 import { renderNotFound } from './views/notfound.js';
+import { T } from './text.js';
 
 // History API 경로 라우팅 — 브라우저 뒤로가기가 탭/챕터 이동과 자연스럽게 동작 (명세서 6).
 // 해시(#/basic)가 아니라 실경로(/basic)를 쓴다: Vercel Web Analytics 스크립트는
@@ -177,11 +178,11 @@ function renderRoute(path, restoreScroll) {
     const box = document.createElement('div');
     box.className = 'paper load-error';
     const h = document.createElement('h2');
-    h.textContent = '이 화면을 여는 데 실패했습니다';
+    h.textContent = T('error.route_title');
     const p1 = document.createElement('p');
     p1.textContent = String((err && err.message) || err);
     const p2 = document.createElement('p');
-    p2.textContent = '다른 메뉴는 그대로 쓰실 수 있습니다.';
+    p2.textContent = T('error.route_sub');
     box.append(h, p1, p2);
     view.appendChild(box);
   } finally {

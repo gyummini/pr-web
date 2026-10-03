@@ -4,6 +4,7 @@ import { addPending, landOne, flyFromRect, openDoc } from '../ui.js';
 import { checkChapterToasts, fmtCase } from '../collect.js';
 import { hasBrief } from './brief.js';
 import { navigate } from '../router.js';
+import { T, TH } from '../text.js';
 
 // 수집된 증거 — 증거 보관함 (명세서 2-4)
 export function renderEvidence(view) {
@@ -16,9 +17,9 @@ export function renderEvidence(view) {
   view.innerHTML = `
     <div class="evidence-page">
       <div class="page-head">
-        <div class="stamp">증거 보관함</div>
-        <h2>수집된 증거</h2>
-        <p class="page-lead">${leadCount(groups)} — 자기소개서의 각 진술을 뒷받침하는 실제 작업물</p>
+        <div class="stamp">${TH('evidence.stamp')}</div>
+        <h2>${TH('evidence.title')}</h2>
+        <p class="page-lead">${TH('evidence.lead', { count: leadCount(groups) })}</p>
       </div>
       <div class="hidden-slot-wrap"></div>
       <div class="ev-grid">
@@ -27,8 +28,8 @@ export function renderEvidence(view) {
       ${
         DB.resume && DB.resume.fullPdf
           ? `<div class="ev-doc-actions">
-               <a class="btn ghost" href="/docs">문서만 모아보기 →</a>
-               <a class="btn ghost" href="${DB.resume.fullPdf}" download>이력서·자기소개서 PDF ⬇</a>
+               <a class="btn ghost" href="/docs">${TH('evidence.to_docs')}</a>
+               <a class="btn ghost" href="${DB.resume.fullPdf}" download>${TH('common.full_pdf')}</a>
              </div>`
           : ''
       }
@@ -59,7 +60,7 @@ function groupHtml(g) {
 function leadCount(groups) {
   const main = groups.filter((g) => !g.minor).reduce((n, g) => n + g.cards.length, 0);
   const minor = groups.filter((g) => g.minor).reduce((n, g) => n + g.cards.length, 0);
-  return `포트폴리오 ${main}건${minor ? ` · 추가 ${minor}건` : ''}`;
+  return minor ? T('common.portfolio_count_minor', { main, minor }) : T('common.portfolio_count', { main });
 }
 
 function esc(s) {
@@ -72,8 +73,8 @@ function cardHtml(ev) {
     ? `<img class="ev-thumb-img" src="${ev.thumb}" alt="" loading="lazy">`
     : '';
   const code = got
-    ? `${ev.id} · ${(ev.chapters || []).map(fmtCase).join(', ')}`
-    : `${ev.id} · 미확인 증거`;
+    ? T('evidence.code', { id: ev.id, chapters: (ev.chapters || []).map(fmtCase).join(', ') })
+    : T('evidence.code_unknown', { id: ev.id });
   return `
     <div class="ev-card ${got ? 'collected' : 'unknown'}" data-eid="${ev.id}" tabindex="0" role="button">
       <div class="ev-thumb">${thumb}<span class="ev-thumb-fallback" aria-hidden="true">${got ? '📄' : '❔'}</span></div>
@@ -91,12 +92,12 @@ function cardHtml(ev) {
             : ''
         }
         <div class="ev-foot">
-          <span class="ev-code">${code}</span>
-          <span class="ev-open">${hasBrief(ev) ? '살펴보기 →' : got ? '문서 열기 ↗' : '요약 확인 →'}</span>
+          <span class="ev-code">${esc(code)}</span>
+          <span class="ev-open">${TH(hasBrief(ev) ? 'evidence.open_interactive' : got ? 'common.open_doc' : 'evidence.open_summary')}</span>
           ${
             // 절대원칙 1(2클릭 내 도달) 유지 — 본문이 브리프로 가더라도
             // 원본 문서로 바로 가는 길은 카드 안에 남겨둔다.
-            got && ev.url ? `<button type="button" class="ev-direct" title="원본 문서 새 탭으로 열기">원본 ↗</button>` : ''
+            got && ev.url ? `<button type="button" class="ev-direct" title="${TH('evidence.direct_title')}">${TH('evidence.direct')}</button>` : ''
           }
         </div>
       </div>
@@ -186,14 +187,14 @@ function renderHiddenSlot(wrap, hidden) {
       <div class="hidden-slot locked">
         <div class="hidden-icon" aria-hidden="true">🔒</div>
         <div class="hidden-info">
-          <span class="hidden-kicker">BONUS FILE</span>
+          <span class="hidden-kicker">${TH('evidence.hidden_kicker')}</span>
           <h3 class="hidden-title"></h3>
           <p class="hidden-cond hidden-sub"></p>
-          <p class="hidden-progress">증거 ${n} / ${total} 수집</p>
+          <p class="hidden-progress">${TH('evidence.hidden_progress', { n, total })}</p>
           <div class="hidden-bar" aria-hidden="true"><div class="hidden-bar-fill" style="width:${(n / total) * 100}%"></div></div>
           <div class="hidden-slot-actions">
-            <button type="button" class="btn hidden-find">남은 증거 찾기</button>
-            <a class="btn ghost hidden-direct" href="${e7Target}">수첩 바로 열람</a>
+            <button type="button" class="btn hidden-find">${TH('evidence.hidden_find')}</button>
+            <a class="btn ghost hidden-direct" href="${e7Target}">${TH('evidence.hidden_direct')}</a>
           </div>
         </div>
       </div>`;
@@ -213,11 +214,11 @@ function renderHiddenSlot(wrap, hidden) {
     <div class="hidden-slot unlocked ${flash ? 'flash' : ''}" tabindex="0" role="button">
       <div class="hidden-icon">🗝️</div>
       <div class="hidden-info">
-        <span class="hidden-kicker">BONUS FILE · ${total}/${total} 수집 완료</span>
+        <span class="hidden-kicker">${TH('evidence.hidden_done_kicker', { total })}</span>
         <h3 class="hidden-title"></h3>
         <p class="hidden-cond hidden-sub"></p>
       </div>
-      <div class="ev-open">${state.endingSeen ? '확인하기 →' : '엔딩과 함께 열기 →'}</div>
+      <div class="ev-open">${TH(state.endingSeen ? 'evidence.hidden_open' : 'evidence.hidden_with_ending')}</div>
     </div>`;
   wrap.querySelector('.hidden-title').textContent = hidden.title;
   wrap.querySelector('.hidden-sub').textContent = hidden.subtitle || '';

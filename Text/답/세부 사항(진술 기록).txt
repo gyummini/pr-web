@@ -1,0 +1,7 @@
+essay.CASE01.label = 계기
+essay.CASE02.label = 설계
+essay.CASE03.label = AI 활용
+essay.CASE04.label = 검증
+essay.EPILOGUE.label = 적용
+ui.dossier.index_title = 진술 기록 목차
+ui.dossier.to_evidence = 수집된 증거 확인하기 →

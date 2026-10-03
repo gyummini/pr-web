@@ -21,6 +21,10 @@ body {
   color: var(--ink);
   font-family: "Pretendard", "Malgun Gothic", "Apple SD Gothic Neo", system-ui, sans-serif;
   line-height: 1.6;
+  /* 한국어는 어절 단위로 줄을 바꾼다. 기본값(글자 단위)이면 좁은 화면에서 '세/트', '더합니/다'처럼
+     낱말이 쪼개진다(10/04). 한 줄보다 긴 낱말(메일 주소·영문 식별자)만 넘칠 때 끊는다. PDF도 같은 규칙이다. */
+  word-break: keep-all;
+  overflow-wrap: break-word;
 }
 a { color: inherit; }
 button { font-family: inherit; }
@@ -1273,6 +1277,16 @@ body.plain-mode #view { min-height: 100vh; }
   .page-head { padding-right: 110px; }
   .page-lead { font-size: .86rem; }
 }
+/* 인적사항·병역사항처럼 '항목 | 값 | 항목 | 값' 4열 표는 휴대폰 폭에서 항목·값 2열로 접는다.
+   4열 그대로면 메일 주소 같은 긴 값이 표를 404px까지 밀어내 390px 이하에서 화면이 옆으로 넘쳤다(10/04). */
+@media (max-width: 560px) {
+  .record-table:not(.rows), .record-table:not(.rows) tbody { display: block; }
+  .record-table:not(.rows) { border: 1px solid var(--line); border-top: 0; }
+  .record-table:not(.rows) tr { display: grid; grid-template-columns: 88px minmax(0, 1fr); }
+  .record-table:not(.rows) th, .record-table:not(.rows) td { display: block; width: auto; border: 0; border-top: 1px solid var(--line); }
+  .record-table:not(.rows) th { border-right: 1px solid var(--line); white-space: normal; }
+  .record-table:not(.rows) td { overflow-wrap: anywhere; }
+}
 
 /* ---------- 증거 요약 메모 (팝업) ----------
    수사 수첩(E7)의 시각 언어를 축소해 가져온다: 괘선 종이 / 좌측 붉은 마진선 /
@@ -1794,6 +1808,29 @@ body.plain-mode #view { min-height: 100vh; }
   background: var(--fx-panel);
 }
 .brief-notice::before { content: '🖥 '; }
+
+/* ---------- 요약 페이지 공통 — 지금 누를 것 ----------
+   "어떤 버튼을 눌러야 하는지 바로 안 보인다"(10/03 피드백). 페이지마다 누를 것의 모양이 달라서
+   한 페이지에서 익힌 게 다음 페이지로 안 넘어갔다. 그래서 표시를 하나로 정한다.
+   - 한 화면에 하나만 붙인다. 첫 클릭 전까지만 테두리가 퍼진다.
+   - 색은 페이지 팔레트와 무관하게 사이트 도장 레드 — 어느 페이지에서든 같은 뜻이다.
+   - 안내 문구는 .cue-note로 누를 것 바로 옆에 붙인다(머리말 알약 대신). */
+.cue { position: relative; }
+.cue::after {
+  content: ''; position: absolute; inset: -7px; border-radius: 10px;
+  border: 2px solid var(--accent); opacity: 0; pointer-events: none;
+  animation: cue-ring 1.7s ease-out infinite;
+}
+@keyframes cue-ring { 0% { opacity: .85; transform: scale(.97); } 100% { opacity: 0; transform: scale(1.07); } }
+.cue-note {
+  position: relative; margin: 0; padding: 7px 12px 7px 14px; border-radius: 6px;
+  background: var(--accent); color: #fff; font-size: .84rem; font-weight: 600; line-height: 1.4;
+}
+.cue-note::before {
+  content: ''; position: absolute; left: -6px; top: 50%; margin-top: -6px;
+  border: 6px solid transparent; border-left: 0; border-right-color: var(--accent);
+}
+@media (prefers-reduced-motion: reduce) { .cue::after { animation: none; opacity: .8; transform: none; } }
 
 /* ---------- 브리프 3열 — 분석 | 플로우 차트 | 데이터 테이블 ----------
    왼쪽에 분석과 조작을 몰고, 넓은 오른쪽 두 칸을 구조에 준다.

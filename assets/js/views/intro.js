@@ -3,6 +3,7 @@ import { state } from '../state.js';
 import { DialogueEngine } from '../engine.js';
 import { standingSprite } from '../sprites.js';
 import { navigate, currentRoute } from '../router.js';
+import { TH } from '../text.js';
 
 // 시작 페이지 (명세서 2-1). SKIP은 첫 프레임부터 상시 노출.
 // 선택지 없는 단일 동선 — 대사가 끝나거나 SKIP하면 기본 사항으로 이동한다.
@@ -25,7 +26,7 @@ export function renderIntro(view) {
   view.className = 'view-intro';
   view.innerHTML = `
     <div class="scene">
-      <button type="button" class="skip-btn">SKIP ≫</button>
+      <button type="button" class="skip-btn">${TH('common.skip')}</button>
       <div class="engine-root"></div>
     </div>`;
 
@@ -188,10 +189,10 @@ function buildOpening() {
   el.className = 'opening';
   el.innerHTML = `
     <div class="opening-cover">
-      <div class="opening-kicker">CASE FILE</div>
-      <div class="opening-title">지원자 김경민</div>
-      <div class="opening-foot">게임 기획 · 2026</div>
-      <div class="stamp opening-stamp">CONFIDENTIAL</div>
+      <div class="opening-kicker">${TH('opening.kicker')}</div>
+      <div class="opening-title">${TH('opening.title')}</div>
+      <div class="opening-foot">${TH('opening.foot')}</div>
+      <div class="stamp opening-stamp">${TH('opening.stamp')}</div>
     </div>`;
   return el;
 }

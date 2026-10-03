@@ -1,5 +1,6 @@
 import { state, baseUnlocked, TOTAL_EVIDENCE } from './state.js';
 import { preloadNotebookFonts } from './preload.js';
+import { T, TH } from './text.js';
 
 // 수첩(E7)에 곧 도달할 신호. 폰트는 용량이 커서 진입 시점에 받으면 글씨가 늦게 바뀌므로,
 // 5/7 도달 시점에 미리 백그라운드 요청해둔다.
@@ -123,7 +124,7 @@ function maybeShowHiddenUnlockToast() {
   // 토스트는 닫기 전까지 남아 있으므로 목적지는 누르는 시점에 다시 판단한다.
   // (router.js는 순환 참조라 import하지 않는다 — 내부 링크는 라우터가 <a href>를 가로챈다)
   const dest = () => (state.endingSeen ? '/notebook' : '/ending');
-  const destLabel = () => (state.endingSeen ? '히든 포트폴리오 보기' : '엔딩과 함께 열기');
+  const destLabel = () => (state.endingSeen ? T('toast.unlock_to_notebook') : T('toast.unlock_to_ending'));
 
   const el = document.createElement('div');
   el.className = 'toast toast-persistent hidden-unlock-toast';
@@ -131,10 +132,10 @@ function maybeShowHiddenUnlockToast() {
   el.innerHTML = `
     <span class="toast-icon" aria-hidden="true">🔓</span>
     <div class="toast-body">
-      <div class="toast-title">이제 마지막 파일을 열어볼 수 있습니다.</div>
+      <div class="toast-title">${TH('toast.unlock_title')}</div>
       <a class="toast-action" href="${dest()}"></a>
     </div>
-    <button type="button" class="toast-close" aria-label="알림 닫기">×</button>`;
+    <button type="button" class="toast-close" aria-label="${TH('toast.close')}">×</button>`;
 
   const close = () => el.remove();
   const action = el.querySelector('.toast-action');
@@ -151,7 +152,7 @@ function maybeShowHiddenUnlockToast() {
 // ---- 외부 문서 열기: 전부 새 탭. PLACEHOLDER는 안내만 ----
 export function openDoc(url) {
   if (!url || String(url).startsWith('PLACEHOLDER')) {
-    toast('링크 준비 중', '이 문서의 외부 링크는 아직 연결되지 않았습니다', '🔗');
+    toast(T('toast.link_pending'), T('toast.link_pending_sub'), '🔗');
     return;
   }
   window.open(url, '_blank', 'noopener');

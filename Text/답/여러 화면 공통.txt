@@ -1,0 +1,3 @@
+ui.common.back_to_evidence = ← 증거 보관함으로
+ui.common.full_pdf = 이력서·자기소개서 PDF ⬇
+ui.common.open_doc = 문서 열기 ↗

@@ -10,7 +10,10 @@
     "test:e3": "node e3-regression.cjs",
     "test:e5": "node e5-regression.cjs",
     "test:play": "node --test play.test.mjs",
-    "pdf": "node ../tools/build-pdf.cjs"
+    "pdf": "node ../tools/build-pdf.cjs",
+    "strings": "node ../tools/strings.cjs request",
+    "strings:apply": "node ../tools/strings.cjs apply",
+    "strings:check": "node ../tools/strings.cjs check"
   },
   "devDependencies": {
     "playwright": "^1.56.0"

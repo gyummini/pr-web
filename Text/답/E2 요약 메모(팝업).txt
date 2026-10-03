@@ -1,0 +1,4 @@
+E2.memo.by = 클루의 요약
+E2.memo.rows.2.block.left_label = 설계 요소
+E2.memo.rows.2.block.pairs.2.r = 멈추지 않는 시간의 압박
+E2.memo.rows.2.block.right_label = 요구되는 것

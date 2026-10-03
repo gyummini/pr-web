@@ -1,6 +1,7 @@
 import { DB, groupCards } from '../data.js';
 import { openDoc } from '../ui.js';
 import { navigate } from '../router.js';
+import { T, TH } from '../text.js';
 
 // 포트폴리오 문서 목록 (/docs).
 // 컨셉 없는 열람용 페이지 — 수사 어휘·캐릭터·수집 UI를 일절 쓰지 않는다.
@@ -9,7 +10,7 @@ import { navigate } from '../router.js';
 function docsCount(groups) {
   const main = groups.filter((g) => !g.minor).reduce((n, g) => n + g.cards.length, 0);
   const minor = groups.filter((g) => g.minor).reduce((n, g) => n + g.cards.length, 0);
-  return `포트폴리오 ${main}건${minor ? ` · 추가 ${minor}건` : ''}`;
+  return minor ? T('common.portfolio_count_minor', { main, minor }) : T('common.portfolio_count', { main });
 }
 
 function esc(s) {
@@ -31,8 +32,8 @@ export function renderDocs(view) {
   view.innerHTML = `
     <div class="docs-page">
       <header class="docs-head">
-        <h1>${esc(r.name || '')} — 게임 기획 포트폴리오</h1>
-        <p class="docs-sub">${docsCount(groups)}</p>
+        <h1>${TH('docs.title', { name: r.name || '' })}</h1>
+        <p class="docs-sub">${esc(docsCount(groups))}</p>
       </header>
 
       ${groups
@@ -46,14 +47,14 @@ export function renderDocs(view) {
 
       <footer class="docs-foot">
         <div class="docs-foot-block">
-          <h2>문서 내려받기</h2>
+          <h2>${TH('docs.downloads')}</h2>
           <div class="docs-actions">
-            ${r.fullPdf ? `<a class="btn accent" href="${esc(r.fullPdf)}" download>이력서·자기소개서 PDF ⬇</a>` : ''}
+            ${r.fullPdf ? `<a class="btn accent" href="${esc(r.fullPdf)}" download>${TH('common.full_pdf')}</a>` : ''}
           </div>
         </div>
 
         <div class="docs-foot-block">
-          <h2>연락처</h2>
+          <h2>${TH('docs.contact')}</h2>
           <p class="docs-contact">
             ${r.email ? `<a href="mailto:${esc(r.email)}">${esc(r.email)}</a>` : ''}
             ${r.email && r.phone ? '<span class="docs-dot">·</span>' : ''}
@@ -62,7 +63,7 @@ export function renderDocs(view) {
         </div>
 
         <p class="docs-alt">
-          <a href="/intro">자기소개서를 읽으며 관련 포트폴리오도 함께 살펴보세요 →</a>
+          <a href="/intro">${TH('docs.to_intro')}</a>
         </p>
       </footer>
     </div>`;
@@ -119,7 +120,7 @@ function docCard(d, no) {
         <p class="docs-summary"></p>
         ${atts}
         <div class="docs-card-foot">
-          <button type="button" class="btn accent docs-open">문서 열기 ↗</button>
+          <button type="button" class="btn accent docs-open">${TH('common.open_doc')}</button>
         </div>
       </div>
     </article>`;

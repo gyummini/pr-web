@@ -1,0 +1,4 @@
+html.brand = CASE FILE
+html.og_description = 게임 기획 지원자 김경민의 이력서·자기소개서·포트폴리오 문서
+html.og_title = 사건 파일: 지원자 김경민
+html.title = 사건 파일: 지원자 김경민

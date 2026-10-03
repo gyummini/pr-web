@@ -8,7 +8,11 @@
 // 넓은 화면(PC)에서는 본문 왼쪽 여백에 장 목록이 따라 내려오고, 지금 읽는 장을 표시한다(좁은 화면은 위의 장 목록).
 import { track } from '../analytics.js';
 
+// 화면에 붙는 고정 문구(장 목록·옆 목차·역할 머리·출처·그림 꼬리표) — brief.labels. 한 번에 한 화면만 그리므로 모듈에 둔다.
+let L = {};
+
 export function playRetro(host, b) {
+  L = b.labels || {};
   const root = el('div', 'rt');
   if (b.cover) root.appendChild(cover(b.cover));
   if ((b.chapters || []).length > 1) root.appendChild(contents(b.chapters, root));
@@ -52,7 +56,7 @@ function cover(c) {
 // 긴 문서라 장 목록을 둔다. 앵커 대신 버튼으로 옮긴다(라우터가 해시를 경로로 바꾸지 않게)
 function contents(chapters, root) {
   const nav = el('nav', 'rt-toc');
-  nav.setAttribute('aria-label', '장 목록');
+  nav.setAttribute('aria-label', L.toc);
   chapters.forEach((ch) => {
     const button = el('button', 'rt-toc-item');
     button.type = 'button';
@@ -67,7 +71,7 @@ function contents(chapters, root) {
 // 좁은 화면에서는 CSS가 숨기므로 그동안은 계산하지 않는다. 브리프를 떠나면 destroy가 리스너를 푼다
 function rail(b, root) {
   const nav = el('nav', 'rt-rail');
-  nav.setAttribute('aria-label', '장 바로가기');
+  nav.setAttribute('aria-label', L.rail);
   const list = el('ol', 'rt-rail-list');
   const marks = [];
   const add = (no, word, find, cls) => {
@@ -82,8 +86,8 @@ function rail(b, root) {
     marks.push({ button, find });
   };
   b.chapters.forEach((ch) => add(ch.no, ch.word, () => root.querySelector(`[data-chapter="${ch.no}"]`)));
-  if (b.credits) add(null, '저작권과 출처', () => root.querySelector('.rt-credits'), 'rt-rail-end');
-  if (b.play) add(null, '직접 플레이', () => root.querySelector('.rt-play'), b.credits ? null : 'rt-rail-end');
+  if (b.credits) add(null, b.credits.title, () => root.querySelector('.rt-credits'), 'rt-rail-end');
+  if (b.play) add(null, L.rail_play, () => root.querySelector('.rt-play'), b.credits ? null : 'rt-rail-end');
   nav.appendChild(list);
 
   let frame = 0;
@@ -167,7 +171,7 @@ function figure(f) {
   fig.appendChild(img);
   if (f.caption) {
     const cap = el('figcaption');
-    if (f.tag) cap.appendChild(el('span', `rt-tag${f.tag === '결과' ? ' result' : ''}`, f.tag));
+    if (f.tag) cap.appendChild(el('span', `rt-tag${f.tag === 'result' ? ' result' : ''}`, L[`tag_${f.tag}`]));
     cap.appendChild(document.createTextNode(f.caption));
     fig.appendChild(cap);
   }
@@ -183,7 +187,7 @@ function pair(items) {
 
 function roles(r) {
   const box = el('div', 'rt-roles');
-  [['mine', r.mine_label || '제가 한 일', r.mine], ['ai', r.ai_label || 'AI가 한 일', r.ai]].forEach(([cls, head, text]) => {
+  [['mine', r.mine_label || L.mine, r.mine], ['ai', r.ai_label || L.ai, r.ai]].forEach(([cls, head, text]) => {
     const cell = el('div', `rt-role ${cls}`);
     cell.append(el('strong', null, head), el('p', null, text));
     box.appendChild(cell);
@@ -212,7 +216,7 @@ function table(t) {
 
 function sources(items) {
   const box = el('div', 'rt-sources');
-  box.appendChild(el('span', 'rt-sources-head', '출처'));
+  box.appendChild(el('span', 'rt-sources-head', L.sources));
   const ol = el('ol');
   items.forEach((s) => {
     const li = el('li');

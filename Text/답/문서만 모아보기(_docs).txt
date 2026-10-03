@@ -1,0 +1,1 @@
+ui.docs.downloads = 문서 내려받기

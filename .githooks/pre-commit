@@ -2,7 +2,7 @@
 # 커밋마다 작업진행.md를 함께 갱신하도록 강제한다.
 #
 # 이 저장소의 작업 이력은 대화 기록이 아니라 작업진행.md에만 남는다.
-# (2026-08-13 커밋 두 건은 세션 기록이 사라져 diff로 역추적해야 했다.)
+# (2026-08-13 커밋 두 건은 어느 대화에서 했는지 몰라 diff로 역추적해야 했다 — 나중에 Codex 기록에서 찾았다.)
 #
 # 훅 연결: git config core.hooksPath .githooks
 # 예외로 넘겨야 할 때: git commit --no-verify
@@ -20,6 +20,27 @@ if [ -f .git/MERGE_HEAD ] || [ -f .git/REVERT_HEAD ]; then exit 0; fi
 # 사이트에 드러나는 변경이 있는가 (코드·스타일·콘텐츠·에셋)
 work=$(printf '%s\n' "$staged" | grep -E '^(assets/|index\.html|vercel\.json|data/|콘텐츠_|스크립트_)' | head -1)
 [ -z "$work" ] && exit 0
+
+# 임시 문구([임시] …)가 든 채로는 커밋하지 않는다 — main에 올리는 순간 그대로 배포된다.
+# 화면 문구의 최종본은 GPT가 쓴다. Text/strings.csv의 DRAFT 행을 `cd tests && npm run strings`로
+# 요청문으로 뽑아 GPT에 주고, 받은 답을 `npm run strings:apply -- <답 파일>`로 넣는다.
+drafts=$(printf '%s\n' "$staged" | grep -E '^(assets/|index\.html|data/|콘텐츠_|스크립트_).*\.(js|css|html|json|md)$' | while IFS= read -r f; do
+  # 문구 값의 맨 앞에 붙은 [임시]만 본다 — 따옴표·태그 바로 뒤나 줄 첫머리. 설명 글 속의 '[임시]' 언급은 걸리지 않는다.
+  if git show ":$f" 2>/dev/null | grep -qE "(^|[\"'>\`])\\[임시\\]"; then printf '    %s\n' "$f"; fi
+done)
+if [ -n "$drafts" ]; then
+  cat >&2 <<MSG
+
+  ✖ 임시 문구([임시] …)가 남아 있는 파일이 있습니다.
+
+$drafts
+
+    최종 문구로 바꾼 뒤 커밋하세요. 바꿀 목록은 Text/strings.csv의 DRAFT 행이고,
+    GPT 요청문은  cd tests && npm run strings  로 뽑습니다.
+
+MSG
+  exit 1
+fi
 
 if printf '%s\n' "$staged" | grep -qx "$DOC"; then
   exit 0

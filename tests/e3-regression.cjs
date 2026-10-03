@@ -1,5 +1,9 @@
 const assert = require('node:assert/strict');
 const { chromium } = require('playwright');
+const fs = require('node:fs');
+const path = require('node:path');
+// 화면 문구는 GPT가 바꿀 수 있다 — 버튼 이름은 데이터에서 읽는다
+const UI = JSON.parse(fs.readFileSync(path.join(__dirname, '..', '콘텐츠_화면문구.json'), 'utf8'));
 const origin = process.env.TEST_ORIGIN || 'http://127.0.0.1:4173';
 (async () => {
   const browser = await chromium.launch();
@@ -45,7 +49,7 @@ const origin = process.env.TEST_ORIGIN || 'http://127.0.0.1:4173';
     await page.locator('.rd-restart').click();
     for (let i = 0; i < 4; i++) await page.locator('.rd-skip').click();
     assert.equal(await page.locator('.rd-result').isVisible(), true, 'All decisions are skippable');
-    await page.getByRole('button', { name: '다시 해보기', exact: true }).click();
+    await page.getByRole('button', { name: UI.brief.restart, exact: true }).click();
     assert.equal(await page.locator('.rd').getAttribute('data-chapter'), '0');
     assert.deepEqual(errors, []);
     console.log('PASS E3 core: chapters, real removal, persistent core/button, context, skip, restart, recap, source links, 320–1440px.');

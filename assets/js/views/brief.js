@@ -8,6 +8,7 @@ import { playOneCard } from '../briefs/one-card.js';
 import { playRetro } from '../briefs/retro.js';
 import { evidenceHeader } from '../motion/evidence-header.js';
 import { animate, effects, reducedMotion } from '../motion/animate.js';
+import { T } from '../text.js';
 
 // 증거 상세 · Interactive Brief (/evidence/:id/brief).
 //
@@ -60,13 +61,17 @@ export function renderBrief(view, eid) {
       <div class="brief-foot"></div>
     </div>`;
 
-  view.querySelector('.ev-kicker').textContent = `증거 ${ev.id} · ${ev.doc_type || ''}`;
+  view.querySelector('.ev-kicker').textContent = T('brief.kicker', { id: ev.id, type: ev.doc_type || '' });
   view.querySelector('.ev-title').textContent = ev.title;
   view.querySelector('.ev-sub').textContent = ev.subtitle || '';
   const stopCover = evidenceHeader(view.querySelector('.brief-head'), ev);
   view.querySelector('.brief-lead-title').textContent = lead.title || '';
   view.querySelector('.brief-lead-line').textContent = lead.line || '';
-  view.querySelector('.brief-prompt').textContent = lead.prompt || '';
+  // 안내를 머리말 구석의 회색 알약에 두면 공지처럼 읽히고 누를 것과 멀다(10/03 피드백).
+  // prompt_at: 'action'인 요약 페이지는 본체가 첫 행동 옆에 직접 붙인다 — 문구는 같다.
+  const prompt = view.querySelector('.brief-prompt');
+  if (lead.prompt_at === 'action') prompt.remove();
+  else prompt.textContent = lead.prompt || '';
   // 브리프는 도표와 테이블이 함께 놓여야 읽히는 화면이라 넓은 화면을 전제로 만든다
   const notice = view.querySelector('.brief-notice');
   if (lead.pc_notice) notice.textContent = lead.pc_notice;
@@ -75,7 +80,7 @@ export function renderBrief(view, eid) {
   // 원본은 머리말에 상시 둔다. 결론까지 내려가야만 닿으면, 브리프를 건너뛰고
   // 문서만 보려는 검토자에게 인터랙션이 통행료가 된다.
   // 브리프가 곧 원문인 증거(E8)는 따로 열 원본이 없다
-  if (ev.url) view.querySelector('.brief-head-doc').appendChild(btn('원본 문서 ↗', 'ghost', () => openDoc(ev.url)));
+  if (ev.url) view.querySelector('.brief-head-doc').appendChild(btn(T('brief.original_doc'), 'ghost', () => openDoc(ev.url)));
 
   const recapEl = view.querySelector('.brief-recap');
   // 마운트 도중에 결론을 여는 브리프가 있다(E2 — 처음부터 열어 둔다). 그때는 play가 아직 없어
@@ -88,7 +93,7 @@ export function renderBrief(view, eid) {
     else pendingRecap = opts || {};
   });
   if (pendingRecap) showRecap(pendingRecap);
-  view.querySelector('.brief-foot').appendChild(link('← 증거 보관함', '/evidence'));
+  view.querySelector('.brief-foot').appendChild(link(T('brief.back'), '/evidence'));
 
   // opts.scroll === false — 브리프가 처음부터 결론을 열어 둘 때 쓴다.
   // 화면을 연 사람을 결론으로 끌어내리지 않는다.
@@ -106,11 +111,11 @@ export function renderBrief(view, eid) {
 
     // 원본 문서는 브리프의 끝에서만 연다
     const docs = recapEl.querySelector('.brief-docs');
-    if (ev.url) docs.appendChild(btn('원본 문서 ↗', 'accent', () => openDoc(ev.url)));
+    if (ev.url) docs.appendChild(btn(T('brief.original_doc'), 'accent', () => openDoc(ev.url)));
     (ev.attachments || []).forEach((att) => {
       docs.appendChild(btn(att.label, 'ghost', () => openDoc(att.url)));
     });
-    if (play.restart) docs.appendChild(btn('다시 해보기', 'ghost', () => play.restart(hideRecap)));
+    if (play.restart) docs.appendChild(btn(T('brief.restart'), 'ghost', () => play.restart(hideRecap)));
 
     recapEl.hidden = false;
     recapEl.classList.add('on');

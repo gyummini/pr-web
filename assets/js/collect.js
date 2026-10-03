@@ -1,9 +1,10 @@
 import { state } from './state.js';
 import { DB } from './data.js';
 import { addPending, landOne, flyFromRect, toast } from './ui.js';
+import { T } from './text.js';
 
 export function fmtCase(chId) {
-  return `CASE ${chId.slice(4)}`;
+  return T('common.case_label', { n: chId.slice(4) });
 }
 
 export function chapterEvidence(chId) {
@@ -19,7 +20,7 @@ export function checkChapterToasts() {
     if (state.toastedChapters.has(ch.id)) continue;
     if (evs.every((e) => state.collected.has(e.id))) {
       state.toastedChapters.add(ch.id);
-      toast(`${fmtCase(ch.id)}. 완벽 수집!`, '이 진술의 증거를 모두 확보했습니다');
+      toast(T('toast.chapter_complete', { case: fmtCase(ch.id) }), T('toast.chapter_complete_sub'));
     }
   }
 }

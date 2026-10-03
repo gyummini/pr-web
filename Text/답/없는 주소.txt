@@ -1,0 +1,3 @@
+ui.notfound.kicker = 조회한 경로
+ui.notfound.stamp = 단서 없음
+ui.notfound.to_basic = 기본 사항으로 →

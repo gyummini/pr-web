@@ -1,19 +1,27 @@
 import { animate, reducedMotion } from '../motion/animate.js';
 
-// E5 — the same Journey twice, one card apart. The left lane keeps today's formation; the right lane
-// swaps one card so a set stands. One run lights both lanes along the same fixed schedule, and only the
-// right lane gains the set's trait, its relation event and the skill it strengthens. Everything the two
-// lanes share is marked as unchanged. Text, cards and sets all come from data; nothing here computes a
-// game rule — the interactive proposal (the original) is the source of truth.
+// E5 — the same Journey twice, one card apart. Both lanes walk the same fixed schedule; the only thing
+// that changes is the empty event time in the swapped lane, which fills with what the set adds: its
+// relation event, the skill it strengthens and its formation trait, gathered in that one cell.
+//
+// That cell is the page's one point (10/03). The page used to show the difference four times — the
+// lanes, a "what changed" block, a rules summary, then the recap — because the lanes alone did not say
+// which change was new: the additions sat in three places and the swapped card's own events change too
+// (that is the existing rule). Now the additions live in one cell, nothing else in the lanes is
+// emphasised, and one line under the lanes names what was seen. The rules stay in the original.
+//
+// The run button is the one thing to press: it carries the shared cue (style.css .cue) and, when the
+// data says prompt_at: 'action', the lead's prompt sits beside it instead of in the header — both until
+// the first press. The relations to swap in appear only after a run.
 //
 // Timing follows the site's traps: state first, motion on top; one timer checks elapsed Date.now()
 // every tick; a hidden tab or reduced motion settles the run at its end.
 export function playOneCard(host, cfg, onComplete) {
   const t = cfg.labels;
   const cards = cfg.cards;
-  const beats = cfg.beats; // [{ id, at }] — ids name what lights: s0 i0 s1 i1 s2 i2 ready s3 event reward
+  const beats = cfg.beats; // [{ id, at }] — ids name what lights: s0 i0 s1 i1 s2 i2 ready s3 event reward end
   const order = beats.map((b) => b.id);
-  const state = { set: 0, step: 0, done: false, running: false };
+  const state = { set: 0, step: 0, done: false, running: false, pressed: false };
   let timer = null;
   let started = 0;
   let recapShown = false;
@@ -22,18 +30,22 @@ export function playOneCard(host, cfg, onComplete) {
   const root = el('div', 'oc');
   root.innerHTML = `
     <div class="oc-controls">
-      <button type="button" class="oc-run"></button>
-      <div class="oc-choose"><span class="oc-choose-label"></span><div class="oc-choose-group" role="group"></div></div>
+      <div class="oc-go"><button type="button" class="oc-run"></button></div>
+      <p class="oc-legend"><span class="oc-key is-same"></span><span class="oc-key is-new"></span></p>
     </div>
-    <p class="oc-legend"><span class="oc-key is-same"></span><span class="oc-key is-new"></span></p>
     <div class="oc-lanes"></div>
-    <p class="oc-status" role="status" aria-live="polite"></p>
-    <section class="oc-diff" hidden></section>
-    <section class="oc-summary" hidden></section>`;
+    <p class="oc-caption" role="status" aria-live="polite"></p>
+    <div class="oc-choose" hidden><span class="oc-choose-label"></span><div class="oc-choose-group" role="group"></div></div>
+    <p class="oc-note"></p>`;
   host.append(root);
 
   const runBtn = root.querySelector('.oc-run');
   runBtn.addEventListener('click', () => (state.running ? null : run()));
+  // The prompt moves next to the button only when the shell has dropped it from the header.
+  const prompt = cfg.lead?.prompt_at === 'action' && cfg.lead.prompt ? el('p', 'cue-note', cfg.lead.prompt) : null;
+  if (prompt) root.querySelector('.oc-go').append(prompt);
+
+  const choose = root.querySelector('.oc-choose');
   root.querySelector('.oc-choose-label').textContent = t.choose;
   const group = root.querySelector('.oc-choose-group');
   group.setAttribute('aria-label', t.choose);
@@ -44,10 +56,9 @@ export function playOneCard(host, cfg, onComplete) {
   });
   root.querySelector('.oc-key.is-same').textContent = t.same;
   root.querySelector('.oc-key.is-new').textContent = t.added;
+  root.querySelector('.oc-note').textContent = t.note;
   const lanes = root.querySelector('.oc-lanes');
-  const status = root.querySelector('.oc-status');
-  const diff = root.querySelector('.oc-diff');
-  const summary = root.querySelector('.oc-summary');
+  const caption = root.querySelector('.oc-caption');
 
   function onVisibility() { if (document.hidden && state.running) settle(); }
   document.addEventListener('visibilitychange', onVisibility);
@@ -75,8 +86,7 @@ export function playOneCard(host, cfg, onComplete) {
     const row = el('div', 'oc-cards');
     formation.forEach((id) => {
       const swapped = after && id === set.swap;
-      const member = after && set.members.includes(id);
-      const fig = el('figure', `oc-card${swapped ? ' is-swapped' : ''}${member ? ' is-member' : ''}`);
+      const fig = el('figure', `oc-card${swapped ? ' is-swapped' : ''}`);
       const img = el('img'); img.src = cards[id].image; img.alt = cards[id].name; img.loading = 'lazy';
       fig.append(img, el('figcaption', '', cards[id].name));
       if (swapped) fig.append(el('em', 'oc-one', t.one_card));
@@ -86,17 +96,9 @@ export function playOneCard(host, cfg, onComplete) {
     const counts = el('p', 'oc-counts');
     cfg.sets.forEach((s) => {
       const have = s.members.filter((m) => formation.includes(m)).length;
-      const on = have >= s.required;
-      counts.append(el('span', on ? 'is-on' : '', `${s.short} ${have} / ${s.required}`));
+      counts.append(el('span', have >= s.required ? 'is-on' : '', `${s.short} ${have} / ${s.required}`));
     });
     head.append(counts);
-    if (after) {
-      const trait = el('p', 'oc-trait is-new');
-      trait.append(el('small', '', t.trait), el('strong', '', set.trait));
-      head.append(trait);
-    } else {
-      head.append(el('p', 'oc-trait is-none', t.no_set));
-    }
     box.append(head);
 
     const route = el('ol', 'oc-route');
@@ -110,36 +112,39 @@ export function playOneCard(host, cfg, onComplete) {
       if (last) return;
       const gap = el('li', 'oc-gap');
       if (i < 3) {
+        // The existing events look the same in both lanes. The swapped card's own events differ by the
+        // existing rule, so they change without being marked — the eye should go to the empty time.
         gap.dataset.beat = `i${i}`;
-        const chips = [cfg.protagonist, fifth, cfg.others[i]];
-        chips.forEach((id, k) => {
-          const member = after && set.members.includes(id);
+        [cfg.protagonist, fifth, cfg.others[i]].forEach((id, k) => {
           const other = k === 2;
-          const chip = el('span', `oc-chip${other ? ' is-other' : ''}${member ? ' is-member' : ''}${k === 1 ? ' is-fifth' : ''}`);
+          const chip = el('span', 'oc-chip');
           const img = el('img'); img.src = cards[id].image; img.alt = ''; img.loading = 'lazy';
           const text = el('span');
           text.append(el('small', '', other ? t.arcana_event : cards[id].name), document.createTextNode(other ? cards[id].name : quote(cards[id].events[i])));
           chip.append(img, text);
           gap.append(chip);
         });
-        if (i === 2 && after) {
-          const ready = el('p', 'oc-ready is-new', t.ready);
-          ready.dataset.beat = 'ready';
-          gap.append(ready);
-        }
-      } else if (after) {
-        gap.classList.add('is-slot');
-        const insert = el('div', 'oc-insert is-new');
-        insert.dataset.beat = 'event';
-        insert.append(el('small', '', t.set_event), el('strong', '', set.event ? quote(set.event) : t.tbd));
-        const reward = el('p', 'oc-reward is-new');
-        reward.dataset.beat = 'reward';
-        reward.append(el('strong', '', fmt(t.skill, { n: set.skill })), el('span', '', t.reward), el('small', '', set.effect));
-        gap.append(el('span', 'oc-slot-label', t.empty), insert, reward);
       } else {
-        gap.classList.add('is-slot', 'is-empty');
+        gap.classList.add('is-slot');
         gap.dataset.beat = 'event';
-        gap.append(el('span', 'oc-slot-label', t.empty), el('small', 'oc-slot-same', t.stays_empty));
+        gap.append(el('span', 'oc-slot-label', t.empty));
+        if (after) {
+          // Everything the set adds, in one cell.
+          const pay = el('div', 'oc-pay');
+          const insert = el('div', 'oc-insert');
+          insert.append(el('small', '', t.set_event), el('strong', '', set.event ? quote(set.event) : t.tbd));
+          const reward = el('p', 'oc-reward');
+          reward.dataset.beat = 'reward';
+          reward.append(el('strong', '', fmt(t.skill, { n: set.skill })), el('span', '', t.reward));
+          const trait = el('p', 'oc-pay-trait');
+          trait.dataset.beat = 'reward';
+          trait.append(el('small', '', t.trait), el('strong', '', set.trait));
+          pay.append(el('span', 'oc-pay-tag', set.name), insert, reward, trait);
+          gap.append(pay);
+        } else {
+          gap.classList.add('is-empty');
+          gap.append(el('small', 'oc-slot-same', t.stays_empty));
+        }
       }
       route.append(gap);
     });
@@ -157,53 +162,15 @@ export function playOneCard(host, cfg, onComplete) {
     });
     runBtn.textContent = state.running ? t.running : state.done ? t.rerun : t.run;
     runBtn.disabled = state.running;
+    // The cue and the prompt belong to the first press only. After a run the button steps back —
+    // it is no longer the next thing to do.
+    runBtn.classList.toggle('cue', !state.pressed);
+    runBtn.classList.toggle('is-done', state.done);
+    if (prompt) prompt.hidden = state.pressed;
+    choose.hidden = !state.done;
+    const line = state.done ? t.caption : '';
+    if (caption.textContent !== line) caption.textContent = line;
     setButtons.forEach((b, i) => b.setAttribute('aria-pressed', String(i === state.set)));
-    diff.hidden = !state.done;
-    summary.hidden = !state.done;
-    if (state.done) { renderDiff(); renderSummary(); }
-  }
-
-  function renderDiff() {
-    const set = currentSet();
-    diff.replaceChildren();
-    const cols = el('div', 'oc-diff-cols');
-    const added = column(t.diff_added, 'is-new', [
-      [t.trait, set.trait],
-      [t.set_event, set.event ? quote(set.event) : t.tbd],
-      [fmt(t.skill, { n: set.skill }), t.reward],
-    ]);
-    const moved = column(t.diff_moved, 'is-moved', [
-      [fmt(t.moved_from, { a: cards[cfg.swap_out].name, b: cards[set.swap].name }), t.moved_rule],
-    ]);
-    const same = column(t.diff_same, 'is-same', cfg.same_items.map((x) => [x, '']));
-    cols.append(added, moved, same);
-    diff.append(el('h4', 'oc-diff-title', t.diff_title), cols);
-  }
-
-  function column(title, cls, rows) {
-    const col = el('div', `oc-diff-col ${cls}`);
-    col.append(el('h5', '', title));
-    const list = el('ul');
-    rows.forEach(([a, b]) => {
-      const li = el('li');
-      li.append(el('strong', '', a));
-      if (b) li.append(el('span', '', b));
-      list.append(li);
-    });
-    col.append(list);
-    return col;
-  }
-
-  function renderSummary() {
-    if (summary.childElementCount) return;
-    summary.append(el('h4', 'oc-summary-title', t.summary_title));
-    const list = el('dl', 'oc-summary-list');
-    cfg.summary.forEach((row) => {
-      const item = el('div');
-      item.append(el('dt', '', row.k), el('dd', '', row.v));
-      list.append(item);
-    });
-    summary.append(list, el('p', 'oc-limit', t.limit), el('p', 'oc-note', t.note));
   }
 
   // ---------- running ----------
@@ -211,13 +178,13 @@ export function playOneCard(host, cfg, onComplete) {
   function run() {
     if (dead) return;
     stop();
+    state.pressed = true;
     state.step = 0;
     state.done = false;
     paint();
     if (reducedMotion() || document.hidden) { settle(); return; }
     state.running = true;
     started = Date.now();
-    status.textContent = t.running;
     paint();
     // One timer; every tick derives the step from elapsed time, so a skipped tick never stalls the run.
     timer = setInterval(tick, 80);
@@ -241,7 +208,6 @@ export function playOneCard(host, cfg, onComplete) {
     stop();
     state.running = false;
     state.done = true;
-    status.textContent = fmt(t.finished, { set: currentSet().name });
     paint();
     if (!recapShown) { recapShown = true; onComplete({ scroll: false }); }
   }
@@ -253,19 +219,12 @@ export function playOneCard(host, cfg, onComplete) {
     stop();
     state.running = false;
     state.set = i;
+    // The chips only appear after a run, so the other relation is shown settled; its cell flashes once.
+    state.step = beats.length;
+    state.done = true;
     build();
-    if (state.done) {
-      // A run already made the point; show the other relation settled, and mark what changed.
-      state.step = beats.length;
-      paint();
-      root.querySelectorAll('.oc-lane.is-after .is-new, .oc-lane.is-after .is-swapped').forEach((node) => {
-        animate(node, [{ boxShadow: '0 0 0 4px rgba(213,233,168,.9)' }, { boxShadow: '0 0 0 0 rgba(213,233,168,0)' }], { duration: 700 });
-      });
-      status.textContent = fmt(t.finished, { set: currentSet().name });
-    } else {
-      state.step = 0;
-      paint();
-    }
+    const slot = root.querySelector('.oc-lane.is-after .is-slot');
+    animate(slot, [{ boxShadow: '0 0 0 10px rgba(213,233,168,.95)' }, { boxShadow: '0 0 0 4px rgba(213,233,168,.7)' }], { duration: 800 });
   }
 
   function restart(before) {
@@ -274,9 +233,7 @@ export function playOneCard(host, cfg, onComplete) {
     before?.();
     onComplete({ hide: true });
     recapShown = false;
-    state.set = 0; state.step = 0; state.done = false; state.running = false;
-    status.textContent = '';
-    summary.replaceChildren();
+    state.set = 0; state.step = 0; state.done = false; state.running = false; state.pressed = false;
     build();
     runBtn.focus({ preventScroll: true });
   }

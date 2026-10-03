@@ -1,0 +1,1 @@
+E5.brief.labels.note = 예시 입니다.

@@ -1,0 +1,5 @@
+E5.memo.by = 클루의 요약
+E5.memo.rows.0.hl = 편성은 육성 방향에 따라 굳어졌다
+E5.memo.rows.0.v = 여정은 반복할수록 이야기가 익숙해지고, 편성은 육성 방향에 따라 굳어졌다.
+E5.memo.rows.1.hl = 기존 여정은 그대로 두고
+E5.memo.rows.2.block.base_label = 그대로 유지한 구조

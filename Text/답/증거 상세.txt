@@ -1,0 +1,3 @@
+ui.detail.kicker = 증거 {id} · 첫 등장: {chapter}
+ui.detail.open_doc = 문서 바로 열기 ↗
+ui.detail.to_statement = 진술에서 확인하기 ({case}) →

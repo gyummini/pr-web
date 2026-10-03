@@ -1,0 +1,4 @@
+ui.toast.chapter_complete_sub = 이 진술의 증거를 모두 확보했습니다
+ui.toast.link_pending = 링크 준비 중
+ui.toast.link_pending_sub = 이 문서의 외부 링크는 아직 연결되지 않았습니다
+ui.toast.unlock_to_notebook = 히든 포트폴리오 보기

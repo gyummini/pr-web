@@ -1,0 +1,4 @@
+ui.basic.email = 이메일
+ui.basic.play_link = 기록 보기 ↗
+ui.basic.resume_pdf = 이력서 PDF 다운로드 ⬇
+ui.basic.to_dossier = 세부 사항 보기 →

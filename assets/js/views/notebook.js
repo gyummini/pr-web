@@ -2,6 +2,9 @@ import { DB } from '../data.js';
 import { SPRITES } from '../sprites.js';
 import { preloadNotebookFonts } from '../preload.js';
 
+// 수첩 화면의 고정 문구(장 넘김·탭·메모 머리) — 콘텐츠_수사수첩.json의 labels
+const NL = () => DB.notebook.labels;
+
 // E7 히든 — 클루의 수사 수첩 (/notebook). 작업지시_수첩디자인이식.md 기준 구현.
 // 페이지 구성: 표지 / 1부 / 2부(3항목) / 2부 계속(2항목) / 3부 / 접힌 페이지 = 6쪽.
 // 넘김 방식: 버튼식 페이지네이션(이전/다음 버튼 + 키보드). 넘김 애니메이션은 순수 CSS로,
@@ -60,9 +63,9 @@ export function renderNotebook(view) {
       ${pageFolded(nb.folded)}
     </div>
     <div class="nb-nav">
-      <button type="button" class="nb-nav-btn nb-prev" aria-label="이전 장" disabled>◀</button>
+      <button type="button" class="nb-nav-btn nb-prev" aria-label="${esc(NL().prev)}" disabled>◀</button>
       <div class="nb-indicator" aria-live="polite"><span class="nb-cur">1</span> / ${PAGE_COUNT}</div>
-      <button type="button" class="nb-nav-btn nb-next" aria-label="다음 장">▶</button>
+      <button type="button" class="nb-nav-btn nb-next" aria-label="${esc(NL().next)}">▶</button>
     </div>`;
 
   // 3부 사진: 파일이 없으면 빈 폴라로이드 프레임으로 폴백
@@ -192,13 +195,13 @@ const sheetClose = `
   </section>`;
 
 function pagePart1(p) {
-  return `${sheetOpen('1부', 'tab1')}
+  return `${sheetOpen(NL().part1_tab, 'tab1')}
     <h2 class="nb-h2"><span>${esc(p.title)}</span></h2>
     <div class="nb-lead">${esc(p.lead)}</div>
     <div class="nb-profile">
       <div class="nb-polaroid">
         <div class="nb-polaroid-inner">
-          <img src="${SPRITES.sd.normal}" alt="클루 SD" loading="lazy" class="nb-sd">
+          <img src="${SPRITES.sd.normal}" alt="${esc(NL().sd_alt)}" loading="lazy" class="nb-sd">
           <div class="nb-polaroid-cap">${esc(p.photoCaption)}</div>
         </div>
         <div class="nb-tape small"></div>
@@ -212,8 +215,8 @@ function pagePart1(p) {
 
 function pagePart2(p, from, to, isCont) {
   const items = p.items.slice(from, to);
-  return `${sheetOpen('2부', 'tab2')}
-    <h2 class="nb-h2"><span>${esc(p.title)}</span>${isCont ? '<span class="nb-cont">(계속)</span>' : ''}</h2>
+  return `${sheetOpen(NL().part2_tab, 'tab2')}
+    <h2 class="nb-h2"><span>${esc(p.title)}</span>${isCont ? `<span class="nb-cont">${esc(NL().continued)}</span>` : ''}</h2>
     ${
       isCont
         ? ''
@@ -237,7 +240,7 @@ function pagePart2(p, from, to, isCont) {
                 : ''
             }
           </div>
-          <div class="nb-postit"><span class="nb-postit-by">클루 메모:</span> ${nbInline(it.memo)}</div>
+          <div class="nb-postit"><span class="nb-postit-by">${esc(NL().memo_by)}</span> ${nbInline(it.memo)}</div>
         </div>`
         )
         .join('')}
@@ -254,7 +257,7 @@ function pagePart2(p, from, to, isCont) {
         ? `<div class="nb-evidence">
              <p class="nb-evidence-line">${nbInline(p.evidence.line || '')}</p>
              <a class="nb-evidence-link" href="${esc(p.evidence.url)}" target="_blank" rel="noopener">${esc(
-               p.evidence.label || '기록 보기 ↗'
+               p.evidence.label
              )}</a>
            </div>`
         : ''
@@ -263,7 +266,7 @@ function pagePart2(p, from, to, isCont) {
 }
 
 function pagePart3(p) {
-  return `${sheetOpen('3부', 'tab3')}
+  return `${sheetOpen(NL().part3_tab, 'tab3')}
     <h2 class="nb-h2"><span>${esc(p.title)}</span></h2>
     <div class="nb-quote">
       <img src="${SPRITES.sd.normal}" alt="" loading="lazy" class="nb-quote-sd">

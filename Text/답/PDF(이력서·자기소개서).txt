@@ -1,0 +1,4 @@
+ui.pdf.essay_title = 자기소개서
+ui.pdf.full_doc_title = {name} 이력서·자기소개서
+ui.pdf.resume_doc_title = {name} 이력서
+ui.pdf.resume_head = 게임 기획 · {email} · {phone}

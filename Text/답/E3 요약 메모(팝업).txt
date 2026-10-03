@@ -1,0 +1,7 @@
+E3.memo.by = 클루의 요약
+E3.memo.rows.0.hl = 핵심 재미의 리듬을 끊고 있었다
+E3.memo.rows.0.v = 재미를 더하려고 넣은 채굴이 정작 핵심 재미의 리듬을 끊고 있었다.
+E3.memo.rows.1.v = 핵심 재미를 흐리는 요소는 아무리 그럴듯해도 덜어낸다.
+E3.memo.rows.2.block.kept = 지킨 것 — 확률 강화의 즉각적인 손맛
+E3.memo.rows.2.block.stages.1.cut = 경제 덜어냄
+E3.memo.rows.2.block.stages.3.cut = 채굴 덜어냄

@@ -45,10 +45,11 @@ export function playReduction(host, cfg, onComplete) {
   root.querySelector('.rd-demo-note').textContent = t.preview;
   const core = el('article', 'rd-core');
   core.dataset.system = 'enhance';
-  core.innerHTML = `<div class="rd-core-head"><span class="rd-core-code">CORE / 01</span><span class="rd-core-keep"></span></div>
+  core.innerHTML = `<div class="rd-core-head"><span class="rd-core-code"></span><span class="rd-core-keep"></span></div>
     <div class="rd-target-art" aria-hidden="true"></div>
     <div class="rd-target-name"></div><h4 class="rd-core-title"></h4><p class="rd-core-note"></p>
     <button type="button" class="rd-enhance"></button><p class="rd-outcome" role="status" aria-live="polite"></p>`;
+  core.querySelector('.rd-core-code').textContent = t.core_code;
   core.querySelector('.rd-core-keep').textContent = t.kept;
   core.querySelector('.rd-core-title').textContent = t.identity;
   core.querySelector('.rd-core-note').textContent = t.core_note;

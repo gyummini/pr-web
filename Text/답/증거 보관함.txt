@@ -1,0 +1,9 @@
+groups.extra.label = 추가 포트폴리오
+ui.evidence.code_unknown = {id} · 미확인 증거
+ui.evidence.direct = 원본 ↗
+ui.evidence.direct_title = 원본 문서 새 탭으로 열기
+ui.evidence.hidden_open = 수사 수첩 보기 →
+ui.evidence.lead = {count} — 자기소개서의 각 진술을 뒷받침하는 실제 작업물
+ui.evidence.open_interactive = 자세히 살펴보기 →
+ui.evidence.open_summary = 요약 확인 →
+ui.evidence.to_docs = 문서만 모아보기 →

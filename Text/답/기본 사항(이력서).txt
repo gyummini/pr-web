@@ -1,0 +1,9 @@
+resume.playRecord.label = 플레이 기록
+resume.playRecord.summary = 274개 · 플레이 시간순
+resume.projects.0.detail = 기획부터 웹 배포까지 2주가 걸렸습니다. 구현과 반복 검증은 AI 도구에 맡기고, 무엇을 검증하고 반영할지는 직접 결정했습니다.
+resume.projects.0.name = 카드 수집 웹 게임 'PokeCollect' 개발·배포
+resume.projects.1.detail = 기획·개발·출시 전 과정을 담당했습니다. MCP를 통해 AI 도구와 연결해 개발했습니다.
+resume.projects.3.detail = 팀 프로젝트에서 데이터베이스 설계와 관리를 담당했습니다.
+resume.skills.0.level = API·웹 스크래핑으로 데이터를 수집·가공하고, 자동화 스크립트로 서버에 저장할 수 있는 수준
+resume.skills.0.notes.1 = 두 번의 팀 프로젝트에서 Python 서버 프로그래밍 담당
+resume.skills.2.notes.0 = '브레인롯 강화하기' 등 개인 프로젝트 개발

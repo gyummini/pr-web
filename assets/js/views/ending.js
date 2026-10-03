@@ -4,6 +4,7 @@ import { DialogueEngine } from '../engine.js';
 import { standingSprite } from '../sprites.js';
 import { syncBadge } from '../ui.js';
 import { navigate } from '../router.js';
+import { TH } from '../text.js';
 
 // 히든 해금 엔딩 대화 (명세서 2-5). 시작 페이지와 동일한 대사 엔진 재사용.
 export function renderEnding(view) {
@@ -15,7 +16,7 @@ export function renderEnding(view) {
   view.className = 'view-ending';
   view.innerHTML = `
     <div class="scene">
-      <button type="button" class="skip-btn">SKIP ≫</button>
+      <button type="button" class="skip-btn">${TH('common.skip')}</button>
       <div class="engine-root"></div>
     </div>`;
 

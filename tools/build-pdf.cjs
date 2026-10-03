@@ -21,6 +21,9 @@ const read = (f) => fs.readFileSync(path.join(root, f), 'utf8');
 const resume = JSON.parse(read('data/resume.json'));
 const cards = JSON.parse(read('콘텐츠_증거카드.json')).evidences;
 const essay = parseEssay(read('콘텐츠_자기소개서.md'));
+// 표 머리·제목 같은 고정 문구 — 사이트 기본 사항과 같은 키(콘텐츠_화면문구.json)
+const ui = JSON.parse(read('콘텐츠_화면문구.json'));
+const fill = (tpl, vars) => tpl.replace(/\{(\w+)\}/g, (m, k) => (vars[k] === undefined ? m : String(vars[k])));
 
 const esc = (s) =>
   String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -62,7 +65,7 @@ function essayBlock(b) {
   return `<p>${esc(plain).replace(/\n/g, '<br>')}</p>`;
 }
 
-const kicker = (id) => (id === 'EPILOGUE' ? 'EPILOGUE' : `CASE ${id.slice(4)}`);
+const kicker = (id) => (id === 'EPILOGUE' ? ui.common.epilogue_label : fill(ui.common.case_label, { n: id.slice(4) }));
 
 function periodTable(rows) {
   return `<table class="rows">${rows.map(([p, cell]) => `<tr><th class="period">${esc(p)}</th><td>${cell}</td></tr>`).join('')}</table>`;
@@ -74,15 +77,15 @@ function resumeHtml(r) {
   const out = [];
 
   out.push(`<header class="who"><h1>${esc(r.name)}</h1>
-    <p>게임 기획 · ${esc(r.email)} · ${esc(r.phone)}</p></header>`);
+    <p>${esc(fill(ui.pdf.resume_head, { email: r.email, phone: r.phone }))}</p></header>`);
 
   out.push(
     sec(
-      '인적사항',
+      ui.basic.personal,
       `<table class="grid">
-        <tr><th>이름</th><td>${esc(r.name)}</td><th>생년월일</th><td>${esc(r.birth)}</td></tr>
-        <tr><th>휴대폰</th><td>${esc(r.phone)}</td><th>E-mail</th><td>${esc(r.email)}</td></tr>
-        <tr><th>주소</th><td colspan="3">${esc(r.address)}</td></tr>
+        <tr><th>${esc(ui.basic.name)}</th><td>${esc(r.name)}</td><th>${esc(ui.basic.birth)}</th><td>${esc(r.birth)}</td></tr>
+        <tr><th>${esc(ui.basic.phone)}</th><td>${esc(r.phone)}</td><th>${esc(ui.basic.email)}</th><td>${esc(r.email)}</td></tr>
+        <tr><th>${esc(ui.basic.address)}</th><td colspan="3">${esc(r.address)}</td></tr>
       </table>`
     )
   );
@@ -90,17 +93,17 @@ function resumeHtml(r) {
   if (has(m.period)) {
     out.push(
       sec(
-        '병역사항',
+        ui.basic.military,
         `<table class="grid">
-          <tr><th>복무기간</th><td>${esc(m.period)}</td><th>군별 / 계급</th><td>${esc(m.branch)} / ${esc(m.rank)}</td></tr>
-          <tr><th>병과</th><td colspan="3">${esc(m.specialty)}</td></tr>
+          <tr><th>${esc(ui.basic.service_period)}</th><td>${esc(m.period)}</td><th>${esc(ui.basic.branch_rank)}</th><td>${esc(m.branch)} / ${esc(m.rank)}</td></tr>
+          <tr><th>${esc(ui.basic.specialty)}</th><td colspan="3">${esc(m.specialty)}</td></tr>
         </table>`
       )
     );
   }
 
   if ((r.education || []).length) {
-    out.push(sec('학력사항', periodTable(r.education.map((e) => [e.period, esc(e.school)]))));
+    out.push(sec(ui.basic.education, periodTable(r.education.map((e) => [e.period, esc(e.school)]))));
   }
 
   // 사이트(basic.js)와 같은 규칙 — 이름이 비면 역할만 제목으로 쓴다
@@ -108,7 +111,7 @@ function resumeHtml(r) {
   if (projects.length) {
     out.push(
       sec(
-        '프로젝트',
+        ui.basic.projects,
         periodTable(
           projects.map((p) => [
             p.period,
@@ -124,7 +127,7 @@ function resumeHtml(r) {
   if (skills.length) {
     out.push(
       sec(
-        '보유 기술',
+        ui.basic.skills,
         `<table class="rows skills">${skills
           .map((s) => {
             const level = has(s.level) ? `<div class="t">${esc(s.level)}</div>` : '';
@@ -140,7 +143,7 @@ function resumeHtml(r) {
   if (play && has(play.url)) {
     out.push(
       sec(
-        play.label || '플레이 기록',
+        play.label,
         `<table class="rows"><tr><th class="period">${esc(play.summary || '')}</th><td>
           <div class="t"><a href="${esc(play.url)}">${esc(play.url.replace(/^https?:\/\//, '').split('?')[0])} ↗</a></div>
           ${has(play.note) ? `<div class="d">${esc(play.note)}</div>` : ''}</td></tr></table>`
@@ -149,7 +152,7 @@ function resumeHtml(r) {
   }
 
   if ((r.experience || []).length) {
-    out.push(sec('경력사항 및 사회경험', periodTable(r.experience.map((e) => [e.period, `${esc(e.org)} — ${esc(e.role)}`]))));
+    out.push(sec(ui.basic.experience, periodTable(r.experience.map((e) => [e.period, `${esc(e.org)} — ${esc(e.role)}`]))));
   }
 
   return `<div class="resume">${out.join('\n')}</div>`;
@@ -159,8 +162,8 @@ function essayHtml(chapters) {
   return chapters
     .map(
       (ch, i) => `<article class="chapter">
-        ${i === 0 ? '<h1 class="doc">자기소개서</h1>' : ''}
-        <div class="kicker">${kicker(ch.id)}</div>
+        ${i === 0 ? `<h1 class="doc">${esc(ui.pdf.essay_title)}</h1>` : ''}
+        <div class="kicker">${esc(kicker(ch.id))}</div>
         <h2>${esc(ch.concept)}</h2>
         ${ch.subtitle ? `<p class="sub">${esc(ch.subtitle)}</p>` : ''}
         <div class="body">${ch.blocks.map(essayBlock).join('\n')}</div>
@@ -214,8 +217,8 @@ const page = (title, inner) => `<!doctype html><html lang="ko"><head><meta chars
   const browser = await chromium.launch();
   const tab = await browser.newPage();
   const targets = [
-    ['이력서.pdf', page(`${resume.name} 이력서`, resumeHtml(resume))],
-    ['이력서_자기소개서.pdf', page(`${resume.name} 이력서·자기소개서`, resumeHtml(resume) + essayHtml(essay))],
+    ['이력서.pdf', page(fill(ui.pdf.resume_doc_title, { name: resume.name }), resumeHtml(resume))],
+    ['이력서_자기소개서.pdf', page(fill(ui.pdf.full_doc_title, { name: resume.name }), resumeHtml(resume) + essayHtml(essay))],
   ];
   for (const [file, html] of targets) {
     await tab.setContent(html, { waitUntil: 'load' });

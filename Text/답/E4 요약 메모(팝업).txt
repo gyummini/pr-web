@@ -1,0 +1,6 @@
+E4.memo.by = 클루의 요약
+E4.memo.rows.0.hl = 연습장이 아니라 장벽이
+E4.memo.rows.0.v = PVE 클리어가 RTA 실력으로 이어지지 않았다. 연습장이 아니라 장벽이 되어 있었다.
+E4.memo.rows.2.block.gap = 끊겨 있던 자리
+E4.memo.rows.2.block.right.note = 상대를 보고 즉시 판단
+E4.memo.rows.2.block.span.note = 밴 · 엔트리 고정 · 증강

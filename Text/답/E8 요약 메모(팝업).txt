@@ -1,0 +1,8 @@
+E8.memo.by = 클루의 요약
+E8.memo.rows.0.hl = 포켓몬 스킨만 씌운 스플렌더가 훨씬 재밌었음
+E8.memo.rows.2.block.core = 팩을 뜯고 카드를 모으는 재미
+E8.memo.rows.2.block.turns.0.a = 팩 개봉부터 만들어 재미를 확인
+E8.memo.rows.2.block.turns.0.q = 무엇부터?
+E8.memo.rows.2.block.turns.1.q = 탐험이 길어지면?
+E8.memo.rows.2.block.turns.2.a = 증강체와 통과 점수를 빌려 옴
+E8.memo.rows.2.block.turns.2.q = 단조로우면?

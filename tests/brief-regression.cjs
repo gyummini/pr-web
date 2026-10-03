@@ -1,6 +1,10 @@
 // Run against a local SPA server: NODE_PATH=<directory containing playwright> node tests/brief-regression.cjs
 const assert = require('node:assert/strict');
 const { chromium } = require('playwright');
+const fs = require('node:fs');
+const path = require('node:path');
+// 화면 문구는 GPT가 바꿀 수 있다 — 버튼 이름은 데이터에서 읽는다
+const UI = JSON.parse(fs.readFileSync(path.join(__dirname, '..', '콘텐츠_화면문구.json'), 'utf8'));
 const origin = process.env.TEST_ORIGIN || 'http://127.0.0.1:4173';
 (async () => {
   const browser = await chromium.launch({ headless: true });
@@ -116,7 +120,7 @@ const origin = process.env.TEST_ORIGIN || 'http://127.0.0.1:4173';
     await page.locator('.cc-ch[data-n="3"]:not([hidden])').waitFor();
     assert.equal(await page.locator('.cc-rl-facets .cc-on').count(), await page.locator('.cc-ep').count());
     await page.locator('.cc-ch[data-n="3"] .cc-next').click();
-    await page.getByRole('button', { name: '다시 해보기', exact: true }).click();
+    await page.getByRole('button', { name: UI.brief.restart, exact: true }).click();
     assert.equal(await page.locator('.cc-second-pass, .cc-done, .cc-drag, .cc-token, .cc-flyer').count(), 0);
     await page.emulateMedia({ reducedMotion: 'reduce' });
     await page.setViewportSize({ width: 390, height: 844 });

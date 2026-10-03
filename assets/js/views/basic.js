@@ -1,4 +1,5 @@
 import { DB } from '../data.js';
+import { TH } from '../text.js';
 
 function esc(s) {
   return String(s == null ? '' : s)
@@ -13,7 +14,7 @@ function projectsSection(list) {
   if (!rows.length) return '';
   return `
       <section class="record-sec">
-        <h3>프로젝트</h3>
+        <h3>${TH('basic.projects')}</h3>
         <table class="record-table rows">
           ${rows
             .map((p) => {
@@ -34,7 +35,7 @@ function skillsSection(list) {
   if (!rows.length) return '';
   return `
       <section class="record-sec">
-        <h3>보유 기술</h3>
+        <h3>${TH('basic.skills')}</h3>
         <table class="record-table rows skills">
           ${rows
             .map((s) => {
@@ -58,13 +59,13 @@ function playSection(p) {
   if (!p || !(p.url || '').trim()) return '';
   return `
       <section class="record-sec">
-        <h3>${esc(p.label || '플레이 기록')}</h3>
+        <h3>${esc(p.label)}</h3>
         <table class="record-table rows">
           <tr>
             <th>${esc(p.summary || '')}</th>
             <td>
               ${p.note ? `<div class="skill-level">${esc(p.note)}</div>` : ''}
-              <a class="play-link" href="${esc(p.url)}" target="_blank" rel="noopener">기록 보기 ↗</a>
+              <a class="play-link" href="${esc(p.url)}" target="_blank" rel="noopener">${TH('basic.play_link')}</a>
             </td>
           </tr>
         </table>
@@ -77,29 +78,29 @@ export function renderBasic(view) {
   view.className = 'view-basic';
   view.innerHTML = `
     <div class="paper record">
-      <div class="stamp">인물 신상 조서</div>
-      <h2 class="record-title">기본 사항</h2>
+      <div class="stamp">${TH('basic.stamp')}</div>
+      <h2 class="record-title">${TH('basic.title')}</h2>
 
       <section class="record-sec">
-        <h3>인적사항</h3>
+        <h3>${TH('basic.personal')}</h3>
         <table class="record-table">
-          <tr><th>이름</th><td>${r.name}</td><th>생년월일</th><td>${r.birth}</td></tr>
-          <tr><th>휴대폰</th><td><a href="tel:${r.phone.replace(/-/g, '')}">${r.phone}</a></td>
-              <th>E-mail</th><td><a href="mailto:${r.email}">${r.email}</a></td></tr>
-          <tr><th>주소</th><td colspan="3">${r.address}</td></tr>
+          <tr><th>${TH('basic.name')}</th><td>${r.name}</td><th>${TH('basic.birth')}</th><td>${r.birth}</td></tr>
+          <tr><th>${TH('basic.phone')}</th><td><a href="tel:${r.phone.replace(/-/g, '')}">${r.phone}</a></td>
+              <th>${TH('basic.email')}</th><td><a href="mailto:${r.email}">${r.email}</a></td></tr>
+          <tr><th>${TH('basic.address')}</th><td colspan="3">${r.address}</td></tr>
         </table>
       </section>
 
       <section class="record-sec">
-        <h3>병역사항</h3>
+        <h3>${TH('basic.military')}</h3>
         <table class="record-table">
-          <tr><th>복무기간</th><td>${r.military.period}</td><th>군별 / 계급</th><td>${r.military.branch} / ${r.military.rank}</td></tr>
-          <tr><th>병과</th><td colspan="3">${r.military.specialty}</td></tr>
+          <tr><th>${TH('basic.service_period')}</th><td>${r.military.period}</td><th>${TH('basic.branch_rank')}</th><td>${r.military.branch} / ${r.military.rank}</td></tr>
+          <tr><th>${TH('basic.specialty')}</th><td colspan="3">${r.military.specialty}</td></tr>
         </table>
       </section>
 
       <section class="record-sec">
-        <h3>학력사항</h3>
+        <h3>${TH('basic.education')}</h3>
         <table class="record-table rows">
           ${r.education.map((e) => `<tr><th>${e.period}</th><td>${e.school}</td></tr>`).join('')}
         </table>
@@ -112,7 +113,7 @@ export function renderBasic(view) {
       ${
         (r.experience || []).length
           ? `<section class="record-sec">
-        <h3>경력사항 및 사회경험</h3>
+        <h3>${TH('basic.experience')}</h3>
         <table class="record-table rows">
           ${r.experience.map((e) => `<tr><th>${esc(e.period)}</th><td>${esc(e.org)} — ${esc(e.role)}</td></tr>`).join('')}
         </table>
@@ -123,8 +124,8 @@ export function renderBasic(view) {
       ${playSection(r.playRecord)}
 
       <div class="record-actions">
-        <a class="btn accent" href="/case/01">세부 사항 보기 →</a>
-        <a class="btn ghost" href="${r.pdf}" download>이력서 PDF 다운로드 ⬇</a>
+        <a class="btn accent" href="/case/01">${TH('basic.to_dossier')}</a>
+        <a class="btn ghost" href="${r.pdf}" download>${TH('basic.resume_pdf')}</a>
       </div>
     </div>`;
   return {};

@@ -5,6 +5,7 @@ import { fmtCase } from '../collect.js';
 import { navigate } from '../router.js';
 import { hasBrief } from './brief.js';
 import { evidenceHeader } from '../motion/evidence-header.js';
+import { T, TH } from '../text.js';
 
 // 미수집 증거 상세 (명세서 2-4): 처음 등장하는 챕터 + 포폴 요약.
 // 방문자가 요약만 볼지, 문서 세부를 열지 선택하게 한다.
@@ -20,29 +21,29 @@ export function renderDetail(view, eid) {
   view.className = 'view-detail';
   view.innerHTML = `
     <div class="paper detail">
-      <div class="stamp">${collected ? '수집된 증거' : '미확인 증거'}</div>
-      <div class="ev-kicker">증거 ${ev.id} · 첫 등장: ${firstChapter ? fmtCase(firstChapter) : '-'}</div>
+      <div class="stamp">${TH(collected ? 'detail.stamp_collected' : 'detail.stamp_unknown')}</div>
+      <div class="ev-kicker">${TH('detail.kicker', { id: ev.id, chapter: firstChapter ? fmtCase(firstChapter) : T('detail.no_chapter') })}</div>
       <h2 class="ev-title"></h2>
       <p class="ev-sub"></p>
       <div class="detail-summary">
-        <h3>요약</h3>
+        <h3>${TH('detail.summary')}</h3>
         <p class="ev-summary"></p>
       </div>
       <div class="ev-attachments"></div>
       <div class="detail-actions">
         ${
           firstChapter
-            ? `<a class="btn accent" href="/case/${firstChapter.slice(4)}">진술에서 확인하기 (${fmtCase(firstChapter)}) →</a>`
+            ? `<a class="btn accent" href="/case/${firstChapter.slice(4)}">${TH('detail.to_statement', { case: fmtCase(firstChapter) })}</a>`
             : ''
         }
         ${
           // 이미 수집한 증거를 주소로 직접 열었을 때 — 조사로 바로 갈 수 있어야 한다
           collected && hasBrief(ev)
-            ? `<a class="btn accent" href="/evidence/${ev.id}/interactive">더 자세히 살펴보기 →</a>`
+            ? `<a class="btn accent" href="/evidence/${ev.id}/interactive">${TH('common.to_interactive')}</a>`
             : ''
         }
-        <button type="button" class="btn ghost open-doc">문서 바로 열기 ↗</button>
-        <a class="btn ghost" href="/evidence">← 증거 보관함으로</a>
+        <button type="button" class="btn ghost open-doc">${TH('detail.open_doc')}</button>
+        <a class="btn ghost" href="/evidence">${TH('common.back_to_evidence')}</a>
       </div>
     </div>`;
 

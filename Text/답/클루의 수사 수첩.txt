@@ -1,0 +1,14 @@
+notebook.cover.seal.main = 봉인|해제
+notebook.labels.continued = (계속)
+notebook.labels.next = 다음 장
+notebook.labels.part1_tab = 1부
+notebook.labels.part2_tab = 2부
+notebook.labels.part3_tab = 3부
+notebook.labels.prev = 이전 장
+notebook.labels.sd_alt = 조수 클루
+notebook.part1.rows.3.1 = 잘 정리된 문서, 색인 스티커, **완벽 수집**
+notebook.part1.rows.5.1 = 첫 사건 해결 기념. 자세한 건 비밀.
+notebook.part1.rows.6.1 = 요약. 뭐든 세 줄로 만들 수 있다.
+notebook.part2.evidence.label = 의뢰인의 플레이 기록 ↗
+notebook.part2.evidence.line = 말로만 좋아한다고 하는 사람은 많다. 그래서 기록을 찾아봤다. 게임 274개의 플레이 시간이 전부 남아 있었다.
+notebook.part2.items.4.name = 시뮬레이션

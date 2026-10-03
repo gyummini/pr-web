@@ -7,6 +7,7 @@ import { checkChapterToasts, fmtCase } from './collect.js';
 import { navigate } from './router.js';
 import { hasMemo, renderMemo } from './memo.js';
 import { hasBrief } from './views/brief.js';
+import { T, TH } from './text.js';
 
 // 앵커(증거) 팝업 (명세서 2-3). 클릭한 앵커는 즉시 수집, 닫을 때 수집 애니메이션.
 export function openEvidencePopup(eid) {
@@ -30,10 +31,10 @@ export function openEvidencePopup(eid) {
   overlay.className = 'modal-overlay';
   overlay.innerHTML = `
     <div class="popup" role="dialog" aria-modal="true">
-      <button type="button" class="popup-close" aria-label="닫기">✕</button>
+      <button type="button" class="popup-close" aria-label="${TH('popup.close')}">✕</button>
       <div class="popup-sd"><div class="sd-engine"></div></div>
       <div class="popup-body">
-        <div class="ev-kicker">증거 ${ev.id} · ${(ev.chapters || []).map(fmtCase).join(', ')}</div>
+        <div class="ev-kicker">${TH('popup.kicker', { id: ev.id, chapters: (ev.chapters || []).map(fmtCase).join(', ') })}</div>
         <h3 class="ev-title"></h3>
         <p class="ev-sub"></p>
         <div class="ev-memo"></div>
@@ -61,7 +62,7 @@ export function openEvidencePopup(eid) {
       resolveSprite: standingSprite,
       mode: 'standing',
     });
-    engine.play([{ speaker: '클루', sprite, text: dlgText }], { holdEnd: true });
+    engine.play([{ speaker: T('popup.speaker'), sprite, text: dlgText }], { holdEnd: true });
   }
 
   let closed = false;
@@ -101,20 +102,20 @@ export function openEvidencePopup(eid) {
   // 그 자리는 브리프의 끝이다. 팝업은 자소서를 읽는 중에 뜨므로 갈림길을 둘로만 둔다.
   const actions = overlay.querySelector('.popup-actions');
   const deeper = hasBrief(ev)
-    ? action('더 자세히 살펴보기 →', wasNew ? 'ghost' : 'accent', () => {
+    ? action(T('common.to_interactive'), wasNew ? 'ghost' : 'accent', () => {
         close();
         navigate(`/evidence/${ev.id}/interactive`);
       })
     : null;
 
   if (wasNew) {
-    actions.appendChild(action('증거 수집', 'accent', close)); // 닫히며 수집 애니메이션
+    actions.appendChild(action(T('popup.collect'), 'accent', close)); // 닫히며 수집 애니메이션
     if (deeper) actions.appendChild(deeper);
   } else if (deeper) {
     actions.appendChild(deeper);
-    actions.appendChild(action('닫기', 'ghost', close));
+    actions.appendChild(action(T('popup.close'), 'ghost', close));
   } else {
-    actions.appendChild(action('닫기', 'accent', close));
+    actions.appendChild(action(T('popup.close'), 'accent', close));
   }
 }
 

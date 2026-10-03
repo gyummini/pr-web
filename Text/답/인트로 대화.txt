@@ -1,0 +1,5 @@
+intro.notice.button = 괜찮아요, 볼게요
+intro.notice.by = 클루의 메모
+intro.notice.lines.0 = 탐정님, 잠깐만요!
+intro.notice.lines.2 = 그래서 순서가 어수선하거나 아직 비어 보이는 칸이 있을 수 있어요. 조금만 양해해 주세요!
+intro.notice.stamp = 재정리 중

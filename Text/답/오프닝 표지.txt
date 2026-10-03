@@ -1,0 +1,2 @@
+ui.opening.kicker = CASE FILE
+ui.opening.stamp = CONFIDENTIAL

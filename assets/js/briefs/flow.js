@@ -2,6 +2,7 @@ import { animate, effects, reducedMotion } from '../motion/animate.js';
 import { fromRect } from '../motion/flip.js';
 import { flowPaths } from '../motion/flow-paths.js';
 import { revealOnce } from '../motion/reveal.js';
+import { fill as fillText } from '../text.js'; // 이 파일에는 표 행을 채우는 fill이 따로 있다
 // E2 · Cost 스킬 시스템 — 한 번의 클릭이 읽는 데이터와 쓰는 데이터.
 //
 //   ① 읽기 — 마스터 데이터(하늘). 기획자가 정의한 정적 데이터.
@@ -27,6 +28,7 @@ const NO_DIFF = new Set(['queue|deck_order']);
 
 export function playFlow(host, cfg, onComplete) {
   const play = cfg.play || {};
+  const labels = cfg.labels; // 화면에 붙는 고정 문구(손패·덱·Cost 표시)
   const byId = new Map((play.students || []).map((s) => [s.id, s]));
   const nodeById = new Map(((cfg.chart || {}).nodes || []).map((n) => [n.id, n]));
   const total = Number(play.uses) || 0;
@@ -70,9 +72,9 @@ export function playFlow(host, cfg, onComplete) {
             <div class="fx-bar"><div class="fx-bar-fill"></div></div>
             <p class="fx-rate-note"></p>
           </div>
-          <span class="fx-sub">손패</span>
+          <span class="fx-sub fx-sub-hand"></span>
           <div class="fx-hand" role="group"></div>
-          <span class="fx-sub">덱</span>
+          <span class="fx-sub fx-sub-deck"></span>
           <ol class="fx-deck"></ol>
         </div>
       </section>
@@ -98,6 +100,8 @@ export function playFlow(host, cfg, onComplete) {
   const sec = cfg.sections || {};
   const mst = cfg.master || {};
   root.querySelector('.fx-sec-play').textContent = sec.play || '';
+  root.querySelector('.fx-sub-hand').textContent = labels.hand;
+  root.querySelector('.fx-sub-deck').textContent = labels.deck;
   root.querySelector('.fx-sec-chart').textContent = sec.chart || '';
   root.querySelector('.fx-sec-master').textContent = sec.master || '';
   root.querySelector('.fx-sec-tables').textContent = sec.tables || '';
@@ -158,8 +162,8 @@ export function playFlow(host, cfg, onComplete) {
   // 차트는 문서의 '최종 플로우 차트' 중 한 번의 선택이 지나는 구간을 그대로 옮긴 것
   function buildChart() {
     const c = root.querySelector('.fx-chart');
-    const yes = (cfg.chart || {}).yes || '예';
-    const no = (cfg.chart || {}).no || '아니오';
+    const yes = cfg.chart.yes;
+    const no = cfg.chart.no;
     c.classList.add('fx-svg-chart');
     ['env','runtime','q_cost','deny','spend','q_draw','to_top','to_bottom','draw','queue','q_change','skilltable','reset'].forEach(id => c.appendChild(node(id)));
     graph = flowPaths(c, yes, no, cfg.chart.edge_labels);
@@ -353,8 +357,8 @@ export function playFlow(host, cfg, onComplete) {
   function paint() {
     const { hand, cost, boosted, used, costs } = presentation || snapshot();
     const rate = () => boosted ? boostRate : baseRate;
-    root.querySelector('.fx-cost').textContent = `현재 Cost ${cost.toFixed(2)} / ${max}`;
-    root.querySelector('.fx-rate').textContent = `회복 ${rate().toFixed(4)} /sec`;
+    root.querySelector('.fx-cost').textContent = fillText(labels.cost, { cost: cost.toFixed(2), max });
+    root.querySelector('.fx-rate').textContent = fillText(labels.rate, { rate: rate().toFixed(4) });
     root.querySelector('.fx-bar-fill').style.width = `${(cost / max) * 100}%`;
     // 시전 가능 여부는 Cost가 차오르는 순간 뒤집힌다. 손패 카드만 반응하고 표는 굳어 있으면
     // 이 열이 무엇을 보는 값인지 드러나지 않는다 — 표 쪽도 같이 뒤집는다.
