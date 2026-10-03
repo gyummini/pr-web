@@ -1,0 +1,2 @@
+E8.brief.chapters.7.blocks.2.table.rows.1.1 = 닌텐도가 팬게임 커뮤니티에 팬 게임 379건의 삭제를 요청했고, 대부분 포켓몬 게임이었습니다.
+E8.brief.chapters.7.blocks.11.table.rows.1.1 = 모든 응답에 noindex를 붙이고 robots.txt로 수집을 막았습니다.
