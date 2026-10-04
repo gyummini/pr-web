@@ -90,9 +90,9 @@ export function renderIntro(view) {
 
   // 작업 중이라는 양해를 먼저 전한다. 표지가 열리기 전에 세우는 이유 —
   // 오프닝이 돌기 시작하면 0.8초 뒤 대사가 이어져, 읽을 틈 없이 지나간다.
-  // 데이터에서 notice를 지우면 이 단계는 통째로 사라진다.
+  // 데이터에서 notice를 지우거나 notice.off를 true로 두면 이 단계는 통째로 사라진다(문구는 데이터에 남는다).
   const notice = DB.intro.notice;
-  if (notice && !state.noticeSeen) {
+  if (notice && !notice.off && !state.noticeSeen) {
     const memo = buildNotice(notice);
     view.appendChild(memo);
     view.classList.add('notice-active');

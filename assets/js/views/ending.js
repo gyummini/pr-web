@@ -2,7 +2,7 @@ import { DB } from '../data.js';
 import { state, baseUnlocked } from '../state.js';
 import { DialogueEngine } from '../engine.js';
 import { standingSprite } from '../sprites.js';
-import { syncBadge } from '../ui.js';
+import { syncBadge, dismissUnlockToast } from '../ui.js';
 import { navigate } from '../router.js';
 import { TH } from '../text.js';
 
@@ -12,6 +12,7 @@ export function renderEnding(view) {
     navigate('/evidence', { replace: true });
     return {};
   }
+  dismissUnlockToast();
 
   view.className = 'view-ending';
   view.innerHTML = `

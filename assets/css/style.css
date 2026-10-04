@@ -67,7 +67,9 @@ button { font-family: inherit; }
   100% { transform: scale(1); }
 }
 
-#view { min-height: calc(100vh - var(--header-h)); transition: opacity .12s ease; }
+/* 장식(지금 누를 것의 퍼지는 테두리 같은)이 화면 끝을 넘어도 가로 스크롤이 생기지 않게 자른다.
+   clip은 스크롤 상자를 만들지 않아 안쪽의 sticky(E8 옆 목차 · E1 진행 띠 · 자기소개서 목차)는 그대로 붙는다(10/04 점검) */
+#view { min-height: calc(100vh - var(--header-h)); transition: opacity .12s ease; overflow-x: clip; }
 #view.view-enter { opacity: 1; }
 @media (prefers-reduced-motion: reduce) {
   #view { transition: none; }
@@ -1080,7 +1082,8 @@ body.plain-mode #view { min-height: 100vh; }
 }
 .nb-seal-top { font-size: .6rem; letter-spacing: 2px; opacity: .85; }
 .nb-seal-main { font-family: var(--nb-font-hand); font-weight: 700; font-size: 1.15rem; line-height: 1.2; text-align: center; }
-.nb-seal-bottom { font-size: .55rem; letter-spacing: 1px; opacity: .85; }
+/* 아랫줄은 자간 0 — 10/04 해금 조건에 맞춰 E8을 더하자 자간 1px로는 지름 110px 원 밖으로 5px 넘쳤다 */
+.nb-seal-bottom { font-size: .55rem; letter-spacing: 0; opacity: .85; }
 
 /* ---- 내지 공통 ---- */
 .nb-sheet {

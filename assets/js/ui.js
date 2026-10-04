@@ -112,7 +112,16 @@ export function toast(title, sub = '', icon = '🏆') {
   setTimeout(() => el.remove(), 3700);
 }
 
-// E1~E6을 모두 모은 순간 표시하는 고정 알림. 직접 닫거나 수첩으로 이동하기 전까지 유지한다.
+// 엔딩이 시작되거나 수첩이 열리면 할 일을 마친 알림이다 — 닫는다.
+// 그대로 두면 엔딩 대사창을 가렸다(10/04 점검: 모바일에서는 대사 줄이 통째로 덮였다).
+// 아직 날아가는 증거가 나중에 내려앉아도 다시 띄우지 않게 표시도 남긴다.
+export function dismissUnlockToast() {
+  if (!baseUnlocked()) return; // 해금 전에 수첩을 먼저 연 사람에게는 알림이 아직 할 일이 있다
+  state.hiddenUnlockToastShown = true;
+  document.querySelectorAll('.hidden-unlock-toast').forEach((n) => n.remove());
+}
+
+// 기본 증거(E1~E6, E8)를 모두 모은 순간 표시하는 고정 알림. 직접 닫거나 엔딩·수첩으로 들어가기 전까지 유지한다.
 function maybeShowHiddenUnlockToast() {
   if (pending > 0 || !baseUnlocked() || state.hiddenUnlockToastShown) return;
   const root = document.getElementById('toast-root');

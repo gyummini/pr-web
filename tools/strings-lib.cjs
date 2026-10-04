@@ -38,6 +38,7 @@ const essayHeading = (id) => new RegExp('^## \\[' + id + '\\][ \\t]*(.+?)[ \\t]+
 const NOT_SHOWN = [
   /^intro\.skip_behavior\./, // 동작 설명(개발 메모)
   /^ending\.on_complete\./, // 동작 설명(개발 메모)
+  /^intro\.notice\./, // 첫 진입 메모 — 10/04 사용자 요청으로 끔(notice.off). 다시 켜면 이 줄을 지운다
   /^E7\.unlock_condition$/, // 코드가 읽지 않는다(옛 해금 조건 설명)
   // 10/03 E5 개편으로 화면에서 빠진 것. 확정 문구라 지우지 않고 남겨 뒀다 — 지울지는 사용자 결정.
   /^E5\.brief\.labels\.(diff_title|diff_added|diff_moved|moved_from|moved_rule|diff_same|summary_title|limit|ready|finished|no_set)$/,

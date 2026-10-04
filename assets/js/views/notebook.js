@@ -1,6 +1,7 @@
 import { DB } from '../data.js';
 import { SPRITES } from '../sprites.js';
 import { preloadNotebookFonts } from '../preload.js';
+import { dismissUnlockToast } from '../ui.js';
 
 // 수첩 화면의 고정 문구(장 넘김·탭·메모 머리) — 콘텐츠_수사수첩.json의 labels
 const NL = () => DB.notebook.labels;
@@ -50,6 +51,7 @@ function nbInline(s) {
 
 export function renderNotebook(view) {
   preloadNotebookFonts();
+  dismissUnlockToast();
   const nb = DB.notebook;
 
   view.className = 'view-notebook';
