@@ -88,9 +88,17 @@ function resolve(key) {
     const m = readText(file).match(HTML[key] || /$^/);
     return m ? m[1] : undefined;
   }
+  const node = nodeAt(key);
+  return typeof node === 'string' ? node : undefined;
+}
+
+// 키가 가리키는 데이터 그대로(문자열·객체·배열) — JSON 데이터의 키만. 장 번호나 그림 꼬리표처럼 문구 둘레를 읽을 때 쓴다.
+function nodeAt(key) {
+  const { file, segs } = locate(key);
+  if (!segs) return undefined;
   let node = readJSON(file);
   for (const seg of segs) node = step(node, seg);
-  return typeof node === 'string' ? node : undefined;
+  return node;
 }
 
 // 파일 하나의 모든 문자열을 키와 함께 꺼낸다. _로 시작하는 키(설명)는 화면에 나가지 않으므로 뺀다.
@@ -218,4 +226,4 @@ function writeValue(key, text) {
   cache.delete(abs);
 }
 
-module.exports = { ROOT, ALIASES, HTML, HANGUL, NOT_SHOWN, shown, resolve, allStrings, screenOf, readLedger, writeLedger, writeValue, CSV, HEADER };
+module.exports = { ROOT, ALIASES, HTML, HANGUL, NOT_SHOWN, shown, resolve, nodeAt, allStrings, screenOf, readLedger, writeLedger, writeValue, CSV, HEADER };

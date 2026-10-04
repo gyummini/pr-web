@@ -16,6 +16,9 @@ const today = () => new Date().toLocaleDateString('sv-SE'); // YYYY-MM-DD
 const rel = (p) => path.relative(L.ROOT, p).split(path.sep).join('/');
 
 // ---------------------------------------------------------------- request
+// 인터랙티브 페이지의 장(E#.brief.chapters.N) 안 문구 — 요청문에서 장마다 묶는다
+const CHAPTER = /^(E\d+\.brief\.chapters\.[^.]+)\.(.+)$/;
+
 function request(only) {
   const ledger = L.readLedger();
   const drafts = ledger.filter((r) => r.status === 'DRAFT' && (!only || L.screenOf(r.key).includes(only)));
@@ -40,16 +43,54 @@ function request(only) {
   out.push('- 사실을 바꾸거나 더하지 마세요. \'전할 것\'에 적힌 내용만 씁니다.');
   out.push('- {이름} 꼴의 자리표시는 그대로 두세요. 화면에서 값으로 바뀝니다.');
   out.push('- \'길이\' 안내를 지켜 주세요.');
-  out.push('- [같은 화면의 다른 문구]는 고치지 않습니다. 톤을 맞추고 같은 말을 되풀이하지 않는 데만 참고하세요.', '');
+  const keep = drafts.some((r) => CHAPTER.test(r.key)) ? '\'(고치지 않음)\' 줄과 [같은 화면의 다른 문구]' : '[같은 화면의 다른 문구]';
+  out.push(`- ${keep}는 고치지 않습니다. 톤을 맞추고 같은 말을 되풀이하지 않는 데만 참고하세요.`, '');
   out.push('답은 아래 형식으로만 주세요. 키는 그대로, 한 줄에 하나씩.', '', '```', '키 = 문구', '```', '');
+
+  // 화면에 나오는 문구를 데이터 순서(= 화면 순서)대로. 한글이 없는 DRAFT도 빠지지 않게 DRAFT는 따로 넣는다.
+  const shownKeys = new Set(all.map((s) => s.key));
+  const ordered = L.allStrings({ hangulOnly: false }).filter((s) => draftKeys.has(s.key) || shownKeys.has(s.key));
 
   for (const [screen, rows] of screens) {
     out.push(`## ${screen}`, '', '### 다시 쓸 문구', '');
-    for (const r of rows) {
-      out.push(`- \`${r.key}\``, `  - 지금: ${r.text}`);
-      for (const part of r.context.split(' | ')) out.push(`  - ${part}`);
+    // 모든 문구에 똑같이 붙은 맥락은 한 번만 적는다
+    const parts = (r) => r.context.split(' | ');
+    const common = rows.length > 1 ? parts(rows[0]).filter((p) => rows.every((r) => parts(r).includes(p))) : [];
+    if (common.length) out.push('모든 문구에 공통:', '', ...common.map((p) => `- ${p}`), '');
+    const printed = new Set();
+    const item = (r, kind) => {
+      out.push(`- \`${r.key}\`${kind ? ` · ${kind}` : ''}`, `  - 지금: ${r.text}`);
+      // 장 안 문구는 장 제목과 블록 종류가 자리를 말해 준다 — 데이터 경로뿐인 '자리'는 뺀다
+      for (const p of parts(r)) if (!common.includes(p) && !(kind && /^자리: .*데이터 위치 /.test(p))) out.push(`  - ${p}`);
       out.push('');
+      printed.add(r.key);
+    };
+
+    // 인터랙티브 페이지의 장 안 문구는 고칠 문장만 떼어 놓으면 앞뒤 흐름이 안 보인다 —
+    // 장마다 화면 순서대로 두고, 고치지 않는 문장도 '(고치지 않음)'으로 함께 둔다.
+    const inChapter = new Map(rows.filter((r) => CHAPTER.test(r.key)).map((r) => [r.key, r]));
+    if (inChapter.size) {
+      out.push('장 안의 문구는 장마다 화면 순서대로 둡니다. 키가 붙은 줄만 답해 주세요. \'(고치지 않음)\' 줄은 앞뒤 흐름을 보라고 함께 둔 것입니다.', '');
+      const wanted = new Set([...inChapter.keys()].map((k) => k.match(CHAPTER)[1]));
+      const chapters = [...new Set(ordered.map((s) => (s.key.match(CHAPTER) || [])[1]))].filter((c) => wanted.has(c));
+      for (const pre of chapters) {
+        const ch = L.nodeAt(pre) || {};
+        const labels = L.nodeAt(pre.replace(/\.chapters\.[^.]+$/, '.labels')) || {};
+        out.push(`#### ${[ch.no, ch.word].filter(Boolean).join(' ')}${ch.title ? ` — ${ch.title}` : ''}`, '');
+        for (const s of ordered.filter((x) => x.key.startsWith(`${pre}.`))) {
+          const sub = s.key.slice(pre.length + 1);
+          const kind = blockKind(pre, sub, labels);
+          if (inChapter.has(s.key)) item(inChapter.get(s.key), kind);
+          else if (!/^(no|word|title)$/.test(sub)) out.push(`- (고치지 않음) ${kind}: ${s.text}`, '');
+        }
+      }
     }
+    const rest = rows.filter((r) => !inChapter.has(r.key));
+    if (rest.length && inChapter.size) out.push('#### 장 밖의 문구', '');
+    for (const r of rest) item(r, '');
+    const missed = rows.filter((r) => !printed.has(r.key));
+    if (missed.length) throw new Error(`요청문에서 빠진 DRAFT: ${missed.map((r) => r.key).join(', ')}`);
+
     // 인터랙티브 페이지 머리에는 증거 제목·부제도 함께 보인다
     const head = new Set(rows.flatMap((r) => (/^E\d+\.brief\./.test(r.key) ? [`${r.key.split('.')[0]}.title`, `${r.key.split('.')[0]}.subtitle`] : [])));
     const refs = all.filter((s) => !draftKeys.has(s.key) && (head.has(s.key) || (L.screenOf(s.key) === screen && isReference(s.key, rows, used))));
@@ -76,6 +117,30 @@ function isReference(key, rows, used) {
   const lab = rest.match(/^brief\.labels\.([^.]+)$/);
   if (lab) return used.has(lab[1]);
   return /^brief\.(lead|recap)\./.test(rest);
+}
+
+// 장 안 문구가 화면 어디에 놓이는지 — 블록 이름은 assets/js/briefs/retro.js가 그리는 대로 쓴다.
+function blockKind(pre, sub, labels) {
+  if (sub === 'word') return '장 이름(장 목록과 옆 목차에 쓰이는 한 단어)';
+  if (sub === 'title') return '장 제목';
+  const m = sub.match(/^blocks\.(\d+)\.(.+)$/);
+  if (!m) return sub;
+  const bk = L.nodeAt(`${pre}.blocks.${m[1]}`) || {};
+  const p = m[2];
+  // 그림 설명 앞에는 '참고'·'결과' 같은 꼬리표가 붙기도 한다
+  const tag = (f) => (f && f.tag && labels[`tag_${f.tag}`] ? `(앞에 '${labels[`tag_${f.tag}`]}' 꼬리표)` : '');
+  let x;
+  if (p === 'verdict') return '장 첫 문단(이 장의 결정과 이유)';
+  if (p === 'h') return '소제목';
+  if (p === 'p') return '본문 문단';
+  if (/^list\.\d+$/.test(p)) return '글머리표 항목';
+  if (p === 'figure.caption') return `그림 설명${tag(bk.figure)}`;
+  if ((x = p.match(/^pair\.(\d+)\.caption$/))) return `나란히 놓인 두 그림 중 ${['앞', '뒤'][x[1]] || `${Number(x[1]) + 1}번째`} 그림 설명${tag(bk.pair[x[1]])}`;
+  if ((x = p.match(/^roles\.(mine|ai)$/))) return `장 끝 '${bk.roles[`${x[1]}_label`] || labels[x[1]]}' 칸`;
+  if (/^table\.head\.\d+$/.test(p)) return '표 머리';
+  if ((x = p.match(/^table\.rows\.\d+\.(\d+)$/))) return `표 칸('${bk.table.head[x[1]]}' 열)`;
+  if (/^sources\.\d+\.label$/.test(p)) return '출처 링크 이름';
+  return p;
 }
 
 // 코드가 읽는 라벨 이름 — 인터랙티브 페이지 코드에 `.이름` 꼴로 나오는지 본다(어림). 화면에 안 나오는 라벨을 거르는 데만 쓴다.
