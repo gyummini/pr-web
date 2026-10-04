@@ -88,7 +88,10 @@ const origin = process.env.TEST_ORIGIN || 'http://127.0.0.1:4173';
     // E1: real pointer input, wrong answer return, cancellation, keyboard alternative, both passes.
     await page.goto(origin + '/evidence/E1/interactive');
     await page.locator('.cc-ch[data-n="0"] .cc-next').click();
-    await page.waitForTimeout(800);
+    // 다음 장으로 데려가는 스크롤(setInterval)이 멈출 때까지 기다린다 — 고정 시간은 화면이 바쁘면 모자라서
+    // 카드 자리를 스크롤 도중에 읽고 엉뚱한 곳을 누르게 된다(지금 누를 것 표시가 퍼지는 동안 특히)
+    const settle = () => page.waitForFunction(async () => { const y = window.scrollY; await new Promise((r) => setTimeout(r, 150)); return window.scrollY === y; });
+    await settle();
     const ids = await page.locator('.cc-cards .cc-plate').evaluateAll(es => es.map(e => e.dataset.id));
     const cancelSource = page.locator('.cc-cards .cc-plate').first();
     await cancelSource.scrollIntoViewIfNeeded();
@@ -99,7 +102,10 @@ const origin = process.env.TEST_ORIGIN || 'http://127.0.0.1:4173';
     assert.equal(await page.locator('.cc-drag').count(), 0, 'Cancelled pointer cleans up its drag');
     async function dragTo(id, target) {
       const src = page.locator('.cc-cards [data-id="' + id + '"]');
+      // 틀린 자리에 놓았던 카드가 제자리로 돌아오는 연출(0.28초)이 끝난 뒤에 자리를 읽는다
+      await page.waitForFunction((sel) => !document.querySelector(sel).getAnimations().length, '.cc-cards [data-id="' + id + '"]');
       await src.scrollIntoViewIfNeeded();
+      await settle();
       const a = await src.boundingBox(), b = await page.locator('.cc-slot[data-id="' + target + '"]').boundingBox();
       await page.mouse.move(a.x + a.width / 2, a.y + a.height / 2); await page.mouse.down();
       await page.mouse.move(b.x + b.width / 2, b.y + b.height / 2, { steps: 8 }); await page.mouse.up();

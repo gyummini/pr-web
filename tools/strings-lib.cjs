@@ -43,6 +43,15 @@ const NOT_SHOWN = [
   /^E5\.brief\.labels\.(diff_title|diff_added|diff_moved|moved_from|moved_rule|diff_same|summary_title|limit|ready|finished|no_set)$/,
   /^E5\.brief\.(summary|same_items)\./,
   /^E5\.brief\.sets\.[^.]+\.effect$/,
+  // 10/04 E3을 '직접 해 보는 판단'(cut_play)으로 다시 짜며 화면에서 빠진 것 — 다섯 단계 화면의 글. 확정 문구라 지우지 않았다.
+  /^E3\.brief\.lead\.prompt$/,
+  /^E3\.brief\.labels\.(nav|chapter|diagram|idle|retry|skip|back|restart|next|cut_economy|cut_mining|add_context|show_result|economy_weight|economy_verdict|discovery|compare|before|after|cut_record|none_cut|action|context|action_line|context_question|context_found|social_label|final_detail|rules|core_code)$/,
+  /^E3\.brief\.labels\.social\./,
+  /^E3\.brief\.chapters\.(0|1|3|4)\./,
+  /^E3\.brief\.chapters\.2\.(name|verb|body|source)$/, // 남는 것은 질문(title)과 관찰(question) — 판단 칸
+  /^E3\.brief\.systems\.(mining|economy)\.(tag|detail|status|cut)$/, // 남는 것은 칸 이름(title)과 설명(note)
+  /^E3\.brief\.systems\.market\./,
+  /^E3\.brief\.(economy_rules|comparison|targets|rhythm|lessons)\./,
 ];
 const shown = (key) => !NOT_SHOWN.some((re) => re.test(key));
 

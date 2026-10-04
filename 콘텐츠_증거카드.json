@@ -1123,14 +1123,53 @@
       "title": "로블록스 브레인롯 강화 개발회고",
       "subtitle": "덜어내며 찾은 재미 — 기획·개발·출시 전 과정",
       "brief": {
-        "kind": "reduction",
+        "kind": "cut_play",
         "lead": {
           "title": "CUT UNTIL IT'S FUN",
           "line": "경제와 채굴을 차례로 덜어내며 끝까지 남겨야 할 재미를 찾았습니다.",
-          "prompt": "강화 버튼을 눌러 진행 속도를 비교하고, 시스템을 하나씩 덜어 보세요. 각 단계는 건너뛸 수 있습니다."
+          "prompt": "강화 버튼을 눌러 진행 속도를 비교하고, 시스템을 하나씩 덜어 보세요. 각 단계는 건너뛸 수 있습니다.",
+          "prompt_at": "action"
         },
         "labels": {
           "nav": "개발 과정에서 내린 다섯 가지 결정",
+          "run_hint": "곡괭이를 강화해 보세요!",
+          "first_title": "처음 만든 게임",
+          "first_line": "성장 요소가 많을수록 오래 즐길 거라 생각했습니다",
+          "final_title": "출시한 게임",
+          "mine": "채굴",
+          "iron": "철광석 {n}",
+          "coal": "석탄 {n}",
+          "buy_coal": "석탄 구매 · {n}골드",
+          "need": "필요한 재료: 철광석 {iron}",
+          "need_coal": "필요한 재료: 철광석 {iron} · 석탄 {coal}",
+          "rate_first": "성공 {s}% · 하락 {d}%",
+          "drop": "강화 실패 · 한 단계 하락",
+          "income": "자동 수익 +{n}/초",
+          "final_cost": "강화 비용 {n}골드",
+          "rate_final": "성공 {s}% · 유지 {k}% · 하락 {d}%",
+          "evolve": "진화! {from} → {to}",
+          "stay": "유지 · 그대로",
+          "devolve": "하락 · {to}",
+          "next_label": "다음 진화",
+          "lane": "줄지어 나오는 브레인롯",
+          "take_hint": "지나가는 브레인롯을 끌어다 내 방에 놓으세요!",
+          "room": "내 방 {n}/{max}",
+          "room_full": "방이 꽉 찼습니다",
+          "stand": "강화대",
+          "stand_empty": "가져온 브레인롯이 강화대에 올라옵니다",
+          "art_credit": "브레인롯 그림 — 위키 기여자 {names}, 크기를 줄여 webp로 바꿈:",
+          "sell": "철광석 판매",
+          "gold": "골드 {n}",
+          "price": "철광석 1개 {n}골드",
+          "short": "재료가 부족합니다. 광석을 캐세요.",
+          "presses": "강화 한 번까지 {n}번 눌렀습니다",
+          "skip_play": "건너뛰고 판단 보기 →",
+          "judge": "판단",
+          "feedback_label": "지인의 첫 반응",
+          "feedback": "“너무 복잡하다”",
+          "research_label": "로블록스 인기 게임",
+          "research": "복잡한 성장보다 밈을 공유하며 짧게 웃는 경험",
+          "cut_both": "채굴과 경제 덜어내기",
           "chapter": "CHAPTER",
           "diagram": "현재 기획의 구성",
           "kept": "끝까지 남긴 것",
@@ -1377,6 +1416,575 @@
             }
           ]
         },
+        "demo": {
+          "seed": 192,
+          "final_goal": 3,
+          "first": {
+            "durability": 2,
+            "respawn_ms": 900,
+            "price_ms": 1300,
+            "iron_prices": [
+              4,
+              5,
+              3,
+              6,
+              5,
+              4,
+              2,
+              3,
+              5,
+              6,
+              4,
+              3
+            ],
+            "coal_price": 8,
+            "upgrade": [
+              {
+                "iron": 3,
+                "coal": 0,
+                "success": 90,
+                "drop": 0
+              },
+              {
+                "iron": 5,
+                "coal": 0,
+                "success": 80,
+                "drop": 0
+              },
+              {
+                "iron": 5,
+                "coal": 2,
+                "success": 70,
+                "drop": 10
+              },
+              {
+                "iron": 8,
+                "coal": 3,
+                "success": 60,
+                "drop": 20
+              }
+            ]
+          },
+          "final": {
+            "slots": 8,
+            "spawn_ms": 1600,
+            "life_ms": 7000,
+            "lane_max": 4,
+            "_spawn_note": "게임의 스폰 표는 +0(30%) +1(25%) +2(20%) +3(13%) +4(8%) +5(4%). wa(+0)는 위키에 그림이 없어 체험에서 뺐다.",
+            "spawn": [
+              {
+                "lvl": 1,
+                "w": 25
+              },
+              {
+                "lvl": 2,
+                "w": 20
+              },
+              {
+                "lvl": 3,
+                "w": 13
+              },
+              {
+                "lvl": 4,
+                "w": 8
+              },
+              {
+                "lvl": 5,
+                "w": 4
+              }
+            ],
+            "_max_note": "+29~+34(Los … dicen …)는 위키에 그림이 없어 체험은 +28(Zibra Zubra Zibralini)까지만 진화한다.",
+            "max_level": 28,
+            "speed": 6,
+            "start_gold": 0,
+            "brainrots": [
+              {
+                "name": "wa",
+                "img": null,
+                "credit": null,
+                "gpm": 100,
+                "cost": 20,
+                "success": 90,
+                "keep": 10,
+                "drop": 0
+              },
+              {
+                "name": "Boneca",
+                "img": "/assets/img/e3/brainrots/boneca.webp",
+                "credit": {
+                  "file": "Boneca_Ambalabu.png",
+                  "by": "Bhutanish Fan",
+                  "page": "https://brainrot.miraheze.org/wiki/File:Boneca_Ambalabu.png"
+                },
+                "gpm": 112,
+                "cost": 20,
+                "success": 89,
+                "keep": 11,
+                "drop": 0
+              },
+              {
+                "name": "Mat_teo",
+                "img": "/assets/img/e3/brainrots/mat-teo.webp",
+                "credit": {
+                  "file": "Matteo.png",
+                  "by": "AGoofyBuncs",
+                  "page": "https://stealabrainrot.fandom.com/wiki/File:Matteo.png"
+                },
+                "gpm": 126,
+                "cost": 30,
+                "success": 88,
+                "keep": 12,
+                "drop": 0
+              },
+              {
+                "name": "Tim Cheese",
+                "img": "/assets/img/e3/brainrots/tim-cheese.webp",
+                "credit": {
+                  "file": "Tim.png",
+                  "by": "Zuchuly",
+                  "page": "https://stealabrainrotwiki.miraheze.org/wiki/File:Tim.png"
+                },
+                "gpm": 141,
+                "cost": 30,
+                "success": 87,
+                "keep": 13,
+                "drop": 0
+              },
+              {
+                "name": "Pipi Corni",
+                "img": "/assets/img/e3/brainrots/pipi-corni.webp",
+                "credit": {
+                  "file": "PipiCorni.png",
+                  "by": "YellowSmithers",
+                  "page": "https://stealabrainrot.fandom.com/wiki/File:PipiCorni.png"
+                },
+                "gpm": 158,
+                "cost": 40,
+                "success": 86,
+                "keep": 14,
+                "drop": 0
+              },
+              {
+                "name": "Pipi_Kiwi",
+                "img": "/assets/img/e3/brainrots/pipi-kiwi.webp",
+                "credit": {
+                  "file": "Better_pipi_kiwi.png",
+                  "by": "Bhutanish Fan",
+                  "page": "https://brainrot.miraheze.org/wiki/File:Better_pipi_kiwi.png"
+                },
+                "gpm": 177,
+                "cost": 40,
+                "success": 85,
+                "keep": 15,
+                "drop": 0
+              },
+              {
+                "name": "Pipi Avocado",
+                "img": "/assets/img/e3/brainrots/pipi-avocado.webp",
+                "credit": {
+                  "file": "Pipi_Avocado.png",
+                  "by": "Excavadoragrua",
+                  "page": "https://stealabrainrot.fandom.com/wiki/File:Pipi_Avocado.png"
+                },
+                "gpm": 198,
+                "cost": 50,
+                "success": 84,
+                "keep": 16,
+                "drop": 0
+              },
+              {
+                "name": "Pi Pi Watermelon",
+                "img": "/assets/img/e3/brainrots/pi-pi-watermelon.webp",
+                "credit": {
+                  "file": "Pi_pi_watermelon.png",
+                  "by": "SabArepa128",
+                  "page": "https://stealabrainrot.fandom.com/wiki/File:Pi_pi_watermelon.png"
+                },
+                "gpm": 222,
+                "cost": 50,
+                "success": 83,
+                "keep": 17,
+                "drop": 0
+              },
+              {
+                "name": "Noobini Pizzanini",
+                "img": "/assets/img/e3/brainrots/noobini-pizzanini.webp",
+                "credit": {
+                  "file": "NoobiniPizzanini.png",
+                  "by": "Bhutanish Fan",
+                  "page": "https://stealabrainrotwiki.miraheze.org/wiki/File:NoobiniPizzanini.png"
+                },
+                "gpm": 249,
+                "cost": 60,
+                "success": 82,
+                "keep": 18,
+                "drop": 0
+              },
+              {
+                "name": "Cocosini Mama",
+                "img": "/assets/img/e3/brainrots/cocosini-mama.webp",
+                "credit": {
+                  "file": "Cocosini_Mama.png",
+                  "by": "Sonicball pro",
+                  "page": "https://stealabrainrot.fandom.com/wiki/File:Cocosini_Mama.png"
+                },
+                "gpm": 279,
+                "cost": 70,
+                "success": 81,
+                "keep": 19,
+                "drop": 0
+              },
+              {
+                "name": "Frigo Camelo",
+                "img": "/assets/img/e3/brainrots/frigo-camelo.webp",
+                "credit": {
+                  "file": "Frigo_Camelo.png",
+                  "by": "AGoofyBuncs",
+                  "page": "https://stealabrainrot.fandom.com/wiki/File:Frigo_Camelo.png"
+                },
+                "gpm": 312,
+                "cost": 80,
+                "success": 80,
+                "keep": 20,
+                "drop": 0
+              },
+              {
+                "name": "Talpa Di Fero",
+                "img": "/assets/img/e3/brainrots/talpa-di-fero.webp",
+                "credit": {
+                  "file": "Talpa_Di_Fero.png",
+                  "by": "Bhutanish Fan",
+                  "page": "https://brainrot.miraheze.org/wiki/File:Talpa_Di_Fero.png"
+                },
+                "gpm": 350,
+                "cost": 90,
+                "success": 78,
+                "keep": 22,
+                "drop": 0
+              },
+              {
+                "name": "Ballerino Lololo",
+                "img": "/assets/img/e3/brainrots/ballerino-lololo.webp",
+                "credit": {
+                  "file": "Ballerinolololo.png",
+                  "by": "Zuchuly",
+                  "page": "https://stealabrainrot.fandom.com/wiki/File:Ballerinolololo.png"
+                },
+                "gpm": 392,
+                "cost": 110,
+                "success": 77,
+                "keep": 22,
+                "drop": 1
+              },
+              {
+                "name": "Burbaloni Loliloli",
+                "img": "/assets/img/e3/brainrots/burbaloni-loliloli.webp",
+                "credit": {
+                  "file": "Burbaloni_Loliloli.png",
+                  "by": "KingBoo16",
+                  "page": "https://stealabrainrot.fandom.com/wiki/File:Burbaloni_Loliloli.png"
+                },
+                "gpm": 439,
+                "cost": 120,
+                "success": 76,
+                "keep": 22,
+                "drop": 2
+              },
+              {
+                "name": "Bambini_Crostini",
+                "img": "/assets/img/e3/brainrots/bambini-crostini.webp",
+                "credit": {
+                  "file": "Bambini_Crostini.png",
+                  "by": "SOMEONEWHODOESNOTCARE",
+                  "page": "https://stealabrainrot.fandom.com/wiki/File:Bambini_Crostini.png"
+                },
+                "gpm": 492,
+                "cost": 140,
+                "success": 74,
+                "keep": 24,
+                "drop": 2
+              },
+              {
+                "name": "Cavallo_Virtuoso",
+                "img": "/assets/img/e3/brainrots/cavallo-virtuoso.webp",
+                "credit": {
+                  "file": "Cavallo_Virtuoso.png",
+                  "by": "AGoofyBuncs",
+                  "page": "https://stealabrainrot.fandom.com/wiki/File:Cavallo_Virtuoso.png"
+                },
+                "gpm": 552,
+                "cost": 160,
+                "success": 72,
+                "keep": 26,
+                "drop": 2
+              },
+              {
+                "name": "Girafa_Celestre",
+                "img": "/assets/img/e3/brainrots/girafa-celestre.webp",
+                "credit": {
+                  "file": "Girafa_Celestre.png",
+                  "by": "SOMEONEWHODOESNOTCARE",
+                  "page": "https://stealabrainrot.fandom.com/wiki/File:Girafa_Celestre.png"
+                },
+                "gpm": 618,
+                "cost": 180,
+                "success": 71,
+                "keep": 26,
+                "drop": 3
+              },
+              {
+                "name": "Graipuss Medussi",
+                "img": "/assets/img/e3/brainrots/graipuss-medussi.webp",
+                "credit": {
+                  "file": "Graipuss_Medussi.png",
+                  "by": "KingBoo16",
+                  "page": "https://stealabrainrot.fandom.com/wiki/File:Graipuss_Medussi.png"
+                },
+                "gpm": 693,
+                "cost": 210,
+                "success": 70,
+                "keep": 26,
+                "drop": 4
+              },
+              {
+                "name": "Gangster Footera",
+                "img": "/assets/img/e3/brainrots/gangster-footera.webp",
+                "credit": {
+                  "file": "Gangster_Footera.png",
+                  "by": "KingBoo16",
+                  "page": "https://stealabrainrot.fandom.com/wiki/File:Gangster_Footera.png"
+                },
+                "gpm": 776,
+                "cost": 240,
+                "success": 68,
+                "keep": 28,
+                "drop": 4
+              },
+              {
+                "name": "Blueberrinni_Octopusini",
+                "img": "/assets/img/e3/brainrots/blueberrinni-octopusini.webp",
+                "credit": {
+                  "file": "Blueberrinni_Octopusini.png",
+                  "by": "KingBoo16",
+                  "page": "https://stealabrainrot.fandom.com/wiki/File:Blueberrinni_Octopusini.png"
+                },
+                "gpm": 870,
+                "cost": 270,
+                "success": 66,
+                "keep": 30,
+                "drop": 4
+              },
+              {
+                "name": "Chicleteira Bicicleteira",
+                "img": "/assets/img/e3/brainrots/chicleteira-bicicleteira.webp",
+                "credit": {
+                  "file": "Default_Chicleteira_Bicicleteira.png",
+                  "by": "KingBoo16",
+                  "page": "https://stealabrainrot.fandom.com/wiki/File:Default_Chicleteira_Bicicleteira.png"
+                },
+                "gpm": 975,
+                "cost": 310,
+                "success": 65,
+                "keep": 30,
+                "drop": 5
+              },
+              {
+                "name": "Perochello_Lemonchello",
+                "img": "/assets/img/e3/brainrots/perochello-lemonchello.webp",
+                "credit": {
+                  "file": "Perochello_Lemonchello.png",
+                  "by": "KingBoo16",
+                  "page": "https://stealabrainrot.fandom.com/wiki/File:Perochello_Lemonchello.png"
+                },
+                "gpm": 1100,
+                "cost": 360,
+                "success": 65,
+                "keep": 29,
+                "drop": 6
+              },
+              {
+                "name": "Agarrini la Palini",
+                "img": "/assets/img/e3/brainrots/agarrini-la-palini.webp",
+                "credit": {
+                  "file": "Agarrini_la_Palini.png",
+                  "by": "LuckyLOL420",
+                  "page": "https://stealabrainrot.fandom.com/wiki/File:Agarrini_la_Palini.png"
+                },
+                "gpm": 1200,
+                "cost": 410,
+                "success": 64,
+                "keep": 30,
+                "drop": 6
+              },
+              {
+                "name": "Avocadini Guffo",
+                "img": "/assets/img/e3/brainrots/avocadini-guffo.webp",
+                "credit": {
+                  "file": "AvocadiniGuffo.png",
+                  "by": "YellowSmithers",
+                  "page": "https://stealabrainrot.fandom.com/wiki/File:AvocadiniGuffo.png"
+                },
+                "gpm": 1400,
+                "cost": 460,
+                "success": 64,
+                "keep": 29,
+                "drop": 7
+              },
+              {
+                "name": "Gattatino_Nyanino",
+                "img": "/assets/img/e3/brainrots/gattatino-nyanino.webp",
+                "credit": {
+                  "file": "Gattatino_Nyanino.png",
+                  "by": "SOMEONEWHODOESNOTCARE",
+                  "page": "https://stealabrainrot.fandom.com/wiki/File:Gattatino_Nyanino.png"
+                },
+                "gpm": 1500,
+                "cost": 530,
+                "success": 64,
+                "keep": 28,
+                "drop": 8
+              },
+              {
+                "name": "Lionel_Cactuseli",
+                "img": "/assets/img/e3/brainrots/lionel-cactuseli.webp",
+                "credit": {
+                  "file": "Lionel_Cactuseli.png",
+                  "by": "KingBoo16",
+                  "page": "https://stealabrainrot.fandom.com/wiki/File:Lionel_Cactuseli.png"
+                },
+                "gpm": 1700,
+                "cost": 600,
+                "success": 63,
+                "keep": 28,
+                "drop": 9
+              },
+              {
+                "name": "Sammyni_Spyderini",
+                "img": "/assets/img/e3/brainrots/sammyni-spyderini.webp",
+                "credit": {
+                  "file": "Sammyni_Spyderini.png",
+                  "by": "LuckyLOL420",
+                  "page": "https://stealabrainrot.fandom.com/wiki/File:Sammyni_Spyderini.png"
+                },
+                "gpm": 1900,
+                "cost": 690,
+                "success": 63,
+                "keep": 28,
+                "drop": 9
+              },
+              {
+                "name": "Unclito_Samito",
+                "img": "/assets/img/e3/brainrots/unclito-samito.webp",
+                "credit": {
+                  "file": "Unclito_Samito.png",
+                  "by": "LuckyLOL420",
+                  "page": "https://stealabrainrot.fandom.com/wiki/File:Unclito_Samito.png"
+                },
+                "gpm": 2200,
+                "cost": 780,
+                "success": 62,
+                "keep": 28,
+                "drop": 10
+              },
+              {
+                "name": "Zibra Zubra Zibralini",
+                "img": "/assets/img/e3/brainrots/zibra-zubra-zibralini.webp",
+                "credit": {
+                  "file": "Zibra_Zubra_Zibralini.png",
+                  "by": "LuckyLOL420",
+                  "page": "https://stealabrainrot.fandom.com/wiki/File:Zibra_Zubra_Zibralini.png"
+                },
+                "gpm": 2400,
+                "cost": 890,
+                "success": 62,
+                "keep": 27,
+                "drop": 11
+              },
+              {
+                "name": "Los orcaleritos dicen",
+                "img": null,
+                "credit": null,
+                "gpm": 2700,
+                "cost": 1000,
+                "success": 62,
+                "keep": 27,
+                "drop": 11
+              },
+              {
+                "name": "los orcaleritos dicen orcala",
+                "img": null,
+                "credit": null,
+                "gpm": 3000,
+                "cost": 1200,
+                "success": 61,
+                "keep": 27,
+                "drop": 12
+              },
+              {
+                "name": "Los Mateositos dicen MATEOO",
+                "img": null,
+                "credit": null,
+                "gpm": 3400,
+                "cost": 1300,
+                "success": 61,
+                "keep": 26,
+                "drop": 13
+              },
+              {
+                "name": "Los Mokel sitos dicen Mokell",
+                "img": null,
+                "credit": null,
+                "gpm": 3800,
+                "cost": 1500,
+                "success": 61,
+                "keep": 25,
+                "drop": 14
+              },
+              {
+                "name": "Los Ta ta Tasitos dicen Sahur",
+                "img": null,
+                "credit": null,
+                "gpm": 4300,
+                "cost": 1700,
+                "success": 60,
+                "keep": 26,
+                "drop": 14
+              },
+              {
+                "name": "Los Pot Hotspotsitos dicen HOTSPOTT",
+                "img": null,
+                "credit": null,
+                "gpm": 4800,
+                "cost": 29000,
+                "success": 40,
+                "keep": 35,
+                "drop": 25
+              }
+            ],
+            "art_sources": [
+              {
+                "label": "Steal a Brainrot Wiki (Fandom)",
+                "url": "https://stealabrainrot.fandom.com/"
+              },
+              {
+                "label": "Steal a Brainrot Wiki (Miraheze)",
+                "url": "https://stealabrainrotwiki.miraheze.org/"
+              },
+              {
+                "label": "Brainrot Wiki",
+                "url": "https://brainrot.miraheze.org/"
+              },
+              {
+                "label": "CC BY-SA (Fandom)",
+                "url": "https://www.fandom.com/licensing"
+              },
+              {
+                "label": "CC BY-SA 4.0",
+                "url": "https://creativecommons.org/licenses/by-sa/4.0/"
+              }
+            ]
+          }
+        },
         "lessons": [
           {
             "title": "덜어내기는 후퇴가 아니다.",
@@ -1429,7 +2037,7 @@
                 {
                   "label": "처음 구상",
                   "items": [
-                    "검 강화",
+                    "곡괭이 강화",
                     "경제",
                     "채굴"
                   ]

@@ -10,7 +10,7 @@ const path = require('node:path');
 const ORIGIN = process.env.TEST_ORIGIN || 'http://127.0.0.1:4173';
 const SUITES = [
   ['인터랙티브 공통 (E1·E2)', ['node', ['tests/brief-regression.cjs']]],
-  ['E3 · reduction', ['node', ['tests/e3-regression.cjs']]],
+  ['E3 · cut_play', ['node', ['tests/e3-regression.cjs']]],
   ['E5 · one_card', ['node', ['tests/e5-regression.cjs']]],
   ['입장권 API', ['node', ['--test', 'tests/play.test.mjs']]],
   ['화면 문구 · GPT 목록', ['node', ['tools/strings.cjs', 'check']]],

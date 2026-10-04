@@ -3,7 +3,7 @@ import { openDoc } from '../ui.js';
 import { navigate } from '../router.js';
 import { playFlow } from '../briefs/flow.js';
 import { playCharacterCall } from '../briefs/character-call.js';
-import { playReduction } from '../briefs/reduction.js';
+import { playCutPlay } from '../briefs/cut-play.js';
 import { playOneCard } from '../briefs/one-card.js';
 import { playRetro } from '../briefs/retro.js';
 import { evidenceHeader } from '../motion/evidence-header.js';
@@ -20,7 +20,7 @@ import { T } from '../text.js';
 const PLAYS = {
   flow: playFlow, // E2 — 원칙 → 요소 → 플로우 차트 → 데이터
   character_call: playCharacterCall, // E1 — 각인 → 호출 → 되감기 → 입체감
-  reduction: playReduction, // E3 — 경제 CUT → 채굴 CUT → 맥락 전환
+  cut_play: playCutPlay, // E3 — 처음 게임을 해 보고, 채굴·경제를 덜어내고, 출시한 게임을 해 본다
   one_card: playOneCard, // E5 — 같은 여정 두 개, 카드 한 장 차이
   retro: playRetro, // E8 — 인터랙션 없이 읽는 개발 회고. 브리프가 곧 원문이다
 };
@@ -39,7 +39,7 @@ export function renderBrief(view, eid) {
   const lead = b.lead || {};
 
   view.className = 'view-brief';
-  if (b.kind === 'reduction') view.classList.add('view-reduction');
+  if (b.kind === 'cut_play') view.classList.add('view-cut-play');
   if (b.kind === 'one_card') view.classList.add('view-one-card');
   if (b.kind === 'retro') view.classList.add('view-retro');
   view.innerHTML = `
