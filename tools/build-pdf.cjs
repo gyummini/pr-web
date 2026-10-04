@@ -54,6 +54,13 @@ function parseEssay(md) {
 // 앵커는 사이트에서만 의미가 있다 — 문장만 남긴다.
 // 다만 문단 전체가 '참고 · …' 앵커면 PDF에서는 가리킬 곳이 없어지므로 원본 문서로 링크한다.
 function essayBlock(b) {
+  // '참고 · {{E4:문서 이름}}' 줄(10/04 원고 형식) — 앵커 대신 원본 문서로 링크한 작은 줄
+  const ref = b.match(/^(참고 · )\{\{(E\d+):([^}]+)\}\}$/);
+  if (ref) {
+    const card = cards.find((c) => c.id === ref[2]);
+    const text = esc(ref[3]);
+    return `<p class="ref">${esc(ref[1])}${card && card.url ? `<a href="${esc(card.url)}">${text} ↗</a>` : text}</p>`;
+  }
   const only = b.match(/^\{\{(E\d+):([^}]+)\}\}$/);
   if (only && only[2].startsWith('참고')) {
     const card = cards.find((c) => c.id === only[1]);

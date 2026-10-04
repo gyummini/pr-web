@@ -174,6 +174,8 @@ function renderBlocks(body) {
       const b = raw.trim();
       if (!b || b === '---') return '';
       if (b.startsWith('### ')) return `<h3>${inline(b.slice(4))}</h3>`;
+      // '참고 · …'로 시작하는 단독 문단은 본문보다 작은 보조 줄이다 — 문구는 원고 그대로 두고 클래스만 붙인다
+      if (b.startsWith('참고 ·')) return `<p class="essay-ref">${inline(b)}</p>`;
       // 문단 안 줄바꿈은 inline()에서 <br>로 보존된다
       return `<p>${inline(b)}</p>`;
     })

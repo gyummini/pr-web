@@ -329,6 +329,8 @@ button { font-family: inherit; }
   border-left: 4px solid var(--accent); padding-left: 10px;
 }
 .essay-body p strong { font-size: 1.02rem; }
+/* 원고의 '참고 · …' 줄 — 본문 흐름에서 한 발 물러난 보조 줄 */
+.essay-body p.essay-ref { font-size: .86rem; line-height: 1.7; color: var(--ink-soft); }
 
 .anchor {
   cursor: pointer; padding: 0 2px;
