@@ -114,6 +114,19 @@ export function playFlow(host, cfg, onComplete) {
   buildTables();
 
   const handWrap = root.querySelector('.fx-hand');
+  // 처음 누를 것은 손패다(style.css .cue). 데이터가 prompt_at: 'action'이면 껍데기가 머리말의 안내를 빼고,
+  // 같은 문구가 손패 바로 위 말풍선으로 온다 — 둘 다 첫 조작까지만. 다시 해보기는 처음 상태로 돌린다.
+  const hint = cfg.lead?.prompt_at === 'action' && cfg.lead.prompt ? document.createElement('p') : null;
+  if (hint) {
+    hint.className = 'cue-note points-down';
+    hint.textContent = cfg.lead.prompt;
+    handWrap.before(hint);
+  }
+  let pressed = false;
+  function paintCue() {
+    handWrap.classList.toggle('cue', !pressed);
+    if (hint) hint.hidden = pressed;
+  }
   const deckWrap = root.querySelector('.fx-deck');
   const caption = root.querySelector('.fx-caption');
   host.appendChild(root);
@@ -314,6 +327,8 @@ export function playFlow(host, cfg, onComplete) {
     drawDeck();
     paintTables();
     paint();
+    pressed = false;
+    paintCue();
   }
 
   function costOf(s, values = costs) {
@@ -525,6 +540,7 @@ export function playFlow(host, cfg, onComplete) {
     // 네 번을 채운 뒤에도 계속 눌러볼 수 있다 — 결론만 한 번 열리고 판은 살아 있다
     finishTrace?.();
     if (!hand.includes(s)) return;
+    if (!pressed) { pressed = true; paintCue(); }
     clearTimers();
     stepTimers = [];
     tick();

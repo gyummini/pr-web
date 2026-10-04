@@ -40,6 +40,7 @@ export function playCharacterCall(host, cfg, onComplete) {
   let selected = null;
   let stopScroll = null;
   let stopResult = null;
+  let stopCue = null;
   let timers = [];
   let scrollIv = null;
   let dead = false;
@@ -78,6 +79,7 @@ export function playCharacterCall(host, cfg, onComplete) {
       p.textContent = cfg.credit;
       sect(4).appendChild(p);
     }
+    cueOn(root.querySelector('.cc-grid-note .cc-next'));
   }
 
   // 장 하나 — 머리말·제목·리드·꼬리말은 다섯 장이 모두 같은 모양이다
@@ -168,7 +170,11 @@ export function playCharacterCall(host, cfg, onComplete) {
 
     const note = el('div', 'cc-grid-note');
     note.appendChild(txt('span', g.note || '', 'cc-mono'));
-    note.appendChild(next(t.to_match, 1));
+    // 2장부터는 이 버튼을 눌러야 열린다. 바로 아래가 보관함 버튼이라 여기서 끝난 것처럼 보여서 말풍선을 단다.
+    if (t.to_match_note) note.appendChild(txt('p', t.to_match_note, 'cue-note points-right'));
+    const go = next(t.to_match, 1);
+    go.addEventListener('click', () => cueOn(root.querySelector('.cc-cards')));
+    note.appendChild(go);
     sect(0).appendChild(note);
   }
 
@@ -313,6 +319,8 @@ export function playCharacterCall(host, cfg, onComplete) {
     if (selected === src) selected = null;
     src.setAttribute('aria-pressed', 'false');
     matched += 1;
+    // 한 장을 맞히면 방법은 안 것이다 — 카드 묶음의 표시를 거둔다
+    if (matched === 1) cueOn(null);
     root.querySelector('.cc-quiz-count').textContent = matched + ' / ' + order.length;
     fromRect(p, from, { duration: 360 });
     if (matched === order.length) {
@@ -320,6 +328,7 @@ export function playCharacterCall(host, cfg, onComplete) {
       done.hidden = false;
       done.classList.add('cc-on');
       animate(done, effects.fade);
+      cueOn(done.querySelector('.cc-next'));
     }
     slot.focus({ preventScroll: true });
   }
@@ -500,6 +509,7 @@ export function playCharacterCall(host, cfg, onComplete) {
     if (worryShown || mode !== 'call') return;
     worryShown = true;
     root.querySelector('.cc-worry').hidden = false;
+    cueOn(root.querySelector('.cc-worry .cc-next'));
   }
 
   /* ---------- 되감기 ---------- */
@@ -511,6 +521,7 @@ export function playCharacterCall(host, cfg, onComplete) {
     root.classList.add('cc-second-pass');
     root.querySelector('.cc-pass').textContent = t.pass_reveal;
     root.querySelector('.cc-worry').hidden = true;
+    cueOn(null);
     revealed = 0;
     // 무대를 비운다 — 두 번째로 내려갈 때 캐릭터가 '다시' 붙어야 한다
     rows().forEach((row) => {
@@ -613,6 +624,7 @@ export function playCharacterCall(host, cfg, onComplete) {
     const nav = el('div', 'cc-next-wrap');
     nav.appendChild(next(t.to_apply, 4));
     wrap.appendChild(nav);
+    cueOn(nav.querySelector('.cc-next'));
 
     // 답이 나온 자리에 질문을 남겨두지 않는다
     root.querySelector('.cc-worry').hidden = true;
@@ -663,9 +675,31 @@ export function playCharacterCall(host, cfg, onComplete) {
 
   /* ---------- 잡동사니 ---------- */
 
+  // 지금 누를 것 — 한 번에 하나만 붙인다(style.css .cue). 할 일을 마치면 다음 할 일로 옮겨 간다.
+  // 이 페이지는 표시가 다섯 번 옮겨 가서, 화면에 들어온 뒤 세 번만 퍼지고 고정 테두리로 남는다(.cue-step).
+  // 누를 것 바로 앞에 놓인 말풍선(.cue-note)은 표시와 함께 보이고 함께 사라진다.
+  function cueOn(target) {
+    stopCue?.();
+    stopCue = null;
+    root.querySelectorAll('.cue').forEach((n) => n.classList.remove('cue', 'cue-step', 'cue-seen'));
+    root.querySelectorAll('.cue-note').forEach((n) => { n.hidden = true; });
+    if (!target) return;
+    target.classList.add('cue', 'cue-step');
+    const hint = target.previousElementSibling;
+    if (hint && hint.classList.contains('cue-note')) hint.hidden = false;
+    const io = new IntersectionObserver((entries) => {
+      if (!entries.some((e) => e.isIntersecting)) return;
+      io.disconnect();
+      target.classList.add('cue-seen');
+    }, { threshold: 0.6 });
+    io.observe(target);
+    stopCue = () => io.disconnect();
+  }
+
   function next(label, chapterIndex) {
     const b = button(label);
     b.addEventListener('click', () => {
+      cueOn(null);
       const s = chapterEl(chapterIndex);
       if (!s) return;
       s.hidden = false;
@@ -766,6 +800,7 @@ export function playCharacterCall(host, cfg, onComplete) {
     },
     destroy() {
       stopResult?.();
+      stopCue?.();
       dead = true;
       stopScroll?.();
       cancelDrag();

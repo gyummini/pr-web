@@ -1833,6 +1833,14 @@ body.plain-mode #view { min-height: 100vh; }
   border: 6px solid transparent; border-left: 0; border-right-color: var(--accent);
 }
 @media (prefers-reduced-motion: reduce) { .cue::after { animation: none; opacity: .8; transform: none; } }
+/* 말풍선 꼬리는 누를 것 쪽을 가리킨다. 기본은 왼쪽 — 누를 것의 오른편에 붙을 때다. */
+.cue-note.points-right::before { left: auto; right: -6px; border: 6px solid transparent; border-right: 0; border-left-color: var(--accent); }
+.cue-note.points-down::before { left: 22px; top: auto; bottom: -6px; margin-top: 0; border: 6px solid transparent; border-bottom: 0; border-top-color: var(--accent); }
+/* 표시가 여러 번 옮겨 가는 페이지(E1)는 계속 퍼지면 시끄럽다 — 화면에 들어온 뒤 세 번만 퍼지고 고정 테두리로 남는다. */
+.cue.cue-step::after { animation: none; opacity: .85; transform: none; }
+.cue.cue-step.cue-seen::after { animation: cue-ring 1.7s ease-out 3, cue-hold .35s ease-out 5.1s; }
+@keyframes cue-hold { from { opacity: 0; } to { opacity: .85; } }
+@media (prefers-reduced-motion: reduce) { .cue.cue-step.cue-seen::after { animation: none; } }
 
 /* ---------- 브리프 3열 — 분석 | 플로우 차트 | 데이터 테이블 ----------
    왼쪽에 분석과 조작을 몰고, 넓은 오른쪽 두 칸을 구조에 준다.
@@ -1860,6 +1868,7 @@ body.plain-mode #view { min-height: 100vh; }
 .fx-play .fx-sub { margin: 12px 0 6px; }
 .fx-play .fx-hand { flex-direction: column; }
 .fx-play .fx-card { flex: none; min-width: 0; }
+.fx-play .cue-note { margin: 0 0 16px; }
 
 /* 차트는 좁은 칸에 맞춰 촘촘하게 */
 .fx-chartcol .fx-node { padding: 6px 10px; font-size: .74rem; }
@@ -2163,6 +2172,13 @@ body.plain-mode #view { min-height: 100vh; }
 .cc-cell.cc-face::before, .cc-cell.cc-face::after { display: none; }
 .cc-grid-note { display: flex; justify-content: space-between; align-items: baseline; margin-top: 14px; gap: 20px; }
 .cc-grid-note .cc-next { margin-top: 0; }
+.cc-grid-note .cue-note { margin-left: auto; }
+@media (max-width: 600px) {
+  /* 좁은 화면에서는 말풍선이 버튼 위로 올라가 아래를 가리킨다 */
+  .cc-grid-note { flex-direction: column; align-items: flex-end; gap: 12px; }
+  .cc-grid-note .cc-mono { align-self: stretch; }
+  .cc-grid-note .cue-note.points-right::before { left: auto; right: 26px; top: auto; bottom: -6px; margin-top: 0; border: 6px solid transparent; border-bottom: 0; border-top-color: var(--accent); }
+}
 
 .cc-ph {
   display: flex; align-items: center; justify-content: center; text-align: center;
@@ -2208,6 +2224,9 @@ body.plain-mode #view { min-height: 100vh; }
 .cc-plate.cc-bare { border: 0; }
 .cc-cards .cc-plate { cursor: grab; touch-action: none; user-select: none; }
 .cc-cards .cc-plate.cc-used { visibility: hidden; }
+/* 지금 누를 것 표시(.cue)가 카드 묶음만 감싸고, 바로 아래 사용법 줄을 덮지 않게 */
+.cc-cards { width: fit-content; max-width: 100%; }
+.cc-cards + .cc-match-help { margin-top: 14px; }
 .cc-plate.cc-drag {
   position: fixed; z-index: 300; pointer-events: none; cursor: grabbing;
   box-shadow: 0 14px 34px rgba(10, 10, 10, .24);
