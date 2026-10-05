@@ -1,5 +1,5 @@
 /* E5 — the same Journey twice, one card apart. Palette from the interactive proposal (greens on warm paper). */
-.view-one-card { --oc-ink: #202b28; --oc-mute: #5d7164; --oc-paper: #f7f8f3; --oc-line: #cfd8cd; --oc-green: #285f4b; --oc-deep: #173b32; --oc-lime: #d5e9a8; --oc-wash: #eef4e6; --oc-off: #c5cec1; }
+.view-one-card { --oc-ink: #202b28; --oc-mute: #586b5f; --oc-dim: #6e786d; --oc-paper: #f7f8f3; --oc-line: #cfd8cd; --oc-green: #285f4b; --oc-deep: #173b32; --oc-lime: #d5e9a8; --oc-wash: #eef4e6; --oc-off: #c5cec1; }
 .view-one-card .brief { background: var(--oc-paper); color: var(--oc-ink); }
 .oc { color: var(--oc-ink); }
 .oc *, .oc *::before, .oc *::after { box-sizing: border-box; }
@@ -43,7 +43,7 @@
 .oc-route::before { content: ''; position: absolute; left: 0; right: 0; top: 8px; border-top: 1px solid #c2ccbf; }
 .oc-stop { position: relative; padding-top: 20px; min-width: 0; }
 .oc-dot { position: absolute; top: 3px; left: 0; width: 11px; height: 11px; border-radius: 50%; background: var(--oc-off); border: 2px solid var(--surface); transition: background .35s, box-shadow .35s; }
-.oc-stop strong { display: block; font-size: .78rem; line-height: 1.3; color: #7c877b; word-break: keep-all; transition: color .35s; }
+.oc-stop strong { display: block; font-size: .78rem; line-height: 1.3; color: var(--oc-dim); word-break: keep-all; transition: color .35s; }
 .oc-stop small { display: block; font-size: .62rem; color: var(--oc-mute); margin-top: 2px; }
 .oc-stop.is-lit .oc-dot { background: var(--oc-green); box-shadow: 0 0 0 3px var(--oc-lime); }
 .oc-stop.is-lit strong { color: var(--oc-ink); }
@@ -60,7 +60,7 @@
 /* the empty event time — everything the set adds gathers here, and only here */
 .oc-gap.is-slot { border: 1px dashed #b8c6ba; border-radius: 5px; margin: 16px 6px 0; padding: 8px; gap: 6px; transition: border-color .4s, background .4s, box-shadow .4s; }
 .oc-slot-label { font-size: .64rem; color: var(--oc-mute); }
-.oc-slot-same { font-size: .68rem; color: #8a968c; opacity: 0; transition: opacity .35s; }
+.oc-slot-same { font-size: .68rem; color: var(--oc-mute); opacity: 0; transition: opacity .35s; }
 .oc-gap.is-empty.is-lit .oc-slot-same { opacity: 1; }
 .oc-lane.is-after .oc-gap.is-slot.is-lit { border: 1.5px solid var(--oc-green); background: var(--oc-wash); box-shadow: 0 0 0 4px rgba(213, 233, 168, .7); }
 .oc-pay { display: grid; gap: 5px; }

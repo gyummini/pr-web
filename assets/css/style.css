@@ -6,7 +6,7 @@
   --ink: #26241f;
   --ink-soft: #5d594f;
   --line: #c9c5bc;
-  --muted: #9a958a;      /* 가장 흐린 보조 글자 — 증거 코드 · 문서 목록 점 · 가지선(전에는 정의 없이 대체값으로만 썼다) */
+  --muted: #6d695e;      /* 가장 흐린 보조 글자 — 증거 코드 · 문서 목록 점 · 가지선. 10/05 대비 정리: #9a958a(2.5~2.7:1) → 종이 · 바탕 종이 위 4.5:1 */
   --accent: #b23a2f; /* 수사 파일 도장 레드 */
   --accent-hover: #983026;
   --accent-soft: rgba(178, 58, 47, 0.08);
@@ -95,7 +95,7 @@ button { font-family: inherit; }
   position: absolute; top: 20px; right: 24px;
   border: 2px solid var(--accent); color: var(--accent);
   font-weight: 800; font-size: .8rem; letter-spacing: .25em;
-  padding: 4px 10px; transform: rotate(6deg); opacity: .85;
+  padding: 4px 10px; transform: rotate(6deg); opacity: .95; /* 10/05 대비 정리: .85면 3.9~4.2:1 */
   user-select: none;
 }
 .btn {
@@ -928,7 +928,8 @@ body.plain-mode #view { min-height: 100vh; }
   --nb-ink: var(--ink);
   --nb-ink-soft: #3d3a32;
   --nb-ink-faint: var(--ink-soft);
-  --nb-muted: #8a8172;
+  --nb-muted: #766e62;   /* 흐린 글자 — 10/05 대비 정리: #8a8172(3.5:1) → 4.5:1 */
+  --nb-ring: #8a8172;    /* 스프링 고리 — 흐린 글자색과 따로 둔다(글자만 진해지게) */
   --nb-red: var(--accent);
   --nb-red-deep: #8f2c23;
   --nb-postit: #fdf3bd;
@@ -1050,7 +1051,7 @@ body.plain-mode #view { min-height: 100vh; }
 }
 .nb-spiral {
   position: absolute; left: 14px; top: 24px; bottom: 24px; width: 14px;
-  background-image: radial-gradient(circle at 50% 9px, var(--nb-muted) 0 4.5px, #6f675a 4.5px 5.5px, transparent 6.5px);
+  background-image: radial-gradient(circle at 50% 9px, var(--nb-ring) 0 4.5px, #6f675a 4.5px 5.5px, transparent 6.5px);
   background-size: 14px 26px; background-repeat: repeat-y;
 }
 .nb-sheet .nb-spiral {
@@ -1077,7 +1078,7 @@ body.plain-mode #view { min-height: 100vh; }
   position: absolute; right: 26px; top: -18px; transform: rotate(8deg);
   border: 3px double var(--nb-red); color: var(--nb-red); border-radius: 6px;
   padding: 8px 18px; font-family: var(--nb-font-hand); font-weight: 700; font-size: 1.3rem; letter-spacing: 6px;
-  background: rgba(178,58,47,.06); opacity: .9;
+  background: rgba(178,58,47,.06); opacity: .95; /* 10/05 대비 정리: 좁은 화면(16px)에서 .9면 4.2:1 */
   -webkit-mask-image: radial-gradient(circle at 40% 60%, black 60%, rgba(0,0,0,.7));
   mask-image: radial-gradient(circle at 40% 60%, black 60%, rgba(0,0,0,.7));
 }
@@ -1088,10 +1089,10 @@ body.plain-mode #view { min-height: 100vh; }
   display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
   transform: rotate(-10deg); box-shadow: 0 6px 14px rgba(0,0,0,.25);
 }
-.nb-seal-top { font-size: .6rem; letter-spacing: 2px; opacity: .85; }
+.nb-seal-top { font-size: .6rem; letter-spacing: 2px; opacity: .95; } /* 10/05 대비 정리: .85면 붉은 도장 위 4.3:1 */
 .nb-seal-main { font-family: var(--nb-font-hand); font-weight: 700; font-size: 1.15rem; line-height: 1.2; text-align: center; }
 /* 아랫줄은 자간 0 — 10/04 해금 조건에 맞춰 E8을 더하자 자간 1px로는 지름 110px 원 밖으로 5px 넘쳤다 */
-.nb-seal-bottom { font-size: .55rem; letter-spacing: 0; opacity: .85; }
+.nb-seal-bottom { font-size: .55rem; letter-spacing: 0; opacity: .95; }
 
 /* ---- 내지 공통 ---- */
 .nb-sheet {
@@ -1111,7 +1112,7 @@ body.plain-mode #view { min-height: 100vh; }
 }
 .nb-parttab.tab1 { background: var(--nb-red); color: var(--nb-paper); }
 .nb-parttab.tab2 { background: #e0aa3e; color: var(--nb-ink); }
-.nb-parttab.tab3 { background: #7d8c74; color: var(--nb-paper); }
+.nb-parttab.tab3 { background: #67735f; color: var(--nb-paper); } /* 10/05 대비 정리: #7d8c74면 3.3:1 */
 .nb-content {
   background-image: repeating-linear-gradient(0deg, transparent 0 35px, var(--nb-rule) 35px 36px);
   line-height: 36px; font-size: 1rem;
@@ -1559,7 +1560,7 @@ body.plain-mode #view { min-height: 100vh; }
 .view-brief {
   --fx-ink: #1c1f23;
   --fx-soft: #5b6470;
-  --fx-mute: #98a1ac;
+  --fx-mute: #6b7785;    /* 10/05 대비 정리: #98a1ac(2.6:1) → 4.5:1. --fx-soft보다는 여전히 연하다 */
   --fx-line: #dde2e8;
   --fx-bg: var(--surface);
   --fx-panel: #f6f8fa;
@@ -1567,6 +1568,7 @@ body.plain-mode #view { min-height: 100vh; }
   --fx-proc: #26282c;   /* 검정 — 단계 */
   --fx-data: #a9d5f5;   /* 하늘 — 데이터 테이블 */
   --fx-state: #ff77c0;  /* 분홍 — 상태 데이터 */
+  --fx-state-ink: #3b2130; /* 분홍 노드 위 작은 글자 — 노드가 .85로 흐려도 4.5:1 */
   --fx-cond: #78dba4;   /* 초록 — 조건 */
   --fx-exc: #f7dd5c;    /* 노랑 — 예외 상황 */
   background: var(--fx-bg);
@@ -2115,7 +2117,8 @@ body.plain-mode #view { min-height: 100vh; }
 .view-brief .brief-play .cc {
   --cc-fg: #0a0a0a;
   --cc-soft: #4a4a4a;
-  --cc-mute: #888888;
+  --cc-mute: #767676;    /* 10/05 대비 정리: #888888(3.5:1) → 4.5:1 */
+  --cc-dash: #888888;    /* 빈 자리 점선 — 흐린 글자색과 따로 둔다(글자만 진해지게) */
   --cc-line: #dfdfdf;
   --cc-rule: #cfcfcf;
   --cc-panel: #fafafa;
@@ -2220,7 +2223,7 @@ body.plain-mode #view { min-height: 100vh; }
 .cc-slot-face { width: 100%; aspect-ratio: 1; object-fit: cover; border: 1px solid var(--cc-line); }
 .cc-slot.cc-over .cc-slot-face { outline: 2px solid var(--cc-fg); outline-offset: -2px; }
 .cc-zone {
-  margin-top: 14px; width: 100%; min-height: 62px; border: 1.5px dashed var(--cc-mute);
+  margin-top: 14px; width: 100%; min-height: 62px; border: 1.5px dashed var(--cc-dash);
   display: flex; align-items: center; justify-content: center;
   font-family: var(--cc-mono); font-size: 10.5px; letter-spacing: .16em; color: var(--cc-mute);
 }
@@ -2410,7 +2413,7 @@ body.plain-mode #view { min-height: 100vh; }
   padding: 10px 13px; font-size: 15px; font-weight: 700; border-left: 2px solid var(--cc-ink);
   background: var(--cc-tint); color: var(--cc-ink);
 }
-.cc-vchip.cc-opt { background: transparent; border: 1px dashed var(--cc-mute); color: var(--cc-soft); }
+.cc-vchip.cc-opt { background: transparent; border: 1px dashed var(--cc-dash); color: var(--cc-soft); }
 .cc-stamp {
   display: inline-block; margin-top: 16px; padding: 6px 14px; border: 1.5px solid var(--cc-fg);
   font-family: var(--cc-mono); font-size: 10.5px; font-weight: 700; letter-spacing: .14em;
@@ -2531,6 +2534,8 @@ body.plain-mode #view { min-height: 100vh; }
 .fx-dgroup:first-child { border-left: 3px solid #a4cce5; padding-left: 10px; }
 .fx-dgroup:last-child { border-left: 3px solid #efacd0; padding-left: 10px; box-shadow: -5px 0 12px -10px #894d6b; }
 .fx-master-table { opacity: .88; }
+/* 참조 표는 통째로 .88 — 그 안의 가장 흐린 글자(열 이름)는 한 단계 진하게 해야 4.5:1을 지킨다(10/05 대비 정리). 지나간 표(.past, .8)는 의도된 흐림 */
+.fx-master-table th span { color: var(--fx-soft); }
 .fx-tracing .fx-side, .fx-tracing .fx-tables .fx-table:not(.on) { opacity: .78; }
 .fx-card-wait:empty { visibility: hidden; }
 @media (max-width: 600px) {
@@ -2597,4 +2602,4 @@ body.plain-mode #view { min-height: 100vh; }
   #tabs a { padding-inline: 4px; }
   .badge { min-width: 26px; padding-inline: 4px; margin-left: 2px; }
 }
-.fx-node[data-k='state'] .fx-node-n { color: #784462; }
+.fx-node[data-k='state'] .fx-node-n { color: var(--fx-state-ink); }

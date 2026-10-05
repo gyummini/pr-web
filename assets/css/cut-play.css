@@ -1,5 +1,5 @@
 /* E3 — 직접 해 보는 판단. 팔레트는 E3 그대로(종이 + 파란 강화). 머리말·결론 칸도 이 파일이 맡는다(옛 reduction.css에서 옮김). */
-.view-cut-play { --rd-ink: #242c31; --rd-mute: #677273; --rd-paper: #f8f7f3; --rd-line: #d8dcd8; --rd-core: #275ac1; --rd-core-wash: #edf2fc; }
+.view-cut-play { --rd-ink: #242c31; --rd-mute: #646f70; --rd-next: #5d6e92; --rd-paper: #f8f7f3; --rd-line: #d8dcd8; --rd-core: #275ac1; --rd-core-wash: #edf2fc; }
 .view-cut-play .brief { background: var(--rd-paper); color: var(--rd-ink); max-width: 1480px; padding: 26px 34px 50px; }
 .view-cut-play .brief-head { display: grid; grid-template-columns: 66px 1fr; column-gap: 14px; align-items: start; }
 .view-cut-play .evidence-cover { grid-row: 1 / 5; height: 94px; margin: 0; }
@@ -125,7 +125,7 @@
 .cp-rot-name { font-size: 1.15rem; line-height: 1.3; overflow-wrap: anywhere; }
 .cp-rot-level { font: 700 .8rem ui-monospace, Consolas, monospace; color: var(--rd-core); }
 .cp-next { display: flex; flex-direction: column; align-items: center; gap: 2px; font-size: .64rem; color: var(--rd-mute); }
-.cp-next-icon { display: grid; place-items: center; width: 30px; height: 30px; border: 2px dashed #b9c3d8; border-radius: 50%; font: 800 16px/1 ui-monospace, Consolas, monospace; color: #9aa6bf; }
+.cp-next-icon { display: grid; place-items: center; width: 30px; height: 30px; border: 2px dashed #b9c3d8; border-radius: 50%; font: 800 16px/1 ui-monospace, Consolas, monospace; color: var(--rd-next); }
 /* 그림이 없을 때의 빈 자리 — 이모지로 대신하지 않는다 */
 .is-blank { display: block; border: 2px dashed #c9d2e6; border-radius: 10px; background: rgba(255,255,255,.6); }
 
