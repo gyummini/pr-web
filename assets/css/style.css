@@ -1920,6 +1920,9 @@ body.plain-mode #view { min-height: 100vh; }
 .view-brief .brief-lead-title,
 .view-brief .brief-lead-line { flex: 1 1 100%; margin-bottom: 0; }
 .view-brief .brief-lead-line { margin-bottom: 4px; }
+/* 머리말 한 줄이 넓은 화면에서 972px · 14.4px(한 줄 약 68자)까지 늘어났다 — 2단 배치가 위의 max-width를 풀기 때문.
+   진술 본문(720px · 한 줄 약 45자)처럼 읽히게 줄만 묶고 글씨를 조금 키운다(10/05, DESIGN.md 13절 원칙 6). E3 · E8은 각자 파일에서 따로 정한다 */
+.view-brief .brief-lead-line { max-width: 40em; font-size: .95rem; }
 
 .fx-grid { padding-top: 14px; gap: 20px; }
 .fx-sec { margin-bottom: 9px; font-size: .66rem; }

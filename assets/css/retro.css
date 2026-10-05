@@ -18,6 +18,8 @@
 .view-retro .brief-lead { max-width: 760px; margin-inline: auto; }
 .view-retro .brief-lead-title { font-size: clamp(1.3rem, 2.6vw, 1.7rem); letter-spacing: -.02em; word-break: keep-all; }
 .view-retro .brief-lead-line, .view-retro .brief-head { word-break: keep-all; }
+/* E8은 머리말이 본문과 같은 760px 한 단이라 이미 읽는 폭이다 — 인터랙티브 페이지의 머리말 줄 묶기(10/05)를 받지 않고 그대로 둔다 */
+.view-retro .brief-lead-line { max-width: none; font-size: .9rem; }
 .view-retro .brief-prompt:empty { display: none; }
 
 .rt { position: relative; max-width: 760px; margin: 0 auto; word-break: keep-all; }
