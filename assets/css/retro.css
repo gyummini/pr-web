@@ -102,7 +102,7 @@
 .rt-notice { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--rt-line); }
 .rt-notice strong { display: block; color: var(--rt-ink); margin-bottom: 2px; }
 .rt-play { margin: 36px 0 6px; text-align: center; }
-.rt-play-btn { display: inline-block; padding: 14px 30px; font-size: 1.05rem; font-weight: 700; text-decoration: none; background: var(--rt-red); border-color: var(--rt-red); color: #fff; }
+.rt-play-btn { display: inline-block; padding: 14px 30px; font-size: 1.05rem; font-weight: 700; text-decoration: none; background: var(--rt-red); border-color: var(--rt-red); color: var(--on-fill); }
 .rt-play-btn:hover { filter: brightness(1.06); }
 .rt-play-note { margin-top: 10px !important; font-size: .84rem; color: var(--rt-ink2); }
 
