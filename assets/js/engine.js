@@ -7,11 +7,23 @@ const TYPE_MS = 32;       // 글자당 출력 간격
 const LOCK_MS = 110;      // 문장 완성 직후 진행 잠금
 export const SPRITE_FADE_MS = 250; // 스탠딩 크로스페이드 (CSS와 동기)
 
+// 이 요소에 초점이 있으면 Space · Enter는 그 요소의 것이다 — 대사를 넘기지 않는다.
+// 문서 전체에서 키를 가로채면 SKIP · 팝업 버튼을 키보드로 누를 수 없었다(10/06 점검).
+// 링크는 넣지 않는다: 머리말 링크를 마우스로 누른 뒤 Space · Enter로 대사를 넘기던 흐름을 지킨다.
+const KEY_OWNERS = 'button, input, select, textarea, summary, [role="button"], [contenteditable="true"]';
+
+function reducedMotion() {
+  return typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+}
+
 export class DialogueEngine {
-  constructor(root, { resolveSprite, mode = 'standing' } = {}) {
+  // keyboard: false — 문서 전체의 Space · Enter를 듣지 않는다(팝업처럼 대사가 한 줄뿐이고 버튼이 따로 있는 곳).
+  // reserveText: true — 타이핑 전에 다 쓴 문장의 높이를 먼저 잡는다(대사 아래에 다른 내용이 이어지는 곳).
+  constructor(root, { resolveSprite, mode = 'standing', keyboard = true, reserveText = false } = {}) {
     this.root = root;
     this.resolveSprite = resolveSprite;
     this.mode = mode;
+    this.reserveText = reserveText;
     this.lines = [];
     this.index = -1;
     this.typing = false;
@@ -58,12 +70,12 @@ export class DialogueEngine {
     root.addEventListener('click', this._onClick);
     this._onKey = (e) => {
       if (this.destroyed || this.choiceShowing) return;
-      if (e.code === 'Space' || e.code === 'Enter') {
-        e.preventDefault();
-        this.advance();
-      }
+      if (e.code !== 'Space' && e.code !== 'Enter') return;
+      if (e.target instanceof Element && e.target.closest(KEY_OWNERS)) return;
+      e.preventDefault();
+      this.advance();
     };
-    document.addEventListener('keydown', this._onKey);
+    if (keyboard) document.addEventListener('keydown', this._onKey);
   }
 
   play(lines, { onChoice, onComplete, holdEnd = false } = {}) {
@@ -126,6 +138,16 @@ export class DialogueEngine {
     this.typing = true;
     this.ctc.classList.remove('on');
     this.full = text;
+    // 움직임 줄이기 설정이면 한 글자씩 찍지 않고 문장을 바로 보여 준다
+    if (reducedMotion()) {
+      this._doneTyping();
+      return;
+    }
+    if (this.reserveText) {
+      // 다 쓴 문장의 높이를 먼저 잡아 둔다 — 글자가 늘며 줄이 바뀔 때 아래 내용이 밀려 내려가지 않게
+      this.textEl.textContent = text;
+      this.textEl.style.minHeight = `${this.textEl.getBoundingClientRect().height}px`;
+    }
     let pos = 0;
     this.textEl.textContent = '';
     this.timer = setInterval(() => {
@@ -139,6 +161,7 @@ export class DialogueEngine {
     clearInterval(this.timer);
     this.timer = null;
     this.textEl.textContent = this.full;
+    this.textEl.style.minHeight = '';
     this.typing = false;
     this.lockUntil = performance.now() + LOCK_MS;
     const isLast = this.index >= this.lines.length - 1;

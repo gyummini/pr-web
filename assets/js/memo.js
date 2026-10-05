@@ -114,35 +114,56 @@ function writeWithHighlight(el, text, hl) {
   el.append(mark, text.slice(at + hl.length));
 }
 
-/* ---------- 블록: 운영 사이클 ---------- */
+/* ---------- 블록: 운영 사이클 ----------
+   위에서 아래로 한 단계씩. 표시(mark)한 단계가 이어지면 붉은 고리 하나로 묶고,
+   오른쪽에 되돌아가는 길을 그린다 — 등장할 때마다 이 고리를 다시 돈다는 것이 그림에서 보인다. */
 
 function blockCycle(cfg) {
   const box = el('div', 'memo-cyc');
-  const row = el('div', 'memo-cyc-steps');
-  (cfg.steps || []).forEach((st, i) => {
-    if (i) row.appendChild(sep('→'));
-    const s = el('span', `memo-cyc-step${st.mark ? ' mark' : ''}`);
+  const flow = el('ol', 'memo-cyc-flow');
+  let ring = null;
+  (cfg.steps || []).forEach((st) => {
+    const s = el('li', `memo-cyc-step${st.mark ? ' mark' : ''}`);
     s.append(el('b', 'memo-cyc-n', st.n), el('span', 'memo-cyc-t', st.t));
-    row.appendChild(s);
+    if (!st.mark) {
+      ring = null;
+      flow.appendChild(s);
+      return;
+    }
+    if (!ring) {
+      const loop = el('li', 'memo-cyc-loop');
+      ring = el('ol', 'memo-cyc-ring');
+      loop.appendChild(ring);
+      flow.appendChild(loop);
+    }
+    ring.appendChild(s);
   });
-  box.appendChild(row);
-  if (cfg.foot) box.appendChild(el('div', 'memo-cyc-foot', `↻ ${cfg.foot}`));
+  box.appendChild(flow);
+  if (cfg.foot) box.appendChild(el('div', 'memo-cyc-foot', cfg.foot));
   return box;
 }
 
-/* ---------- 블록: 단계마다 덜어내기 ---------- */
+/* ---------- 블록: 단계마다 덜어내기 ----------
+   바로 다음 줄에서 덜어내는 것에는 미리 줄을 긋는다(<del>) — 무엇이 빠지는지 그림이 먼저 말한다.
+   덜어낸 것은 '덜어냄' 줄의 문구에 그 이름이 들어 있는 것으로 찾는다(데이터에 따로 적지 않는다). */
 
 function blockReduce(cfg) {
   const box = el('div', 'memo-red');
-  (cfg.stages || []).forEach((st) => {
+  const stages = cfg.stages || [];
+  stages.forEach((st, i) => {
     if (st.cut) {
-      box.appendChild(el('div', 'memo-red-cut', `↓ ${st.cut}`));
+      box.appendChild(el('div', 'memo-red-cut', st.cut));
       return;
     }
+    const next = stages[i + 1];
+    const cutText = next && next.cut ? next.cut : '';
     const line = el('div', `memo-red-line${st.keep ? ' keep' : ''}`);
     line.appendChild(el('span', 'memo-red-label', st.label));
     const chips = el('span', 'memo-chips');
-    (st.items || []).forEach((t) => chips.appendChild(el('span', 'memo-chip', t)));
+    (st.items || []).forEach((t) => {
+      const goes = !!cutText && cutText.includes(t);
+      chips.appendChild(el(goes ? 'del' : 'span', `memo-chip${goes ? ' cut' : ''}`, t));
+    });
     line.appendChild(chips);
     box.appendChild(line);
   });
@@ -150,7 +171,9 @@ function blockReduce(cfg) {
   return box;
 }
 
-/* ---------- 블록: 갈림길마다 돌아오는 기준 ---------- */
+/* ---------- 블록: 갈림길마다 돌아오는 기준 ----------
+   기준(알약)에서 내려오는 붉은 등뼈에 갈림길이 하나씩 매달린다. 등뼈 끝의 화살표는 기준 쪽을 가리킨다 —
+   결정할 때마다 그리로 돌아왔다는 뜻. 물음과 답은 위아래로 쌓아 좁은 화면에서도 넘치지 않는다. */
 
 function blockCompass(cfg) {
   const box = el('div', 'memo-cmp');
@@ -158,42 +181,44 @@ function blockCompass(cfg) {
   const list = el('div', 'memo-cmp-list');
   (cfg.turns || []).forEach((t) => {
     const row = el('div', 'memo-cmp-row');
-    row.append(el('span', 'memo-cmp-q', t.q), el('span', 'memo-sep', '→'), el('span', 'memo-cmp-a', t.a));
+    row.append(el('span', 'memo-cmp-q', t.q), el('span', 'memo-cmp-a', t.a));
     list.appendChild(row);
   });
   box.appendChild(list);
   return box;
 }
 
-/* ---------- 블록: 화면 ↔ 판단 대응 ---------- */
+/* ---------- 블록: 화면 ↔ 판단 대응 ----------
+   요소마다 요구되는 것으로 화살표가 가고, 세 줄을 아래에서 묶는 괄호가 결론 한 줄로 모인다. */
 
 function blockMapping(cfg) {
   const box = el('div', 'memo-map');
   const head = el('div', 'memo-map-head');
   head.append(el('span', 'memo-map-h', cfg.left_label), el('span', 'memo-map-h', cfg.right_label));
   box.appendChild(head);
+  const rows = el('div', 'memo-map-rows');
   (cfg.pairs || []).forEach((pr) => {
     const row = el('div', 'memo-map-row');
-    row.append(el('span', 'memo-map-l', pr.l), el('span', 'memo-sep', '→'), el('span', 'memo-map-r', pr.r));
-    box.appendChild(row);
+    row.append(el('span', 'memo-map-l', pr.l), arrow(), el('span', 'memo-map-r', pr.r));
+    rows.appendChild(row);
   });
+  box.appendChild(rows);
   if (cfg.converge) box.appendChild(el('div', 'memo-map-conv', cfg.converge));
   return box;
 }
 
-/* ---------- 블록: 끊긴 자리에 놓은 디딤돌 ---------- */
+/* ---------- 블록: 끊긴 자리에 놓은 디딤돌 ----------
+   두 기슭(PVE · RTA) 사이의 '끊겨 있던 자리'를 점선 칸으로 그리고, 디딤돌(오토마톤 타워)을 그 칸 안에 놓는다.
+   붉은 실선이 점선 경계를 건너 두 기슭에 닿는다 — 끊긴 곳을 이어 준 것이 그림에서 보인다.
+   넓으면 가로, 좁으면 세로(CSS 컨테이너 쿼리). */
 
 function blockBridge(cfg) {
   const box = el('div', 'memo-bri');
-  if (cfg.gap) box.appendChild(el('div', 'memo-bri-gap', cfg.gap));
+  const gap = el('div', 'memo-bri-gap');
+  if (cfg.gap) gap.appendChild(el('span', 'memo-bri-gap-label', cfg.gap));
+  gap.append(el('span', 'memo-bri-link from', ''), island(cfg.span, true), el('span', 'memo-bri-link to', ''));
   const row = el('div', 'memo-bri-row');
-  row.append(
-    island(cfg.left, false),
-    el('span', 'memo-bri-link', ''),
-    island(cfg.span, true),
-    el('span', 'memo-bri-link', ''),
-    island(cfg.right, false)
-  );
+  row.append(island(cfg.left, false), gap, island(cfg.right, false));
   box.appendChild(row);
   return box;
 
@@ -213,14 +238,16 @@ function blockGraft(cfg) {
     el('span', 'memo-gra-name', (cfg.added || {}).name),
     el('span', 'memo-gra-cond', (cfg.added || {}).cond)
   );
-  box.append(add, el('div', 'memo-gra-drop', '▼'));
+  box.append(add, el('div', 'memo-gra-drop', ''));
   const base = el('div', 'memo-gra-base');
   (cfg.base || []).forEach((t) => base.appendChild(el('span', 'memo-gra-part', t)));
   box.append(base, el('div', 'memo-gra-label', cfg.base_label));
   return box;
 }
 
-/* ---------- 블록: 두 몫으로 가른 분담표 ---------- */
+/* ---------- 블록: 두 몫으로 가른 분담표 ----------
+   한 줄의 막대(같은 일)를 두 칸으로 가르고, 칸 사이의 꺾쇠가 진행 방향을 가리킨다.
+   무게를 옮긴 쪽(keep) 칸이 조금 더 넓다 — '남은 시간은 전부 다듬는 데 썼음'을 그림으로. */
 
 function blockSplit(cfg) {
   const box = el('div', 'memo-spl');
@@ -238,8 +265,11 @@ function blockSplit(cfg) {
 
 /* ---------- ---------- */
 
-function sep(ch) {
-  return el('span', 'memo-sep', ch);
+// 그림 안의 화살표 — 글자 기호(→) 대신 선과 꺾쇠로 그린다. 블록마다 같은 굵기 · 같은 머리.
+function arrow() {
+  const a = el('span', 'memo-to');
+  a.setAttribute('aria-hidden', 'true');
+  return a;
 }
 
 function el(tag, cls, text) {

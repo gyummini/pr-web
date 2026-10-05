@@ -68,6 +68,7 @@ button { font-family: inherit; }
   font-size: .75rem; font-weight: 700; padding: 1px 8px; margin-left: 4px;
 }
 .badge.pulse { animation: badge-pulse .45s ease; }
+@media (prefers-reduced-motion: reduce) { .badge.pulse { animation: none; } }
 @keyframes badge-pulse {
   0% { transform: scale(1); }
   40% { transform: scale(1.45); background: #e0584a; }
@@ -301,6 +302,11 @@ button { font-family: inherit; }
    (sd 모드에서는 .dlg-sd가 그 역할을 했다 — 모드를 바꾸면 함께 잃는다) */
 .popup-sd .dlg-scene {
   position: relative; height: 100%; min-height: 300px;
+}
+/* 팝업 안이 스크롤될 때(노트북 높이 · 긴 메모) 클루와 대사가 함께 올라가 잘리지 않게, 보이는 높이만큼만 차지하고 붙어 있는다.
+   스크롤이 없으면 칸 높이 그대로라 달라 보이지 않는다(10/06 — 1280×650에서 대사창이 111px 중 0~28px만 보였다) */
+@media (min-width: 821px) {
+  .popup-sd .dlg-scene { position: sticky; top: 0; height: min(100%, calc(100vh - 60px)); }
 }
 .popup-sd .dlg-standing .dlg-sprite {
   left: 50%; bottom: 20px; transform: translateX(-50%);
@@ -547,17 +553,30 @@ button { font-family: inherit; }
   position: relative;
   width: min(780px, 100%); max-height: calc(100vh - 60px);
   background: var(--paper); border-radius: 12px; overflow: auto;
+  /* 팝업 끝까지 스크롤해도 뒤의 진술이 이어서 밀려 올라가지 않게 */
+  overscroll-behavior: contain;
   display: grid; grid-template-columns: 280px 1fr;
   box-shadow: 0 12px 40px rgba(0,0,0,.4);
 }
-.popup-close {
-  position: absolute; top: 10px; right: 12px; z-index: 5;
-  background: none; border: none; font-size: 1.1rem; cursor: pointer; color: var(--ink-soft);
+/* 열리면 초점이 팝업 자체로 온다(제목이 읽히고, 위아래 키 · Space로 바로 스크롤된다). 상자 전체에 초점 테두리를 두르지는 않는다 */
+.popup:focus { outline: none; }
+/* 팝업이 떠 있는 동안 뒤의 페이지를 멈춘다 — 터치 화면만. 마우스 화면은 스크롤바가 사라지며 뒤의 내용이 옆으로 밀린다 */
+@media (pointer: coarse) {
+  html.modal-open { overflow: hidden; }
 }
+/* 닫기 — 보이는 ✕는 작게 두고, 누르는 자리만 40px로 넓힌다(전: 26×25px) */
+.popup-close {
+  position: absolute; top: 4px; right: 6px; z-index: 5;
+  display: grid; place-items: center; width: 40px; height: 40px; padding: 0;
+  background: none; border: none; border-radius: 50%; cursor: pointer; color: var(--ink-soft);
+}
+.popup-close svg { display: block; }
+.popup-close:hover { color: var(--ink); background: var(--paper-dark); }
+.popup-close:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
 .popup-sd { background: var(--scene-bg); min-height: 320px; }
-.popup-body { padding: 30px 28px 24px; }
-.popup-body .ev-title { margin: 6px 0 2px; font-size: 1.2rem; }
-.popup-body .ev-sub { margin: 0 0 14px; color: var(--ink-soft); font-size: .9rem; }
+.popup-body { --body-x: 28px; padding: 30px var(--body-x) 24px; }
+.popup-body .ev-title { margin: 6px 0 2px; font-size: 1.2rem; text-wrap: balance; }
+.popup-body .ev-sub { margin: 0 0 14px; color: var(--ink-soft); font-size: .9rem; text-wrap: balance; }
 .popup-body .ev-summary {
   margin: 0 0 14px; font-size: .95rem; line-height: 1.7;
   background: var(--accent-soft); border-left: 3px solid var(--accent);
@@ -570,10 +589,29 @@ button { font-family: inherit; }
 }
 .att-chip:hover { border-color: var(--accent); color: var(--accent); }
 /* 주 행동 하나 + 보조들. 좁은 화면에서 줄바꿈되며 primary가 항상 첫 줄에 온다. */
-.popup-actions { display: flex; flex-wrap: wrap; gap: 9px; margin-top: 16px; }
+/* 버튼 줄은 팝업 아래에 붙어 있다 — 메모가 길어 스크롤이 생기는 화면(노트북 높이 · 휴대폰)에서도 '증거 수집'이 늘 보인다.
+   스크롤이 없으면 제자리 그대로라 달라 보이는 것이 없다(위 여백 4+12 = 전 16, 아래 16+8 = 전 24).
+   위쪽 띠는 그 뒤로 지나가는 메모를 흐리게 덮는다(10/06 — 메모를 키운 뒤 1366×768에서 E8 버튼이 63px 가려졌다) */
+.popup-actions {
+  position: sticky; bottom: 0; z-index: 3;
+  display: flex; flex-wrap: wrap; gap: 9px; margin: 4px calc(var(--body-x) * -1) 0; padding: 12px var(--body-x) 16px;
+  background: var(--paper);
+}
+/* 아주 좁은 휴대폰(≤380px): 두 버튼이 한 줄에 들어가게 — 두 줄이면 띠가 119px로 팝업의 20%를 덮었다 */
+@media (max-width: 380px) {
+  .popup-actions { gap: 8px; }
+  .popup-actions .btn { padding: 9px 12px; }
+  .popup-actions .btn.ghost { font-size: .84rem; }
+}
+.popup-actions::before {
+  content: ''; position: absolute; left: 0; right: 0; top: -16px; height: 16px;
+  background: linear-gradient(transparent, var(--paper)); pointer-events: none;
+}
+.popup-body { padding-bottom: 8px; }
 .popup-actions .btn.accent { font-weight: 800; }
 .popup-actions .btn.ghost { font-size: .86rem; color: var(--ink-soft); }
 .popup-actions .btn.ghost:hover { color: var(--accent); }
+.popup-actions .btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
 /* ---------- 미수집 증거 상세 / 제작기 ---------- */
 .detail-summary h3, .making-contact h3 {
@@ -1322,8 +1360,8 @@ body.plain-mode #view { min-height: 100vh; }
 .memo-tab {
   position: absolute; right: -9px; bottom: 16px;
   background: var(--nb-red); color: var(--nb-paper);
-  font-size: .66rem; font-weight: 700; letter-spacing: .06em;
-  padding: 3px 8px 3px 10px; border-radius: 0 4px 4px 0;
+  font-size: .75rem; font-weight: 700; letter-spacing: .06em;
+  padding: 2px 8px 2px 10px; border-radius: 0 4px 4px 0;
   box-shadow: 2px 2px 3px rgba(0, 0, 0, .15);
 }
 /* 머리말 줄이 사진 높이를 그대로 떠안는다 — 사진이 본문 위로 넘칠 수 없다 */
@@ -1331,9 +1369,11 @@ body.plain-mode #view { min-height: 100vh; }
   display: flex; align-items: center; justify-content: space-between; gap: 12px;
   min-height: 56px; margin-bottom: 6px;
 }
+/* '클루의 요약' — 한글에는 대문자가 없고, 넓힌 자간은 글자를 흩어 놓는다(10/06: .68rem · 자간 .1em · 레드 → 정리).
+   붉은색은 메모 안에서 결론과 증거 코드 탭에만 남긴다 */
 .memo-by {
-  font-size: .68rem; font-weight: 700; letter-spacing: .1em;
-  color: var(--nb-red); text-transform: uppercase;
+  font-size: .8rem; font-weight: 700; letter-spacing: .02em;
+  color: var(--nb-ink-soft);
 }
 /* 메모를 남긴 사람 — 수첩 .nb-polaroid의 축소판. 살짝 기울여 둔 스크랩 사진. */
 .memo-photo {
@@ -1356,11 +1396,12 @@ body.plain-mode #view { min-height: 100vh; }
   background-image: repeating-linear-gradient(0deg,
     transparent 0 27px, var(--nb-rule) 27px 28px);
 }
+/* 줄 이름(관찰 · 판단 · 재구성 …) — 세 글자도 한 줄에 들어가는 폭. 34px이던 때는 '재구성'이 두 줄로 갈라졌다(10/06) */
 .memo-k {
-  flex: none; width: 34px; line-height: 28px;
-  font-size: .74rem; font-weight: 700; color: var(--nb-red);
+  flex: none; width: 3.2em; white-space: nowrap; line-height: 28px;
+  font-size: .75rem; font-weight: 700; color: var(--nb-muted);
 }
-.memo-v { font-size: .92rem; line-height: 28px; color: var(--nb-ink); }
+.memo-v { flex: 1; min-width: 0; font-size: .92rem; line-height: 28px; color: var(--nb-ink); text-wrap: pretty; }
 .memo-hl {
   background: linear-gradient(transparent 52%, var(--nb-hl) 52% 92%, transparent 92%);
   -webkit-box-decoration-break: clone; box-decoration-break: clone;
@@ -1384,173 +1425,318 @@ body.plain-mode #view { min-height: 100vh; }
     transparent 0 24px, rgba(178, 58, 47, .35) 24px 25px, transparent 25px); }
 }
 
-/* ---------- 메모 블록 ----------
-   모두 '수첩에 붙여둔 쪽지' 바탕(흰 종이 + 살짝 기울임)을 공유하되, 그림 자체는 증거마다 다르다.
-   여기서 정의하는 것은 바탕과 칩·화살표 같은 공용 부품까지. 그림은 각 블록 규칙이 맡는다. */
-.memo-cyc, .memo-map, .memo-red, .memo-bri, .memo-gra, .memo-spl, .memo-cmp {
-  margin: 7px 0 9px; padding: 11px 13px;
-  background: var(--surface); border: 1px solid var(--nb-rule); border-radius: 4px;
-  box-shadow: 0 3px 7px rgba(0, 0, 0, .1);
+/* ---------- 휴대폰: 클루는 얼굴과 대사의 띠로 (10/06) ----------
+   넓은 화면의 왼쪽 칸(서 있는 클루 + 대사창)을 그대로 위에 쌓으면 첫 화면의 약 38%를 차지해
+   제목 · 메모 · 버튼이 아래로 밀렸다. 휴대폰에서만 얼굴을 동그랗게 잘라 대사 옆에 둔다. PC는 그대로다.
+   스탠딩 4종은 자세가 달라 얼굴 자리가 다르다 — 표정마다 자르는 자리를 따로 둔다
+   (원본 311×1100을 103px 폭(0.33배)으로 줄여 52px 동그라미에 두 눈이 가운데 줄에 오게: 기본 · 진지 / 기쁨 · 놀람). */
+@media (max-width: 560px) {
+  .modal-overlay { padding: 10px; }
+  .popup {
+    display: block;
+    max-height: calc(100vh - 20px);
+    max-height: calc(100dvh - 20px);
+  }
+  /* 닫기는 스크롤해도 오른쪽 위에 남는다 — 흰 동그라미라 어두운 띠 위에서도, 메모 위에서도 보인다.
+     누르는 자리 44px, 보이는 동그라미 34px. 아래 여백을 음수로 줘서 자리를 차지하지 않는다 */
+  .popup-close {
+    position: sticky; top: 6px; right: auto; z-index: 6;
+    width: 44px; height: 44px; margin: 0 6px -44px auto;
+    border: 5px solid transparent; background: var(--surface) padding-box;
+    box-shadow: inset 0 0 0 1px var(--line); color: var(--ink);
+    filter: drop-shadow(0 2px 3px rgba(0, 0, 0, .25));
+  }
+  .popup-close:hover { background: var(--paper-dark) padding-box; }
+  .popup-close:focus-visible { outline-offset: -7px; }
+  .popup-sd { min-height: 0; padding: 14px 56px 14px 14px; }
+  .popup-sd .dlg-scene { position: relative; height: auto; min-height: 0; display: flex; align-items: flex-start; gap: 12px; }
+  .popup-sd .dlg-standing .dlg-sprite {
+    position: relative; left: auto; bottom: auto; transform: none;
+    flex: none; width: 52px; height: 52px; min-height: 0;
+    border-radius: 50%; overflow: hidden;
+    background: rgba(255, 255, 255, .1); box-shadow: 0 0 0 2px rgba(255, 255, 255, .2);
+  }
+  .popup-sd .dlg-sprite .spr {
+    inset: auto; left: -26px; top: -13px; width: 103px; height: auto; max-width: none;
+    object-fit: fill;
+  }
+  .popup-sd .dlg-sprite .spr[data-key="happy"],
+  .popup-sd .dlg-sprite .spr[data-key="surprised"] { left: -44px; top: -27px; }
+  /* 작은 얼굴이 숨 쉬듯 움직이면 떨림처럼 보인다 */
+  .popup-sd .dlg-standing .dlg-sprite .spr.show { animation: none; }
+  .popup-sd .dlg-box {
+    position: static; transform: none; flex: 1; min-width: 0; width: auto; min-height: 0;
+    padding: 0; background: none; border: 0; border-radius: 0;
+  }
+  .popup-sd .dlg-name { position: static; display: inline-block; margin-bottom: 5px; padding: 1px 9px; font-size: .75rem; }
+  .popup-sd .dlg-text { font-size: .875rem; line-height: 1.55; min-height: 0; }
+  .popup-sd .dlg-ctc, .popup-sd .dlg-choice { display: none; }
+  .popup-body { --body-x: 16px; padding: 18px var(--body-x) 2px; }
+  .memo { padding: 12px 14px 14px 30px; background-image: linear-gradient(90deg,
+    transparent 0 21px, rgba(178, 58, 47, .35) 21px 22px, transparent 22px); }
 }
-.memo-cyc { transform: rotate(-.3deg); }
-.memo-map { transform: rotate(.25deg); }
-.memo-red { transform: rotate(-.35deg); }
-.memo-bri { transform: rotate(-.25deg); }
-.memo-gra { transform: rotate(.3deg); }
-.memo-spl { transform: rotate(-.3deg); }
-.memo-cmp { transform: rotate(.2deg); }
+
+/* ---------- 메모 블록 ----------
+   모두 '수첩에 붙여둔 쪽지' 바탕(흰 종이)을 공유하되, 그림 자체는 증거마다 다르다.
+   여기서 정의하는 것은 바탕과 화살표 같은 공용 부품까지. 그림은 각 블록 규칙이 맡는다.
+   10/06 정리(Impeccable 점검):
+   - 기울이지 않는다 — 0.2~0.35° 기울기가 작은 글자를 흐리게 했고, 기울기는 도장류에만 쓴다(DESIGN.md 4절).
+   - 글자는 12px(.75rem) 아래로 내리지 않는다(전: 9.6~12.8px). 결론 한 줄은 14px 굵게 — 본문(14.7px)과 같은 무게로 읽힌다.
+   - 붉은색은 결정(묶은 고리 · 남긴 것 · 놓은 디딤돌 · 얹은 조각 · 무게를 옮긴 칸 · 기준)과 결론에만 쓴다. 과정과 화살표는 고리색(--nb-ring).
+   - 그림이 '어떻게 작동하는지'를 보여 준다 — 되돌아가는 길 · 덜어낼 것에 그은 줄 · 점선으로 그린 끊긴 자리 · 진행 방향 꺾쇠 · 기준으로 돌아오는 등뼈.
+   - 좁은 화면에서 가로 배치가 넘치면 세로로 바꾼다 — 화면 폭이 아니라 메모 칸의 폭을 본다(컨테이너 쿼리). */
+.memo-lines { container: memo-lines / inline-size; }
+.memo-cyc, .memo-map, .memo-red, .memo-bri, .memo-gra, .memo-spl, .memo-cmp {
+  margin: 8px 0 10px; padding: 12px 14px;
+  background: var(--surface); border: 1px solid var(--nb-rule); border-radius: 4px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, .08);
+  font-size: .8rem; line-height: 1.45; color: var(--nb-ink-soft);
+}
+/* 결론 한 줄 — 블록마다 같은 크기 · 같은 굵기 · 같은 색 */
+.memo-cyc-foot, .memo-map-conv, .memo-red-kept, .memo-cmp-core {
+  font-size: .875rem; font-weight: 700; line-height: 1.45; color: var(--nb-red-deep); text-wrap: balance;
+}
 
 /* 공용 부품 */
-.memo-chips { display: flex; align-items: center; flex-wrap: wrap; gap: 4px; }
+.memo-chips { display: flex; align-items: center; flex-wrap: wrap; gap: 5px; }
 .memo-chip {
-  font-size: .78rem; white-space: nowrap;
+  font-size: .8rem; line-height: 1.4; color: var(--nb-ink-soft); text-decoration: none;
   border: 1px solid var(--nb-rule); border-radius: 3px;
-  padding: 2px 7px; background: var(--nb-paper);
+  padding: 2px 8px; background: var(--nb-paper);
 }
-.memo-sep { font-size: .72rem; color: var(--nb-muted); }
+/* 화살표 — 선과 꺾쇠. 글자 기호(→ ▼ ↻)를 쓰지 않는다 */
+.memo-to { position: relative; height: 1.5px; background: var(--nb-ring); }
+.memo-to::after {
+  content: ''; position: absolute; right: 1px; top: 50%; width: 6px; height: 6px; margin-top: -3px;
+  border-top: 1.5px solid var(--nb-ring); border-right: 1.5px solid var(--nb-ring);
+  transform: rotate(45deg);
+}
 
-/* E1 cycle — 각인 → 호출 → 입체감이 반복된다 */
-.memo-cyc-steps { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 3px; }
-.memo-cyc-step {
-  display: inline-flex; align-items: baseline; gap: 5px;
-  font-size: .74rem; white-space: nowrap;
-  border: 1px solid var(--nb-rule); border-radius: 3px;
-  padding: 3px 8px; background: var(--nb-paper);
+/* E1 cycle — 위에서 아래로 한 단계씩. 다시 도는 단계는 붉은 고리로 묶고 오른쪽에 되돌아가는 길 */
+.memo-cyc-flow, .memo-cyc-ring { list-style: none; margin: 0; padding: 0; display: grid; gap: 7px; }
+.memo-cyc-flow { position: relative; }
+/* 순서를 잇는 세로줄 — 번호 동그라미의 가운데를 지난다 */
+.memo-cyc-flow::before {
+  content: ''; position: absolute; left: 13px; top: 10px; bottom: 10px; width: 1.5px;
+  background: var(--nb-ring);
 }
-.memo-cyc-n { font-size: .6rem; color: var(--nb-muted); }
-.memo-cyc-step.mark {
-  border-color: var(--nb-red); background: rgba(178, 58, 47, .06);
-  color: var(--nb-red-deep); font-weight: 700;
+.memo-cyc-step { position: relative; display: flex; align-items: flex-start; gap: 9px; }
+.memo-cyc-n {
+  flex: none; width: 27px; line-height: 19px; text-align: center;
+  font-size: .75rem; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--nb-muted);
+  background: var(--surface); border: 1px solid var(--nb-rule); border-radius: 999px;
 }
-.memo-cyc-step.mark .memo-cyc-n { color: var(--nb-red); }
+.memo-cyc-t { padding-top: 1px; font-size: .8rem; color: var(--nb-ink-soft); }
+.memo-cyc-loop {
+  position: relative; margin: 0 22px 0 -5.5px; padding: 6px 10px 6px 4px;
+  border: 1.5px solid var(--nb-red); border-radius: 8px; background: var(--accent-soft);
+}
+.memo-cyc-loop .memo-cyc-n { color: var(--nb-red-deep); border-color: var(--nb-red); }
+/* 되돌아가는 길 — 고리의 마지막 단계에서 오른쪽으로 나가 위로 올라간다 */
+.memo-cyc-loop::before {
+  content: ''; position: absolute; right: -17px; top: 16px; bottom: 16px; width: 15.5px;
+  border: 1.5px solid var(--nb-red); border-left: 0; border-radius: 0 9px 9px 0;
+}
+/* 그 길의 머리 — 위쪽 끝에서 고리의 첫 단계를 가리킨다 */
+.memo-cyc-loop::after {
+  content: ''; position: absolute; right: -9.5px; top: 13.75px; width: 6px; height: 6px;
+  border-left: 1.5px solid var(--nb-red); border-bottom: 1.5px solid var(--nb-red);
+  transform: rotate(45deg);
+}
 .memo-cyc-foot {
-  margin-top: 8px; padding-top: 7px; border-top: 1px solid var(--nb-red);
-  font-size: .74rem; font-weight: 700; color: var(--nb-red-deep); text-align: center;
+  margin-top: 10px; padding-top: 8px; border-top: 1px solid var(--nb-rule); text-align: center;
 }
 
-/* E3 reduce — 단계마다 덜어내며 좁혀진다 */
-.memo-red-line { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 8px; }
-.memo-red-label {
-  flex: none; width: 62px;
-  font-size: .66rem; color: var(--nb-muted); letter-spacing: .04em;
+/* E3 reduce — 단계마다 덜어내며 좁혀진다. 다음 줄에서 덜어낼 것에 미리 붉은 줄을 긋는다 */
+.memo-red-line { display: grid; grid-template-columns: 3.7rem minmax(0, 1fr); column-gap: 8px; align-items: center; }
+.memo-red-label { font-size: .75rem; color: var(--nb-muted); }
+.memo-red-line.keep .memo-red-label { color: var(--nb-red-deep); font-weight: 700; }
+/* 덜어낸 것의 줄은 먹색 — 레드는 '남긴 것' 하나의 뜻으로 둔다(10/06 재점검: 레드가 덜어냄과 남김 양쪽에 쓰였다) */
+.memo-chip.cut {
+  color: var(--nb-muted);
+  text-decoration: line-through; text-decoration-color: var(--nb-ink-soft); text-decoration-thickness: 1.5px;
 }
-.memo-red-cut {
-  margin: 5px 0 5px 62px;
-  font-size: .7rem; font-weight: 700; color: var(--nb-red);
-}
-/* 아직 덜어내기 전 단계 — 흐리게 */
-.memo-red-line:not(.keep) .memo-chip { opacity: .5; }
-/* 남은 것 */
-.memo-red-line.keep .memo-red-label { color: var(--nb-red); font-weight: 700; }
 .memo-red-line.keep .memo-chip {
   border-color: var(--nb-red); color: var(--nb-red-deep);
-  background: rgba(178, 58, 47, .06); font-weight: 700; opacity: 1;
+  background: var(--accent-soft); font-weight: 700;
+}
+/* 단계 사이 — 아래로 내려가는 줄과 덜어낸 것 */
+.memo-red-cut {
+  position: relative; margin: 4px 0 4px calc(3.7rem + 8px); padding: 1px 0 3px 18px;
+  font-size: .75rem; color: var(--nb-muted);
+}
+.memo-red-cut::before {
+  content: ''; position: absolute; left: 6px; top: 0; bottom: 2px; width: 1.5px; background: var(--nb-ring);
+}
+.memo-red-cut::after {
+  content: ''; position: absolute; left: 3.75px; bottom: 3px; width: 6px; height: 6px;
+  border-right: 1.5px solid var(--nb-ring); border-bottom: 1.5px solid var(--nb-ring);
+  transform: rotate(45deg);
 }
 .memo-red-kept {
-  margin-top: 9px; padding-top: 7px; border-top: 1px dashed var(--nb-rule);
-  font-size: .72rem; color: var(--nb-ink-soft); text-align: center;
+  margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--nb-rule); text-align: center;
 }
 
-/* E8 compass — 가운데 기준 하나, 갈림길마다 그리로 돌아온 결정 */
+/* E8 compass — 기준(알약)에서 내려오는 붉은 등뼈에 갈림길이 하나씩 매달린다.
+   등뼈 끝 꺾쇠는 기준 쪽을 가리킨다: 결정할 때마다 그리로 돌아왔다 */
 .memo-cmp-core {
-  margin: 0 auto 9px; width: fit-content; padding: 4px 12px;
-  border: 1.5px solid var(--nb-red); border-radius: 999px;
-  font-size: .74rem; font-weight: 700; color: var(--nb-red-deep); background: rgba(178, 58, 47, .06);
+  width: fit-content; max-width: 100%; padding: 5px 14px; text-align: center;
+  border: 1.5px solid var(--nb-red); border-radius: 999px; background: var(--accent-soft);
 }
-.memo-cmp-list { display: grid; gap: 5px; }
-.memo-cmp-row { display: flex; align-items: baseline; gap: 6px; font-size: .72rem; line-height: 1.45; }
-.memo-cmp-q { flex: none; width: 92px; color: var(--nb-muted); }
-.memo-cmp-a { color: var(--nb-ink-soft); font-weight: 600; }
+.memo-cmp-list {
+  position: relative; display: grid; gap: 9px;
+  margin-left: 18px; padding: 14px 0 2px 18px; border-left: 1.5px solid var(--nb-red);
+}
+.memo-cmp-list::before {
+  content: ''; position: absolute; left: -5.25px; top: 0; width: 9px; height: 9px;
+  border-left: 2px solid var(--nb-red); border-top: 2px solid var(--nb-red);
+  transform: rotate(45deg);
+}
+.memo-cmp-row { position: relative; display: grid; gap: 1px; }
+/* 등뼈에서 갈라지는 가지 */
+.memo-cmp-row::before {
+  content: ''; position: absolute; left: -18px; top: .7em; width: 12px; height: 1.5px; background: var(--nb-red);
+}
+.memo-cmp-q { font-size: .75rem; color: var(--nb-muted); }
+.memo-cmp-a { font-size: .8rem; font-weight: 600; color: var(--nb-ink-soft); }
 
-/* E2 mapping — 화면 ↔ 판단, 그리고 한 줄로 수렴 */
-.memo-map-head { display: flex; gap: 8px; margin-bottom: 5px; }
-.memo-map-h {
-  font-size: .62rem; letter-spacing: .08em; color: var(--nb-muted);
+/* E2 mapping — 요소마다 요구되는 것으로 화살표, 세 줄을 아래에서 묶는 괄호가 결론으로 모인다 */
+.memo-map-head, .memo-map-row {
+  display: grid; grid-template-columns: 5.6em 20px minmax(0, 1fr); column-gap: 8px; align-items: center;
 }
-.memo-map-h:first-child { flex: none; width: 84px; }
-.memo-map-row { display: flex; align-items: baseline; gap: 8px; line-height: 22px; }
-.memo-map-l {
-  flex: none; width: 84px; font-size: .76rem; font-weight: 700; color: var(--nb-ink);
+.memo-map-head { margin-bottom: 4px; }
+.memo-map-h { font-size: .75rem; color: var(--nb-muted); }
+.memo-map-h + .memo-map-h { grid-column: 3; }
+.memo-map-rows { position: relative; display: grid; gap: 4px; padding-bottom: 14px; }
+.memo-map-rows::after {
+  content: ''; position: absolute; left: 4px; right: 4px; bottom: 0; height: 9px;
+  border: 1.5px solid var(--nb-red); border-top: 0; border-radius: 0 0 8px 8px;
 }
-.memo-map-r { font-size: .78rem; color: var(--nb-ink-soft); }
-.memo-map-conv {
-  margin-top: 7px; padding-top: 7px; border-top: 1px solid var(--nb-red);
-  font-size: .78rem; font-weight: 700; color: var(--nb-red-deep); text-align: center;
+.memo-map-l { font-size: .8rem; font-weight: 700; color: var(--nb-ink); }
+.memo-map-r { font-size: .8rem; color: var(--nb-ink-soft); }
+.memo-map-conv { position: relative; margin-top: 18px; text-align: center; }
+/* 괄호 가운데에서 결론으로 내려오는 줄기와 꺾쇠 */
+.memo-map-conv::before {
+  content: ''; position: absolute; left: 50%; top: -18px; width: 1.5px; height: 14px; margin-left: -.75px;
+  background: var(--nb-red);
+}
+.memo-map-conv::after {
+  content: ''; position: absolute; left: 50%; top: -9.5px; width: 6px; height: 6px; margin-left: -3px;
+  border-right: 1.5px solid var(--nb-red); border-bottom: 1.5px solid var(--nb-red);
+  transform: rotate(45deg);
 }
 
-/* E4 bridge — 끊겨 있던 자리에 놓은 디딤돌 */
-.memo-bri-gap {
-  font-size: .62rem; color: var(--nb-muted); text-align: center; margin-bottom: 4px;
-}
-.memo-bri-row { display: flex; align-items: stretch; }
+/* E4 bridge — 두 기슭 사이 '끊겨 있던 자리'는 점선 칸, 디딤돌은 그 칸 안.
+   붉은 실선이 점선 경계와 그 바깥 틈(10px)을 건너 두 기슭에 닿는다 */
+.memo-bri-row { display: flex; align-items: center; gap: 10px; }
 .memo-bri-node {
-  flex: 1; display: flex; flex-direction: column; gap: 2px; text-align: center;
-  border: 1px solid var(--nb-rule); border-radius: 3px; padding: 5px 6px;
+  flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; text-align: center;
+  border: 1px solid var(--nb-rule); border-radius: 4px; padding: 6px 7px;
   background: var(--nb-paper);
 }
+.memo-bri-name { font-size: .8rem; font-weight: 700; color: var(--nb-ink); }
+.memo-bri-note { font-size: .75rem; line-height: 1.4; color: var(--nb-muted); }
+.memo-bri-gap {
+  position: relative; flex: 1.7; min-width: 0; display: flex; align-items: center;
+  border: 1.5px dashed var(--nb-ring); border-radius: 6px; padding: 16px 0 10px;
+}
+/* 칸의 이름표 — 위 테두리에 얹는다 */
+.memo-bri-gap-label {
+  position: absolute; top: -.75em; left: 50%; transform: translateX(-50%);
+  padding: 0 6px; background: var(--surface); white-space: nowrap;
+  font-size: .75rem; line-height: 1.5; color: var(--nb-muted);
+}
 .memo-bri-node.span {
-  flex: 1.15; border-color: var(--nb-red); background: rgba(178, 58, 47, .06);
+  flex: 0 1 auto; border: 1.5px solid var(--nb-red); background: var(--accent-soft);
 }
-.memo-bri-name { font-size: .76rem; font-weight: 700; }
 .memo-bri-node.span .memo-bri-name { color: var(--nb-red-deep); }
-.memo-bri-note { font-size: .62rem; color: var(--nb-muted); line-height: 1.35; }
-/* 이어진 자리 — 실선으로 붙는다 */
-.memo-bri-link {
-  flex: none; width: 14px; align-self: center;
-  border-top: 2px solid var(--nb-red);
+.memo-bri-node.span .memo-bri-note { color: var(--nb-ink-soft); }
+/* 실선은 칸 안에서 14px 이상 — 디딤돌이 점선 칸보다 넓어지지 않게. 칸 밖(테두리 1.5 + 틈 10px)으로 이어지는 부분은 꼬리(::before · ::after)가 그린다.
+   10/06 처음 그린 것은 음수 여백으로 건너가게 해서 디딤돌이 칸보다 5px 넓어졌다 */
+.memo-bri-link { position: relative; flex: 1 0 14px; height: 2px; background: var(--nb-red); }
+.memo-bri-link.from::before, .memo-bri-link.to::after {
+  content: ''; position: absolute; top: 0; width: 11.5px; height: 2px; background: var(--nb-red);
 }
+.memo-bri-link.from::before { right: 100%; }
+.memo-bri-link.to::after { left: 100%; }
 
-/* E5 graft — 아래는 손대지 않고 위에만 얹는다 */
+/* E5 graft — 아래는 손대지 않고(점선 · 흐린 칸) 위에만 얹는다(붉은 칸) */
 .memo-gra { text-align: center; }
 .memo-gra-add {
-  display: inline-flex; flex-direction: column; gap: 1px;
-  border: 1px solid var(--nb-red); border-radius: 3px;
-  background: rgba(178, 58, 47, .06); padding: 4px 12px;
+  display: inline-flex; flex-direction: column; gap: 2px; max-width: 100%;
+  border: 1.5px solid var(--nb-red); border-radius: 4px;
+  background: var(--accent-soft); padding: 6px 14px;
 }
-.memo-gra-name { font-size: .8rem; font-weight: 700; color: var(--nb-red-deep); }
-.memo-gra-cond { font-size: .62rem; color: var(--nb-muted); }
-.memo-gra-drop { font-size: .66rem; color: var(--nb-red); line-height: 1.4; }
+.memo-gra-name { font-size: .875rem; font-weight: 700; color: var(--nb-red-deep); }
+.memo-gra-cond { font-size: .75rem; line-height: 1.4; color: var(--nb-ink-soft); }
+/* 얹는 자리 — 아래로 내려가는 줄과 꺾쇠 */
+.memo-gra-drop { position: relative; width: 1.5px; height: 14px; margin: 0 auto 7px; background: var(--nb-red); }
+.memo-gra-drop::after {
+  content: ''; position: absolute; left: 50%; bottom: -1px; width: 6px; height: 6px; margin-left: -3px;
+  border-right: 1.5px solid var(--nb-red); border-bottom: 1.5px solid var(--nb-red);
+  transform: rotate(45deg);
+}
 .memo-gra-base {
   display: flex; justify-content: center; flex-wrap: wrap; gap: 6px;
-  border: 1px dashed var(--nb-rule); border-radius: 3px; padding: 7px 8px;
+  border: 1.5px dashed var(--nb-ring); border-radius: 4px; padding: 8px;
   background: var(--nb-paper-dim);
 }
 .memo-gra-part {
-  font-size: .76rem; color: var(--nb-muted);
+  font-size: .8rem; color: var(--nb-muted);
   border: 1px solid var(--nb-rule); border-radius: 3px;
   padding: 2px 9px; background: var(--surface);
 }
-.memo-gra-label { font-size: .62rem; color: var(--nb-muted); margin-top: 4px; }
+.memo-gra-label { font-size: .75rem; color: var(--nb-muted); margin-top: 5px; }
 
-/* E6 split — 하나의 일을 두 몫으로 */
+/* E6 split — 한 줄의 막대(같은 일)를 두 칸으로. 칸 사이 꺾쇠가 진행 방향, 무게를 옮긴 칸이 더 넓다 */
 .memo-spl-title {
-  font-size: .76rem; font-weight: 700; text-align: center; margin-bottom: 6px;
+  font-size: .8rem; font-weight: 700; text-align: center; margin-bottom: 6px; color: var(--nb-ink-soft);
 }
-.memo-spl-cols { display: flex; gap: 0; }
+.memo-spl-cols {
+  display: flex; border: 1px solid var(--nb-rule); border-radius: 4px; background: var(--nb-paper);
+}
 .memo-spl-col {
-  flex: 1; display: flex; flex-direction: column; gap: 4px;
-  padding: 6px 10px; text-align: center;
+  position: relative; flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px;
+  padding: 8px 10px; text-align: center;
 }
-.memo-spl-col + .memo-spl-col { border-left: 1px dashed var(--nb-rule); }
-.memo-spl-name { font-size: .68rem; letter-spacing: .04em; color: var(--nb-muted); }
-.memo-spl-item {
-  font-size: .76rem; border: 1px solid var(--nb-rule); border-radius: 3px;
-  padding: 3px 8px; background: var(--nb-paper); color: var(--nb-ink-soft);
+.memo-spl-col.keep {
+  flex: 1.35; background: var(--accent-soft);
+  box-shadow: inset 0 0 0 1.5px var(--nb-red); border-radius: 3px;
 }
-.memo-spl-col.keep .memo-spl-name { color: var(--nb-red); font-weight: 700; }
-.memo-spl-col.keep .memo-spl-item {
-  border-color: var(--nb-red); background: rgba(178, 58, 47, .06);
-  color: var(--nb-red-deep); font-weight: 700;
+.memo-spl-col + .memo-spl-col:not(.keep) { border-left: 1px dashed var(--nb-rule); }
+/* 진행 방향 꺾쇠 — 처음 그린 8px 회색은 거의 보이지 않았다(10/06 재점검). 무게를 옮긴 칸을 가리키므로 레드 */
+.memo-spl-col + .memo-spl-col::before {
+  content: ''; position: absolute; left: -7px; top: 50%; width: 11px; height: 11px; margin-top: -5.5px;
+  border-top: 2px solid var(--nb-red); border-right: 2px solid var(--nb-red);
+  transform: rotate(45deg);
 }
+.memo-spl-name { font-size: .75rem; color: var(--nb-muted); }
+.memo-spl-item { font-size: .8rem; color: var(--nb-ink-soft); }
+.memo-spl-col.keep .memo-spl-name { color: var(--nb-red-deep); font-weight: 700; }
+.memo-spl-col.keep .memo-spl-item { color: var(--nb-ink); font-weight: 600; }
+/* 좁은 칸에서 두 줄이 되는 짧은 이름 · 설명은 줄 길이를 고르게 — '고정 ·' / '증강'처럼 끝에 한 낱말만 남지 않게 */
+.memo-bri-note, .memo-gra-cond, .memo-spl-name, .memo-spl-item, .memo-cyc-t, .memo-map-r { text-wrap: balance; }
 
-@media (max-width: 760px) {
-  .memo-map-h:first-child, .memo-map-l { width: 70px; }
-  .memo-red-label { width: 100%; }
-  .memo-red-cut { margin-left: 0; }
-  .memo-bri-row { flex-direction: column; gap: 4px; }
-  .memo-bri-link { width: 2px; height: 10px; align-self: center; border-top: 0; border-left: 2px solid var(--nb-red); }
+/* 메모 칸이 좁을 때(휴대폰) — 가로로 놓으면 넘치는 그림을 세로로 */
+@container memo-lines (max-width: 340px) {
+  /* 디딤돌: 위 기슭 → 점선 칸(디딤돌) → 아래 기슭. 실선은 왼쪽 가까이로 내려 이름표(오른쪽 위)와 겹치지 않게 */
+  .memo-bri-row { flex-direction: column; align-items: stretch; }
+  .memo-bri-node { text-align: left; }
+  .memo-bri-gap { flex-direction: column; align-items: stretch; padding: 0 10px; }
+  .memo-bri-gap-label { left: auto; right: 10px; transform: none; }
+  /* 실선은 칸 안에서 14.5px — 위 테두리에 얹은 이름표(높이 18px)가 디딤돌을 덮지 않게. 칸 밖으로는 꼬리가 위아래로 */
+  .memo-bri-link { flex: none; width: 2px; height: 14.5px; margin-left: 18px; }
+  .memo-bri-link.from::before, .memo-bri-link.to::after { left: 0; right: auto; width: 2px; height: 11.5px; }
+  .memo-bri-link.from::before { top: auto; bottom: 100%; }
+  .memo-bri-link.to::after { top: 100%; }
+  .memo-map-head, .memo-map-row { grid-template-columns: 5.2em 16px minmax(0, 1fr); column-gap: 6px; }
 }
-
+@container memo-lines (max-width: 240px) {
+  /* 분담표: 위 칸 → 아래 칸, 꺾쇠는 아래를 가리킨다 */
+  .memo-spl-cols { flex-direction: column; }
+  .memo-spl-col + .memo-spl-col:not(.keep) { border-left: 0; border-top: 1px dashed var(--nb-rule); }
+  .memo-spl-col + .memo-spl-col::before { left: 50%; top: -7px; margin: 0 0 0 -5.5px; transform: rotate(135deg); }
+}
 
 
 /* ---------- 증거 브리프 ----------
@@ -2070,12 +2256,17 @@ body.plain-mode #view { min-height: 100vh; }
    표정이 바뀔 때의 반응 동작은 넣지 않는다 — 대사 읽기를 방해한다.
    새 에셋 없이 transform만 쓴다 (함정 9). 발을 축으로 삼는다.
 
-   reduced-motion에서도 재생한다 — 수첩 넘김과 같은 판단이다(함정 7). */
+   움직임 줄이기 설정에서는 멈춘다(10/06) — 전에는 '수첩 넘김과 같은 판단'으로 재생했지만,
+   사용자가 정한 예외는 수첩 넘김 하나다(함정 7 · DESIGN.md 6절). 끝없이 도는 움직임이라 더 지켜야 한다. */
 .dlg-sprite .spr {
   transform-origin: 50% 100%;
 }
 .dlg-standing .dlg-sprite .spr.show {
   animation: clue-breathe 4.2s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .dlg-standing .dlg-sprite .spr.show { animation: none; }
+  .dlg-ctc.on { animation: none; } /* '다음' 표시는 깜빡이지 않고 켜진 채로 */
 }
 
 @keyframes clue-breathe {

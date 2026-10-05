@@ -54,7 +54,9 @@ function renderBadge(pulse) {
 export function flyFromRect(rect, onLand) {
   const target = badgeEl();
   const root = document.getElementById('fly-root');
-  if (!target || !root) {
+  // 움직임 줄이기 설정이면 날아가는 연출 없이 바로 내려앉힌다(DESIGN.md 6절 — 10/06 재점검에서 빠져 있던 것)
+  const still = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (!target || !root || still) {
     if (onLand) onLand();
     return;
   }
