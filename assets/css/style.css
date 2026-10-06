@@ -2839,3 +2839,145 @@ body.plain-mode #view { min-height: 100vh; }
   .badge { min-width: 26px; padding-inline: 4px; margin-left: 2px; }
 }
 .fx-node[data-k='state'] .fx-node-n { color: var(--fx-state-ink); }
+
+/* ---------- E2 · 처음에는 조작 칸만(10/06 사용자 결정) ----------
+   플레이어가 보는 화면(Cost · 손패 · 덱)을 판 가운데에 먼저 세운다. 스킬을 처음 누르면 .fx-closed가 빠지며
+   칸은 왼쪽 첫 열로 옮겨 가고, 그 오른쪽으로 플로우 차트와 두 표 무리가 펼쳐진다(flow.js open()).
+   닫힌 동안의 칸은 넓으니 글자를 하한(12px) 위로 올려 둔다 — 펼쳐지면 원래 배치 그대로 */
+.fx.fx-closed .fx-concept,
+.fx.fx-closed .fx-chartcol,
+.fx.fx-closed .fx-datacol,
+.fx.fx-closed .fx-caption,
+.fx.fx-closed .fx-foot { display: none; }
+.fx.fx-closed .fx-grid { grid-template-columns: minmax(0, 1fr); }
+.fx.fx-closed .fx-side { width: min(660px, 100%); justify-self: center; }
+.fx.fx-closed .fx-play {
+  padding: 16px 20px 20px; border: 1px solid var(--fx-line); border-radius: 12px; background: var(--fx-panel);
+}
+.fx.fx-closed .fx-play .fx-meter-head { font-size: .9rem; }
+.fx.fx-closed .fx-play .fx-rate-note { font-size: .75rem; color: var(--fx-soft); } /* 닫힌 칸은 회색 바탕이라 --fx-mute는 4.29:1 */
+.fx.fx-closed .fx-play .fx-sub { margin: 14px 0 7px; font-size: .75rem; }
+.fx.fx-closed .fx-play .cue-note { width: fit-content; max-width: 100%; margin: 14px 0 12px; }
+.fx.fx-closed .fx-play .fx-hand { flex-wrap: nowrap; gap: 10px; }
+.fx.fx-closed .fx-play .fx-card { flex: 1 1 0; min-width: 0; padding: 11px 13px 12px; gap: 4px; background: var(--fx-bg); }
+.fx.fx-closed .fx-play .fx-card-name { font-size: .95rem; }
+.fx.fx-closed .fx-play .fx-card-cost { width: 28px; height: 28px; font-size: .8rem; }
+.fx.fx-closed .fx-play .fx-card-ex { font-size: .78rem; line-height: 1.45; -webkit-line-clamp: 4; }
+.fx.fx-closed .fx-play .fx-card-wait { font-size: .75rem; }
+.fx.fx-closed .fx-side .fx-play .fx-deck { flex-wrap: nowrap; gap: 8px; }
+.fx.fx-closed .fx-play .fx-deck-item { flex: 1 1 0; min-width: 0; padding: 5px 10px; font-size: .8rem; background: var(--fx-bg); }
+.fx.fx-closed .fx-play .fx-deck-n { font-size: .75rem; }
+@media (max-width: 600px) {
+  .fx.fx-closed .fx-play { padding: 14px 14px 16px; }
+  .fx.fx-closed .fx-play .fx-hand,
+  .fx.fx-closed .fx-side .fx-play .fx-deck { flex-wrap: wrap; }
+  .fx.fx-closed .fx-play .fx-card { flex: 1 1 140px; }
+  .fx.fx-closed .fx-play .fx-deck-item { flex: 1 1 140px; }
+}
+
+/* ---------- E1 · 맞히기 먼저, 회차는 버튼으로, 두꺼워지는 시트(10/06 사용자 결정) ----------
+   배포본의 지면(다섯 장 · 편집 치수 · 캐릭터 색)을 그대로 두고 세 가지를 얹는다.
+   - 맞히기가 첫 장이다. 카드 묶음을 왼쪽 칸에 세워 첫 화면에서 얼굴과 나란히 보이게 한다.
+   - 호출 장 위쪽 줄은 인물 시트 셋이다. 면모가 붙을 때마다 시트 뒤에 종이(.cc-layers i)가 한 장씩 쌓인다.
+     먼저 붙은 종이가 시트 바로 뒤에 온다 — 새 종이를 맨 앞 형제로 넣어 가장 먼저(가장 밑에) 그린다(character-call.js addLayer).
+   - 회차는 한 장씩 버튼으로 넘긴다. 화면 → 캐릭터가 시트에서 내려옴 → (다시 보기) 컷 → 면모가 시트로 올라감. */
+
+/* 첫인상 — 카드는 왼쪽 칸에 세로로, 얼굴은 오른쪽에 4:3으로 */
+.cc-ch[data-n="1"] .cc-ch-copy { margin-bottom: 12px; }
+.cc-quiz { margin-top: 20px; gap: 48px; }
+.cc-quiz-side .cc-cards { flex-direction: column; align-items: stretch; width: auto; gap: 10px; margin-top: 18px; }
+.cc-quiz-side .cc-plate { text-align: left; }
+.cc-quiz-side .cc-cards + .cc-match-help { margin-top: 12px; }
+.cc-quiz-side .cc-quiz-count { margin-top: 14px; padding-top: 10px; font-size: 20px; }
+.cc-quiz-side .cc-skip { margin-top: 10px; }
+.cc-match .cc-slot-face { aspect-ratio: 4 / 3; object-position: 50% 22%; }
+.cc-match-done { margin-top: 26px; }
+
+/* 역설 — 맞히기 위의 짧은 띠(10/07 사용자 결정, 예전 기획처럼 첫 화면에 37명을 조금). 표지는 같은 말을 두 번 해서 뺐다.
+   제목 · 리드 아래 37명 한 줄(넓은 화면에서 한 줄에 다 든다). 맞힐 셋은 캐릭터 색 테두리 */
+.cc-ch[data-n="0"] .cc-hero { margin-top: 8px; }
+.cc-ch[data-n="0"] .cc-hero-copy .cc-lede { margin-top: 8px; }
+.cc-strip { display: flex; flex-wrap: wrap; align-items: center; gap: 3px; margin-top: 14px; }
+.cc-strip .cc-cell { flex: none; width: 34px; height: 34px; background-repeat: no-repeat; }
+.cc-strip .cc-cell.cc-pick { width: 38px; height: 38px; }
+.cc-strip-note { margin-top: 6px; }
+.cc-cell.cc-pick { border: 2px solid var(--cc-ink); box-shadow: 0 0 0 3px var(--cc-tint); z-index: 1; }
+/* 첫인상 장은 표지 띠 바로 아래 — 맞히기 카드가 첫 화면에 들도록 장 사이 · 리드를 조인다(리드는 한 줄) */
+.cc-ch[data-n="1"] { margin-top: 24px; }
+.cc-ch[data-n="1"] .cc-ch-copy .cc-lede { max-width: none; margin-top: 6px; }
+.cc-ch[data-n="1"] .cc-quiz { margin-top: 12px; }
+@media (max-width: 760px) {
+  .cc-strip .cc-cell { width: 24px; height: 24px; }
+  .cc-strip .cc-cell.cc-pick { width: 28px; height: 28px; }
+}
+
+/* 호출 — 위에 붙은 줄: 진행 표시, 그 아래 인물 시트 셋 */
+.cc-rail { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px 26px; padding: 8px 0 10px; }
+
+/* 인물 시트 — 오른쪽 · 아래는 뒤에 쌓이는 종이의 자리 */
+.cc-rl { position: relative; display: block; padding: 0 12px 12px 0; min-width: 0; }
+.cc-layers { position: absolute; inset: 0 12px 12px 0; z-index: 0; pointer-events: none; }
+.cc-layers i { position: absolute; inset: 0; background: var(--cc-tint); border: 1px solid var(--cc-ink); transform: translate(var(--o), var(--o)); }
+.cc-layers i.is-opt { background: var(--surface); border-style: dashed; }
+.cc-rl-paper {
+  position: relative; z-index: 1; display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 7px 12px;
+  padding: 9px 10px; background: var(--surface); border: 1.5px solid var(--cc-fg); transition: box-shadow .3s;
+}
+.cc-rl.is-now .cc-rl-paper { box-shadow: 0 0 0 2px var(--cc-ink); }
+.cc-rl-name { font-size: 13.5px; font-weight: 700; line-height: 1.3; margin-bottom: 5px; }
+.cc-rl .cc-rl-plate { padding: 5px 10px; }
+.cc-rl-slots { grid-column: 1 / -1; list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+.cc-rl-slot { display: flex; align-items: baseline; gap: 10px; min-height: 26px; padding: 2px 9px; border: 1px dashed var(--cc-line); }
+.cc-rl-where { flex: none; font: 12px/1.6 var(--cc-mono); color: var(--cc-mute); visibility: hidden; }
+.cc-rl-slot.is-called { border-color: var(--cc-dash); }
+.cc-rl-slot.is-called .cc-rl-where,
+.cc-rl-slot.is-on .cc-rl-where { visibility: visible; }
+.cc-rl-slot b { min-width: 0; font-size: 13.5px; font-weight: 800; line-height: 1.5; }
+.cc-rl-slot.is-on { border: 1px solid var(--cc-ink); background: var(--cc-tint); }
+.cc-rl-slot.is-on .cc-rl-where,
+.cc-rl-slot.is-on b { color: var(--cc-ink); color: color-mix(in srgb, var(--cc-ink) 72%, var(--cc-fg)); }
+
+/* 회차 — 내려가며 펼쳐진다. 마지막 회차의 칸도 트리거 줄까지 올라오게 아래 여백(34vh)은 배포본 그대로 */
+/* 채워진 칸은 빈 칸 안내용 등폭 글꼴을 벗는다 — 안에 든 이름표가 등폭으로 벌어졌다 */
+.cc-ep.cc-filled .cc-ep-slot,
+.cc-zone.cc-done { font: inherit; letter-spacing: normal; }
+/* 칸이 트리거 줄(화면 78%)에 닿을 때 위에 붙은 시트 줄 아래로 컷 전체가 보여야 '화면이 먼저'가 된다 —
+   시트 줄이 배포본 레일보다 높아 컷 높이를 화면 높이에 묶는다(배포본 360px) */
+.cc-fig img { max-height: clamp(200px, 30vh, 330px); }
+.cc-worry { margin-top: 24px; }
+
+/* 검증과 적용 — 같은 양식의 카드. 이벤트가 붙을 때마다 뒤에 종이가 쌓인다 */
+.cc-vsheet { position: relative; padding: 0 20px 20px 0; }
+.cc-vsheet .cc-layers { inset: 0 20px 20px 0; }
+.cc-vbody { position: relative; z-index: 1; padding: 16px; background: var(--surface); border: 1.5px solid var(--cc-ink); }
+.cc-vrole { margin-right: 20px; }
+
+@media (max-width: 1240px) {
+  .cc-rail { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px 16px; padding: 10px 0 12px; }
+  .cc-quiz-side .cc-cards { flex-direction: row; flex-wrap: wrap; }
+  .cc-quiz-side .cc-plate { flex: 1 1 180px; }
+}
+@media (max-width: 760px) {
+  .cc-rl-paper { grid-template-columns: 40px minmax(0, 1fr); gap: 6px 8px; padding: 8px; }
+  .cc-rl-face { width: 40px; height: 40px; }
+  .cc-rl-plate { font-size: 13px; padding: 5px 7px; }
+  .cc-rl-slot { padding: 2px 6px; gap: 6px; }
+  .cc-rl-slot b { font-size: 12.5px; }
+}
+@media (max-width: 600px) {
+  .cc-rail { gap: 8px 6px; }
+  .cc-rl { padding: 0 12px 12px 0; }
+  .cc-layers { inset: 0 12px 12px 0; }
+  .cc-rl-paper { grid-template-columns: minmax(0, 1fr); padding: 6px; gap: 5px; }
+  .cc-rl-face { width: 34px; height: 34px; }
+  .cc-rl-name { display: none; }
+  .cc-rl-plate { display: block; font-size: 12px; padding: 4px 5px; letter-spacing: -.03em; }
+  .cc-rl-slot { flex-direction: column; gap: 0; min-height: 0; padding: 2px 5px; }
+  .cc-rl-where { line-height: 1.4; }
+  .cc-rl-slot b { font-size: 12px; line-height: 1.35; }
+  .cc-quiz-side .cc-plate { flex: 1 1 150px; font-size: 14px; padding: 9px 11px; }
+  .cc-ep { padding: 24px 0; }
+  .cc-ep-top { gap: 4px 12px; }
+  .cc-ep-need { font-size: 19px; }
+  .cc-fig img { max-height: 24vh; }
+}

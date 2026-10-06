@@ -20,6 +20,8 @@ import { fill as fillText } from '../text.js'; // 이 파일에는 표 행을 �
 // onfinish가 오지 않기 때문(함정 2와 같은 부류). 진행은 setTimeout이 몬다.
 
 const TICK_MS = 100;
+// 첫 시전이 판을 펼치는 시간 — 손패 칸이 제자리로 옮겨 가고 차트 · 표가 드러난 뒤에 흐름이 걷기 시작한다
+const OPEN_MS = 560;
 
 // 변화 표시를 하지 않는 칸.
 // 큐의 순번은 카드 한 장이 움직이면 모든 행이 한꺼번에 밀려서 여섯 칸이 동시에 깜빡인다.
@@ -44,6 +46,7 @@ export function playFlow(host, cfg, onComplete) {
   let deck = [];
   let costs = new Map(); // 학생별 EX_스킬_Cost_소모 (예외 4로 깎일 수 있다)
   let scrolled = false;
+  let opened = false; // 처음에는 손패 칸만 — 첫 시전이 판을 연다(10/06 사용자 결정)
   let cost = 0;
   let boosted = false;
   let used = 0;
@@ -59,9 +62,11 @@ export function playFlow(host, cfg, onComplete) {
   let finishTrace = null;
 
   const root = document.createElement('div');
-  root.className = 'fx';
+  root.className = 'fx fx-closed';
   // 왼쪽은 이 시스템을 '왜 그렇게 짰는가'(분석)와 조작, 오른쪽 두 칸은 '어떻게 짰는가'(구조).
   // 분석과 구조를 갈라 놓고, 넓은 면적은 구조에 준다 — 이 문서가 보여주려는 것이 그쪽이다.
+  // 처음에는 조작 칸(플레이어가 보는 화면)만 보인다. 스킬을 처음 누르면 판이 펼쳐지며 그 화면 밑에서
+  // 실제로 도는 차트와 표가 드러난다 — 화면이 먼저, 시스템이 그다음(10/06 사용자 결정, .fx-closed)
   root.innerHTML = `
     <div class="fx-grid">
       <section class="fx-side">
@@ -353,6 +358,30 @@ export function playFlow(host, cfg, onComplete) {
     paint();
     pressed = false;
     paintCue();
+    // 다시 해보기는 처음 화면(조작 칸만)으로 돌린다 — 펼쳐지는 순간도 다시 볼 수 있게
+    opened = false;
+    scrolled = false;
+    root.classList.add('fx-closed');
+  }
+
+  // 조작 칸 하나만 있던 판을 연다. 칸은 제자리(왼쪽 첫 열)로 옮겨 가고, 차트와 두 표 무리가 그 오른쪽으로 펼쳐진다.
+  // 판은 클래스 하나로 바로 열리고 움직임은 그 위에 얹는다 — 재생되지 않아도 판은 이미 열려 있다.
+  // 돌려주는 값은 흐름이 걷기 시작할 때까지 기다릴 시간이다
+  function open() {
+    opened = true;
+    const side = root.querySelector('.fx-side');
+    const from = side.getBoundingClientRect();
+    root.classList.remove('fx-closed');
+    if (reducedMotion() || document.hidden) return 0;
+    const to = side.getBoundingClientRect();
+    // 가운데에 있던 칸이 왼쪽 열로 미끄러진다(폭이 줄어든 칸의 가운데를 옛 가운데에서 출발시킨다)
+    const dx = from.left + from.width / 2 - (to.left + to.width / 2);
+    animate(side, [{ transform: `translate(${dx}px, ${from.top - to.top}px)` }, { transform: 'none' }], { duration: 520 });
+    // READ → WRITE 머리는 화면에 들어오는 순간 제 연출(revealOnce)로 나타난다
+    [root.querySelector('.fx-chartcol'), root.querySelector('.fx-datacol')].forEach((el, i) =>
+      animate(el, [{ opacity: 0, transform: 'translateX(-32px)' }, { opacity: 1, transform: 'none' }], { duration: 460, delay: 140 + i * 130, fill: 'backwards' }));
+    [caption, root.querySelector('.fx-foot')].forEach((el) => animate(el, effects.fade, { duration: 360, delay: 420, fill: 'backwards' }));
+    return OPEN_MS;
   }
 
   function costOf(s, values = costs) {
@@ -580,6 +609,7 @@ export function playFlow(host, cfg, onComplete) {
     tick();
     const afford = cost >= costOf(s, costs);
     running = true;
+    const wait = opened ? 0 : open(); // 첫 시전 — 판이 펼쳐진 뒤에 흐름이 걷는다
     root.classList.add('fx-tracing');   // 이번 클릭과 상관없는 영역은 뒤로 물러난다
     root.classList.remove('fx-returned', 'fx-assembled-on', 'fx-assembled-done');
     clearLit();
@@ -617,12 +647,17 @@ export function playFlow(host, cfg, onComplete) {
       finish();
       return;
     }
-    step(path[i++], ms);
-    const walker = setInterval(() => {
-      if (i < path.length) { step(path[i++], ms); return; }
-      finish();
-    }, ms);
-    stepTimers.push(walker);
+    const walk = () => {
+      step(path[i++], ms);
+      const walker = setInterval(() => {
+        if (i < path.length) { step(path[i++], ms); return; }
+        finish();
+      }, ms);
+      stepTimers.push(walker);
+    };
+    // 기다리는 타이머도 stepTimers에 둔다 — 그사이 탭이 가려지거나 다시 누르면 finish가 함께 거둔다
+    if (wait) stepTimers.push(setTimeout(walk, wait));
+    else walk();
   }
 
   function snapshot() { return { hand: [...hand], deck: [...deck], costs: new Map(costs), cost, boosted, used }; }

@@ -28,6 +28,10 @@ const origin = process.env.TEST_ORIGIN || 'http://127.0.0.1:4173';
     await page.waitForTimeout(500);
     assert.equal(await page.locator('.fx-node').count(), 13);
     assert.equal(await page.locator('.fx-master-table').count(), 4);
+    // 처음에는 조작 칸만 — 차트 · 표는 첫 스킬을 누를 때 펼쳐진다(10/06)
+    assert.equal(await page.locator('.fx.fx-closed').count(), 1, 'E2 opens with the skill panel only');
+    assert.equal(await page.locator('.fx-chartcol').isVisible(), false);
+    assert.equal(await page.locator('.fx-card').first().isVisible(), true);
     // 원본 문서는 버튼이 아니라 새 탭으로 여는 링크다(10/06 — 가운데 클릭 · 주소 복사가 되게)
     assert.equal(await page.locator('.brief-head-doc a[target="_blank"]').count(), 1, 'Original is always reachable');
     assert.notEqual(await page.locator('.brief-head-doc a').getAttribute('href'), '#', 'Original link has a real address');
@@ -56,9 +60,13 @@ const origin = process.env.TEST_ORIGIN || 'http://127.0.0.1:4173';
     assert.match(await test.locator('.fx-cost').innerText(), /7\.00/);
     assert.equal(await test.locator('.fx-deck-item').last().getAttribute('data-sid'), 'himari');
     assert.equal(await test.locator('.fx-card').first().getAttribute('data-sid'), 'tomoe');
+    assert.equal(await test.locator('.fx-closed').count(), 0, 'The first cast opens the board');
+    await page.evaluate(() => window.testFlow.restart());
+    assert.equal(await test.locator('.fx-closed').count(), 1, 'Restart returns to the skill panel only');
     await mountFlow({ start_cost: 1 });
     await test.locator('.fx-card').first().evaluate(el => el.click());
-    await page.waitForTimeout(500);
+    // 판이 펼쳐진 뒤에 흐름이 걷는다 — 고정 시간 대신 흐름이 끝날 때까지 기다린다
+    await page.waitForFunction(() => !document.querySelector('#regression-host .fx-tracing'));
     assert.match(await test.locator('.fx-count').innerText(), /^0 \/ 4/);
     assert.match(await test.locator('.fx-cost').innerText(), /1\.00/);
     assert.equal(await test.locator('.fx-paths path[data-to="deny"]').getAttribute('class'), 'on');
@@ -88,8 +96,11 @@ const origin = process.env.TEST_ORIGIN || 'http://127.0.0.1:4173';
     await page.locator('.cc').waitFor();
 
     // E1: real pointer input, wrong answer return, cancellation, keyboard alternative, both passes.
+    // 맞히기가 첫 장이다(10/06) — 첫 화면에서 바로 카드를 끈다
     await page.goto(origin + '/evidence/E1/interactive');
-    await page.locator('.cc-ch[data-n="0"] .cc-next').click();
+    await page.locator('.cc').waitFor();
+    assert.deepEqual(await page.locator('.cc-ch:not([hidden])').evaluateAll(es => es.map(e => e.dataset.n)), ['0', '1'], 'The paradox band and the quiz are open at first');
+    assert.ok(await page.evaluate(() => document.querySelector('.cc-cards .cc-plate').getBoundingClientRect().bottom <= innerHeight), 'The first action is on the first screen');
     // 다음 장으로 데려가는 스크롤(setInterval)이 멈출 때까지 기다린다 — 고정 시간은 화면이 바쁘면 모자라서
     // 카드 자리를 스크롤 도중에 읽고 엉뚱한 곳을 누르게 된다(지금 누를 것 표시가 퍼지는 동안 특히)
     const settle = () => page.waitForFunction(async () => { const y = window.scrollY; await new Promise((r) => setTimeout(r, 150)); return window.scrollY === y; });
@@ -119,20 +130,30 @@ const origin = process.env.TEST_ORIGIN || 'http://127.0.0.1:4173';
       await page.locator('.cc-slot[data-id="' + id + '"]').focus(); await page.keyboard.press('Enter');
     }
     assert.equal(await page.locator('.cc-done').count(), 3);
-    await page.locator('.cc-match-done .cc-next').click(); await page.waitForTimeout(800);
-    await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
-    await page.locator('.cc-worry:not([hidden])').waitFor();
-    await page.locator('.cc-worry button').click(); await page.waitForTimeout(900);
+    // 셋을 다 맞히면 소감과 '이후 이야기 살펴보기'가 열리고, 그 버튼이 호출 장을 연다
+    await page.locator('.cc-match-done .cc-next').click();
+    // 회차는 내려가며 펼쳐진다 — 끝까지 내리면 남은 회차가 모두 펼쳐지고, 마지막 캐릭터가 내려앉으면 걱정이 열린다
+    // 그림이 늦게 실리면 문서가 길어진다 — 닿을 때까지 끝으로 다시 내린다
+    const toEnd = (sel) => page.waitForFunction((q) => { window.scrollTo(0, document.documentElement.scrollHeight); return !!document.querySelector(q); }, sel, { polling: 300 });
+    await settle();
+    await toEnd('.cc-worry:not([hidden])');
+    assert.equal(await page.locator('.cc-ep.cc-filled').count(), 6);
+    assert.equal(await page.locator('.cc-rl-slot.is-called').count(), 6, 'Pass 1 records every call on the sheets');
+    assert.equal(await page.locator('.cc-rl .cc-layers i').count(), 0, 'Pass 1 does not thicken the sheets');
+    await page.locator('.cc-worry .cc-next').click();
     assert.equal(await page.locator('.cc-second-pass').count(), 1);
-    await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
-    await page.locator('.cc-ch[data-n="3"]:not([hidden])').waitFor();
-    assert.equal(await page.locator('.cc-rl-facets .cc-on').count(), await page.locator('.cc-ep').count());
+    await settle();
+    await toEnd('.cc-ch[data-n="3"]:not([hidden])');
+    assert.equal(await page.locator('.cc-rl-slot.is-on').count(), await page.locator('.cc-ep').count());
+    assert.equal(await page.locator('.cc-rl .cc-layers i').count(), await page.locator('.cc-ep').count(), 'Every facet adds one sheet of paper');
+    // 먼저 붙은 종이가 시트 바로 뒤(위)에 — 그리는 순서가 가장 나중(형제 중 마지막)이고 어긋남이 가장 작다
+    assert.deepEqual(await page.locator('.cc-rl').first().locator('.cc-layers i').evaluateAll(es => es.map(e => e.style.getPropertyValue('--o'))), ['12px', '6px']);
     await page.locator('.cc-ch[data-n="3"] .cc-next').click();
     await page.getByRole('button', { name: UI.brief.restart, exact: true }).click();
     assert.equal(await page.locator('.cc-second-pass, .cc-done, .cc-drag, .cc-token, .cc-flyer').count(), 0);
+    assert.equal(await page.evaluate(() => document.activeElement?.classList.contains('cc-plate')), true, 'Restart focuses the first card');
     await page.emulateMedia({ reducedMotion: 'reduce' });
     await page.setViewportSize({ width: 390, height: 844 });
-    await page.locator('.cc-ch[data-n="0"] .cc-next').click();
     await page.locator('.cc-skip').click();
     assert.equal(await page.locator('.cc-ch[data-n="2"]:not([hidden])').count(), 1);
     assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);

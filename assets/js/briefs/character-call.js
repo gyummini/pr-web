@@ -3,45 +3,63 @@ import { fromRect, moveFrom } from '../motion/flip.js';
 import { revealOnce } from '../motion/reveal.js';
 // E1 · 캐릭터 호출 — 각인된 한 줄이 어떻게 입체감이 되는가.
 //
-// 다섯 장을 스크롤로 지난다. 버튼으로 넘기는 단계가 아니라, 내려가는 동안 벌어진다.
-//   01 역설   — 37명을 한 화면에 늘어놓는다. 문제를 눈으로 먼저 본다.
+// 다섯 장을 위에서 아래로 지난다. 첫 화면에 01 · 02장이 함께 있다(10/07 사용자 결정 — 맞히기는 첫 화면에서 바로 하되,
+// 맞힌 뒤에 표지가 끼어들면 어색하다. 예전 기획처럼 맞히기 위에 표지와 37명을 조금 할당한다).
+//   01 역설   — 37명을 한 줄로 짧게(표지는 뺐다). '100명이 모두 메인 히로인'을 먼저 묻는다. 맞힐 셋은 37명 안에서 짚어 둔다.
 //   02 첫인상 — 한 줄짜리 카드를 초상에 끌어다 맞춘다. 설명 없이 맞혀진다는 것이 논증이다.
-//   03 호출   — 내려갈수록 회차가 흐르고, 맞힌 그 한 줄이 명찰이 되어 칸에 내려앉는다.
-//               끝에서 "소모되는 것 아닐까" 하고 되감아 다시 내려가면, 이번엔 남은 것이 붙는다.
+//   03 호출   — 내려갈수록 회차가 펼쳐진다. 회차 화면(컷)이 먼저 들어오고, 그 장면에 필요한 캐릭터가 위에 붙은 시트에서
+//               내려와 시그니처 대사를 뱉는다. 끝에서 "소모되는 것 아닐까" 하고 되감아 다시 내려가면, 이번엔 캐릭터가 내려온 뒤
+//               새로 드러난 면모의 컷이 열리고, 그 면모가 위 시트로 올라가 붙는다 — 붙을 때마다 시트 뒤에 종이가 한 장씩 쌓인다.
+//               (10/06 버튼으로 한 장씩 넘기는 안을 해 본 뒤 사용자가 스크롤로 정했다)
 //   04 결과   — 한 줄은 그대로인데 축이 늘어 있다.
-//   05 검증·적용 — 같은 패턴을 실제 서비스 게임과 본인 기획에서 확인한다.
+//   05 검증·적용 — 같은 패턴을 실제 서비스 게임과 본인 기획에서 확인한다. 한 줄만 보이다가 이벤트가 하나씩 붙으며 두꺼워진다.
 //
 // 화면에 나오는 글자는 전부 콘텐츠_증거카드.json에서 온다. 여기 있는 건 순서와 조건뿐이다.
 //
 // 연출은 전부 setTimeout이 몬다. requestAnimationFrame은 가려진 탭에서 멈추고,
 // transitionend·onfinish도 오지 않는다 — 상태 변경을 거기 걸면 화면이 영영 잠긴다(함정 2·3).
+// 회차 한 장의 걸음(화면 → 등장 → 컷 → 면모)도 타이머로 걸고, 되감기 · 탭 가려짐이 오면 남은 걸음을 움직임 없이 한 번에 마친다.
 
-const TRIGGER = 0.78; // 슬롯이 화면 이 높이까지 올라오면 그 회차가 발화한다
+const OPEN_AT_START = 2; // 처음부터 열려 있는 장 수(역설 · 첫인상)
+const TRIGGER = 0.78; // 캐릭터가 내려앉을 칸이 화면 이 높이까지 올라오면 그 회차가 펼쳐진다
+// 걸음 간격은 배포본 스크롤 연출만큼 짧게 — 줄을 넘는 즉시 캐릭터가 내려오고, 컷 · 면모가 바로 뒤따른다(10/06 사용자 요청:
+// 기다리게 하면 스크롤하는 손이 연출을 앞질러 버린다)
 const STAGGER = 180; // 같은 화면에 여러 회차가 걸릴 때 서로 밀어 주는 간격
+const CALL_AT = 0; // 줄을 넘으면 바로 — 컷(화면)은 스크롤로 이미 들어와 있다
+const FLY_MS = 420; // 시트 → 회차 칸
+const CUT_AT = 260; // (다시 보기) 새로 드러난 면모의 컷이 열리는 때
+const RISE_AT = 620; // (다시 보기) 면모가 컷에서 시트로 올라가기 시작하는 때
+const RISE_MS = 460; // 컷 → 시트
+const LAYER_STEP = 6; // 시트 뒤 종이 한 장의 어긋남(px)
 
 export function playCharacterCall(host, cfg, onComplete) {
   const cast = new Map((cfg.cast || []).map((c) => [c.id, c]));
   const order = (cfg.order || []).filter((id) => cast.has(id));
   const eps = (cfg.episodes || []).filter((e) => cast.has(e.c));
+  const chs = cfg.chapters || [];
   const t = cfg.labels || {};
 
-  // 레일에 붙을 축은 회차에서 뽑는다 — 한 곳에만 적어 두고 두 군데서 읽는다
+  // 결과 장의 축은 회차에서 뽑는다 — 한 곳에만 적어 두고 두 군데서 읽는다
   function facetsOf(id) {
     return eps.filter((e) => e.c === id).map((e) => e.gain_label);
   }
 
-  let mode = 'call'; // 'call' → 되감기 → 'reveal'
-  let filled = 0;
-  let revealed = 0;
-  let matched = 0;
+  let pass = 1; // 1 호출 → 되감기 → 2 다시 보기
+  let called = new Set(); // 호출에서 펼친 회차
+  let revealed = new Set(); // 다시 보기에서 펼친 회차
+  let played = 0; // 이번 패스에서 연출까지 마친 회차 수
   let suspend = false; // 자동 스크롤이 도는 동안 sweep을 멈춘다
+  let matched = 0;
   let worryShown = false;
   let drag = null;
   let selected = null;
   let stopScroll = null;
   let stopResult = null;
+  let stopApply = null;
   let stopCue = null;
   let timers = [];
+  let jobs = []; // 지금 회차의 남은 걸음
+  let quiet = false; // 남은 걸음을 한 번에 마치는 동안은 움직임 없이
   let scrollIv = null;
   let dead = false;
 
@@ -67,8 +85,7 @@ export function playCharacterCall(host, cfg, onComplete) {
 
   function build() {
     root.textContent = '';
-    const chs = cfg.chapters || [];
-    chs.forEach((ch, i) => root.appendChild(chapter(ch, i, chs.length)));
+    chs.forEach((ch, i) => root.appendChild(chapter(i)));
     buildGrid();
     buildMatch();
     buildRail();
@@ -79,29 +96,29 @@ export function playCharacterCall(host, cfg, onComplete) {
       p.textContent = cfg.credit;
       sect(4).appendChild(p);
     }
-    cueOn(root.querySelector('.cc-grid-note .cc-next'));
+    cueOn(root.querySelector('.cc-cards'));
   }
 
   // 장 하나 — 머리말·제목·리드·꼬리말은 다섯 장이 모두 같은 모양이다
-  function chapter(ch, i, total) {
+  function chapter(di) {
+    const ch = chs[di] || {};
     const s = el('section', 'cc-ch');
-    s.dataset.n = String(i);
-    if (i > 0) s.hidden = true;
+    s.dataset.n = String(di);
+    if (di >= OPEN_AT_START) s.hidden = true;
 
     const head = el('div', 'cc-head');
     head.appendChild(txt('span', `${ch.no} · ${ch.name}`));
     const right = el('span');
     const b = el('b');
     b.textContent = ch.mark || '';
-    right.append(b, document.createTextNode(` / ${String(total).padStart(2, '0')}`));
+    right.append(b, document.createTextNode(` / ${String(chs.length).padStart(2, '0')}`));
     head.appendChild(right);
     s.appendChild(head);
     s.appendChild(el('hr', 'cc-rule'));
 
     const bodyTop = el('div', 'cc-ch-top');
-    // 2~5장 머리 — 데이터의 제목과 리드. 1장은 표지와 나란히 놓으므로 buildGrid가 따로 채운다.
-    // 10/06 점검 전까지는 이 칸이 비어, 2~5장 제목 · 리드(확정 문구)가 화면에 나오지 않았다(사용자 결정으로 복원)
-    if (i > 0 && (ch.title || ch.lede)) {
+    // 장 머리 — 데이터의 제목과 리드. 역설 장(데이터 0번)은 표지와 나란히 놓으므로 buildGrid가 따로 채운다
+    if (di > 0 && (ch.title || ch.lede)) {
       const copy = el('div', 'cc-ch-copy');
       if (ch.title) copy.appendChild(lines('h3', 'cc-title', ch.title));
       if (ch.lede) copy.appendChild(lines('p', 'cc-lede', ch.lede));
@@ -127,79 +144,63 @@ export function playCharacterCall(host, cfg, onComplete) {
     return root.querySelector(`.cc-ch[data-n="${i}"]`);
   }
 
-  /* ---------- 01 · 역설 ---------- */
+  /* ---------- 역설 — 37명 ---------- */
 
   function buildGrid() {
     const g = cfg.grid || {};
-    const ch = (cfg.chapters || [])[0] || {};
+    const ch = chs[0] || {};
     const hero = sectTop(0);
 
-    // 제목·리드와 표지를 나란히 둔다. 글자만으로 시작하면 '100명'이 숫자로만 읽힌다.
+    // 첫 화면 위쪽을 조금만 쓴다 — 제목 · 리드와 37명 한 줄. 바로 아래가 맞히기다.
+    // 글자만으로 시작하면 '100명'이 숫자로만 읽힌다. 단행본 표지(key_visual)는 같은 말('히로인이 많다')을 두 번 하고
+    // 첫 화면을 붐비게 해서 뺐다(10/07 사용자 결정) — 데이터에는 남겨 둔다
     const wrap = el('div', 'cc-hero');
     const copy = el('div', 'cc-hero-copy');
     copy.appendChild(lines('h3', 'cc-title', ch.title));
     copy.appendChild(lines('p', 'cc-lede', ch.lede));
     wrap.appendChild(copy);
 
-    const kv = cfg.key_visual;
-    if (kv && kv.src) {
-      const fig = el('figure', 'cc-hero-key');
-      const img = el('img');
-      img.src = kv.src;
-      img.alt = '';
-      fig.appendChild(img);
-      const cap = el('figcaption');
-      cap.appendChild(txt('i', kv.label || ''));
-      cap.appendChild(lines('b', '', kv.name));
-      fig.appendChild(cap);
-      wrap.appendChild(fig);
-    }
-    hero.appendChild(wrap);
-
-    const grid = el('div', 'cc-grid');
     const names = g.names || [];
-    const cols = Number(g.sprite_cols) || 10;
-    const rowCount = Number(g.sprite_rows) || 4;
-    const cells = Number(g.cells) || names.length;
-    for (let i = 0; i < cells; i += 1) {
-      const c = el('div', 'cc-cell');
-      if (i < names.length && g.sprite) {
+    if (names.length && g.sprite) {
+      const strip = el('div', 'cc-strip');
+      strip.setAttribute('aria-hidden', 'true'); // 얼굴 37개는 낭독하지 않는다 — 아래 그림 설명이 대신한다
+      const cols = Number(g.sprite_cols) || 10;
+      const rowCount = Number(g.sprite_rows) || 4;
+      // 맞힐 셋은 37명 안에서 캐릭터 색 테두리로 짚어 둔다 — '이 셋은 100명 중 셋'
+      const pick = new Map(order.map((id) => [cast.get(id).name, id]));
+      names.forEach((name, i) => {
         // 스프라이트를 퍼센트로 자른다. 10×4 배열이 이름 순서와 그대로 대응한다.
-        c.className = 'cc-cell cc-face';
-        c.title = names[i];
+        const c = el('div', 'cc-cell cc-face');
+        c.title = name;
         c.style.backgroundImage = `url("${g.sprite}")`;
         c.style.backgroundSize = `${cols * 100}% ${rowCount * 100}%`;
         c.style.backgroundPositionX = `${((i % cols) / (cols - 1)) * 100}%`;
         c.style.backgroundPositionY = `${(Math.floor(i / cols) / (rowCount - 1)) * 100}%`;
-      }
-      grid.appendChild(c);
+        if (pick.has(name)) {
+          c.classList.add('cc-pick');
+          tint(c, pick.get(name));
+        }
+        strip.appendChild(c);
+      });
+      copy.appendChild(strip);
+      copy.appendChild(txt('p', g.note || '', 'cc-mono cc-strip-note'));
     }
-    sect(0).appendChild(grid);
 
-    const note = el('div', 'cc-grid-note');
-    note.appendChild(txt('span', g.note || '', 'cc-mono'));
-    // 2장부터는 이 버튼을 눌러야 열린다. 바로 아래가 보관함 버튼이라 여기서 끝난 것처럼 보여서 말풍선을 단다.
-    if (t.to_match_note) note.appendChild(txt('p', t.to_match_note, 'cue-note points-right'));
-    const go = next(t.to_match, 1);
-    go.addEventListener('click', () => cueOn(root.querySelector('.cc-cards')));
-    note.appendChild(go);
-    sect(0).appendChild(note);
+    hero.appendChild(wrap);
   }
 
-  /* ---------- 02 · 첫인상 ---------- */
+  /* ---------- 첫인상 — 맞히기 ---------- */
 
   function buildMatch() {
     const m = cfg.match || {};
-    // 초상 셋은 지면의 왼쪽 절반만 쓴다 — 오른쪽이 비면 화면이 끝난 것처럼 보인다.
-    // 왼쪽에 '무엇을 하는 칸인지'를 세워 두고, 퀴즈는 오른쪽에 몰아 붙인다.
+    // 왼쪽 칸에 '무엇을 하는 칸인지'와 카드 묶음을 세우고, 오른쪽에 초상 셋을 둔다 —
+    // 첫 화면에서 카드와 얼굴이 나란히 보여야 설명 없이 바로 맞힌다(10/06, 맞히기가 첫 장이 되면서)
     const quiz = el('div', 'cc-quiz');
     const side = el('div', 'cc-quiz-side');
     const s = m.side || {};
     side.appendChild(txt('div', s.label || '', 'cc-quiz-lab'));
     side.appendChild(lines('p', 'cc-quiz-t', s.title));
     side.appendChild(lines('p', 'cc-quiz-note', s.note));
-    side.appendChild(txt('div', `0 / ${order.length}`, 'cc-quiz-count'));
-    side.querySelector('.cc-quiz-count').setAttribute('aria-live', 'polite');
     const main = el('div', 'cc-quiz-main');
     quiz.append(side, main);
     sect(1).appendChild(quiz);
@@ -236,11 +237,14 @@ export function playCharacterCall(host, cfg, onComplete) {
       cards.appendChild(p);
     });
     cards.addEventListener('pointerdown', onDown);
-    main.appendChild(cards);
-    main.appendChild(txt('p', t.match_help, 'cc-match-help'));
+    side.appendChild(cards);
+    side.appendChild(txt('p', t.match_help, 'cc-match-help'));
+    const count = txt('div', `0 / ${order.length}`, 'cc-quiz-count');
+    count.setAttribute('aria-live', 'polite');
+    side.appendChild(count);
     const skip = next(t.skip_match, 2);
     skip.classList.add('cc-skip');
-    main.appendChild(skip);
+    side.appendChild(skip);
 
     const done = el('div', 'cc-match-done');
     done.hidden = true;
@@ -331,37 +335,53 @@ export function playCharacterCall(host, cfg, onComplete) {
     if (matched === 1) cueOn(null);
     root.querySelector('.cc-quiz-count').textContent = matched + ' / ' + order.length;
     fromRect(p, from, { duration: 360 });
-    if (matched === order.length) {
-      const done = root.querySelector('.cc-match-done');
-      done.hidden = false;
-      done.classList.add('cc-on');
-      animate(done, effects.fade);
-      cueOn(done.querySelector('.cc-next'));
-    }
+    if (matched === order.length) finishQuiz();
     slot.focus({ preventScroll: true });
   }
 
-  /* ---------- 03 · 호출 ---------- */
+  // 셋을 다 맞히면 소감과 함께 '이후 이야기 살펴보기'가 열린다 — 누르면 호출 장으로(배포본 그대로)
+  function finishQuiz() {
+    const done = root.querySelector('.cc-match-done');
+    root.querySelector('.cc-skip').hidden = true; // 다 맞힌 뒤에 '건너뛰기'는 할 말이 없다
+    done.hidden = false;
+    done.classList.add('cc-on');
+    animate(done, effects.fade);
+    cueOn(done.querySelector('.cc-next'));
+  }
 
+  /* ---------- 호출 — 위에 붙은 시트, 아래로 흐르는 연재 ---------- */
+
+  // 시트 한 장 — 초상 · 이름 · 한 줄, 그리고 그 인물이 불린 회차 수만큼의 면모 칸.
+  // 뒤에 깔린 종이(.cc-layers)가 붙은 면모 수만큼 늘어난다 — 그것이 두께다(10/06 사용자 결정으로 2단계 시안에서 가져옴)
   function buildRail() {
     const rail = el('div', 'cc-rail');
+    const status = txt('div', t.pass_call, 'cc-pass');
+    status.setAttribute('aria-live', 'polite');
+    rail.appendChild(status);
     order.forEach((id) => {
       const c = cast.get(id);
       const w = el('div', 'cc-rl');
       w.dataset.id = id;
       tint(w, id);
-      w.appendChild(faceOf(id, 'cc-rl-face'));
+      w.appendChild(layersBox());
+      const paper = el('div', 'cc-rl-paper');
+      paper.appendChild(faceOf(id, 'cc-rl-face'));
       const b = el('div', 'cc-rl-b');
+      b.appendChild(txt('div', c.name, 'cc-rl-name'));
       b.appendChild(txt('div', c.core, 'cc-rl-plate'));
-      const fs = el('div', 'cc-rl-facets');
-      facetsOf(id).forEach((label) => fs.appendChild(txt('span', label, 'cc-facet')));
-      b.appendChild(fs);
-      w.appendChild(b);
+      paper.appendChild(b);
+      const slots = el('ol', 'cc-rl-slots');
+      eps.forEach((ep, n) => {
+        if (ep.c !== id) return;
+        const li = el('li', 'cc-rl-slot');
+        li.dataset.n = String(n);
+        li.append(txt('span', ep.no, 'cc-rl-where'), el('b'));
+        slots.appendChild(li);
+      });
+      paper.appendChild(slots);
+      w.appendChild(paper);
       rail.appendChild(w);
     });
-    const status = txt('div', t.pass_call, 'cc-pass');
-    status.setAttribute('aria-live', 'polite');
-    rail.prepend(status);
     sect(2).appendChild(rail);
     sect(2).appendChild(el('div', 'cc-stream'));
 
@@ -417,6 +437,7 @@ export function playCharacterCall(host, cfg, onComplete) {
       const img = el('img');
       img.src = src;
       img.alt = '';
+      img.loading = 'lazy';
       shot.appendChild(img);
     } else {
       shot.appendChild(txt('div', t.no_image || '', 'cc-ph'));
@@ -432,129 +453,174 @@ export function playCharacterCall(host, cfg, onComplete) {
   function rows() {
     return [...root.querySelectorAll('.cc-ep')];
   }
+  function sheetOf(id) {
+    return root.querySelector(`.cc-rl[data-id="${id}"]`);
+  }
 
   /* 스크롤 위치를 직접 계산한다.
      IntersectionObserver는 빠른 스크롤·앵커 점프·탭 전환에서 행을 통째로 건너뛸 수 있고,
      그러면 끝까지 차지 않아 다음 단계가 영영 안 열린다(소프트 락). */
   function sweep() {
     if (dead || suspend) return;
-    // 아직 열리지 않은 장은 건드리지 않는다. display:none인 요소는
-    // getBoundingClientRect()가 top:0/height:0을 돌려주는데, 그걸 '이미 지나갔다'로 읽으면
-    // 숨어 있는 동안 회차가 전부 소비된다.
+    // 아직 열리지 않은 장은 건드리지 않는다. display:none인 요소는 getBoundingClientRect()가 top:0을 돌려주는데,
+    // 그걸 '이미 지나갔다'로 읽으면 숨어 있는 동안 회차가 전부 소비된다.
     if (chapterEl(2).hidden) return;
     const line = window.innerHeight * TRIGGER;
     const doc = document.documentElement;
-    // 문서 끝에 닿으면 남은 행은 전부 처리한다. 마지막 행은 아래에 스크롤할 것이 없어
-    // 슬롯이 트리거 라인까지 못 올라온다 — 그대로 두면 잠긴다.
+    // 문서 끝에 닿으면 남은 행은 전부 처리한다. 마지막 행은 아래에 스크롤할 것이 없어 트리거 줄까지 못 올라온다 — 그대로 두면 잠긴다.
     const atEnd = window.scrollY + window.innerHeight >= doc.scrollHeight - 6;
-    const all = rows();
+    const seen = pass === 1 ? called : revealed;
     let batch = 0;
-    all.forEach((row) => {
-      if (!row.getBoundingClientRect().height) return;
-      // 행 맨 위가 아니라 '명찰이 붙을 슬롯'을 본다. 컷이 커지면 행이 600px를 넘는데,
-      // 행 위쪽을 기준으로 하면 정작 붙는 자리는 아직 화면 밖인 채로 발화한다.
+    rows().forEach((row, n) => {
+      if (!row.getBoundingClientRect().height || seen.has(n)) return;
+      // 행 맨 위가 아니라 '캐릭터가 내려앉을 칸'을 본다 — 그 칸이 줄에 닿을 때 위의 컷은 이미 화면에 있다
       const mark = row.querySelector('.cc-ep-slot').getBoundingClientRect();
       if (!atEnd && mark.top > line) return;
-      const key = mode === 'call' ? 'p1' : 'p2';
-      if (row.dataset[key]) return;
-      row.dataset[key] = '1'; // 논리 상태는 즉시 확정한다 — 연출이 늦어도 두 번 세지 않는다
-      const withGain = mode !== 'call';
-      playRow(row, withGain, batch * STAGGER);
+      seen.add(n); // 논리 상태는 즉시 확정한다 — 연출이 늦어도 두 번 세지 않는다
+      play(row, n, batch * STAGGER);
       batch += 1;
-      if (withGain) {
-        revealed += 1;
-        if (revealed >= all.length) showResult();
-      } else {
-        filled += 1;
-        if (filled >= all.length) showWorry();
-      }
     });
   }
 
-  // 두 패스 모두 같은 동작이다 — 명찰이 내려와 붙는다.
-  // 다른 점은 2회차에만 '남은 것'과 레일의 입체화 재료가 뒤따른다는 것뿐.
-  function playRow(row, withGain, delay = 0) {
-    callInto(row, delay);
-    if (!withGain) return;
-    row.classList.add('cc-revealed');
-    animate(row.querySelector('.cc-gain'), effects.slide, { delay: delay + 220, fill: 'backwards', duration: 380 });
-    flyToRail(row, delay + 420);
+  // 회차 한 장의 걸음을 건다. 되감기 · 다시 해보기 · 탭 가려짐이 오면 settle()이 남은 걸음을 움직임 없이 한 번에 마친다
+  function stepAt(ms, fn) {
+    const job = { done: false };
+    job.run = () => {
+      if (job.done || dead) return;
+      job.done = true;
+      fn();
+    };
+    job.id = setTimeout(job.run, ms);
+    jobs.push(job);
+  }
+  function settle() {
+    const left = jobs;
+    jobs = [];
+    quiet = true;
+    left.forEach((j) => { clearTimeout(j.id); j.run(); });
+    quiet = false;
+  }
+  function moving() {
+    return !quiet && !reducedMotion() && !document.hidden;
   }
 
-  function callInto(row, delay) {
+  // 회차가 트리거 줄에 닿으면 펼친다. 화면(컷)은 스크롤로 먼저 들어와 있다 — 곧바로 그 장면에 필요한 캐릭터가
+  // 위 시트에서 내려와 시그니처 대사를 뱉는다. 다시 보기에서는 그다음 새로 드러난 면모의 컷이 열리고,
+  // 그 면모가 위 시트로 올라가 붙으며 시트 뒤에 종이가 한 장 쌓인다(10/06 사용자 결정)
+  function play(row, n, delay) {
+    const ep = eps[n];
+    stepAt(delay, () => root.querySelectorAll('.cc-rl').forEach((rl) => rl.classList.toggle('is-now', rl.dataset.id === ep.c)));
+    stepAt(delay + CALL_AT, () => callInto(row));
+    if (pass === 1) {
+      stepAt(delay + CALL_AT + FLY_MS, () => {
+        sheetOf(ep.c).querySelector(`.cc-rl-slot[data-n="${n}"]`).classList.add('is-called');
+        played += 1;
+        if (played === eps.length) showWorry();
+      });
+    } else {
+      stepAt(delay + CUT_AT, () => row.classList.add('cc-revealed'));
+      stepAt(delay + RISE_AT, () => riseFacet(row, n));
+      stepAt(delay + RISE_AT + RISE_MS, () => {
+        addLayer(sheetOf(ep.c));
+        played += 1;
+        // 마지막 면모가 붙은 시트를 잠깐 보여 준 뒤 결과 장을 연다
+        if (played === eps.length) after(400, showResult);
+      });
+    }
+  }
+
+  // 캐릭터가 위 시트에서 회차 칸으로 내려온다 — 얼굴과 한 줄이 각자 시트의 자리에서 출발한다.
+  // 내려오는 끝에 시그니처 대사가 말풍선으로 뜬다
+  function callInto(row) {
     const id = row.dataset.c, c = cast.get(id);
     const slot = row.querySelector('.cc-ep-slot');
     slot.textContent = '';
     row.classList.add('cc-filled');
-    slot.appendChild(faceOf(id, 'cc-slot-mini'));
+    const face = faceOf(id, 'cc-slot-mini');
     const plate = txt('div', c.core, 'cc-plate');
-    slot.appendChild(plate);
-    const source = root.querySelector('.cc-rl[data-id="' + id + '"] .cc-rl-plate');
-    // Animate the actual destination label from its source, with no floating duplicate.
-    moveFrom(plate, source, { duration: 420, delay, fill: 'backwards' });
-    const bub = txt('span', c.line || '', 'cc-bubble cc-on');
-    slot.appendChild(bub);
-    after(delay + 2100, () => bub.classList.remove('cc-on'));
+    const bub = txt('span', c.line || '', 'cc-bubble');
+    slot.append(face, plate, bub);
+    const rl = sheetOf(id);
+    if (moving() && onScreen(rl) && onScreen(slot)) {
+      moveFrom(face, rl.querySelector('.cc-rl-face'), { duration: FLY_MS });
+      moveFrom(plate, rl.querySelector('.cc-rl-plate'), { duration: FLY_MS });
+      after(Math.round(FLY_MS * .75), () => bub.classList.add('cc-on'));
+    } else {
+      bub.classList.add('cc-on');
+    }
+    after(2600, () => bub.classList.remove('cc-on'));
   }
 
-  function flyToRail(row, delay) {
-    const id = row.dataset.c;
-    const chips = [...root.querySelectorAll('.cc-rl[data-id="' + id + '"] .cc-facet')];
-    const chip = chips.find(x => !x.dataset.claimed);
-    if (!chip) return;
-    chip.dataset.claimed = '1';
-    chip.classList.add('cc-on');
-    const source = row.querySelector('.cc-gain .cc-cap b');
-    // Offscreen sources do not fly across the whole document.
-    const r = source.getBoundingClientRect();
-    if (r.bottom > 0 && r.top < innerHeight) moveFrom(chip, source, { duration: 460, delay, fill: 'backwards' });
-    else animate(chip, effects.scale, { duration: 280, delay });
-    const rail = chip.closest('.cc-rl');
-    rail.dataset.facets = String(chips.filter(x => x.dataset.claimed).length);
+  // 새로 드러난 면모가 컷의 이름표에서 위 시트의 빈 칸으로 올라가 붙는다
+  function riseFacet(row, n) {
+    const ep = eps[n];
+    const slot = sheetOf(ep.c).querySelector(`.cc-rl-slot[data-n="${n}"]`);
+    slot.classList.add('is-on');
+    const b = slot.querySelector('b');
+    b.textContent = ep.gain_label;
+    if (!moving()) return;
+    const from = row.querySelector('.cc-gain .cc-cap b');
+    if (onScreen(from) && onScreen(slot)) moveFrom(b, from, { duration: RISE_MS });
+    else animate(b, effects.slide, { duration: 320 });
+  }
+
+  function layersBox() {
+    const box = el('div', 'cc-layers');
+    box.setAttribute('aria-hidden', 'true');
+    return box;
+  }
+
+  // 시트 뒤에 종이 한 장을 더한다. 먼저 붙은 종이가 시트 바로 뒤(위)에 남도록 새 종이는 맨 아래에 깐다 —
+  // 형제 중 맨 앞에 넣으면 그려지는 순서가 가장 먼저라 앞 종이들 밑에 깔린다(10/06: 나중 종이가 위에 덮여 뭉개져 보였다)
+  function addLayer(sheetEl, { dashed = false, still = false } = {}) {
+    const box = sheetEl.querySelector('.cc-layers');
+    const i = el('i');
+    if (dashed) i.classList.add('is-opt');
+    const o = (box.children.length + 1) * LAYER_STEP;
+    i.style.setProperty('--o', `${o}px`);
+    box.prepend(i);
+    if (!still && moving()) {
+      animate(i, [{ transform: 'translate(0, 0)', opacity: 0 }, { transform: `translate(${o}px, ${o}px)`, opacity: 1 }], { duration: 420 });
+    }
+    return i;
   }
 
   function showWorry() {
-    if (worryShown || mode !== 'call') return;
+    if (worryShown || pass !== 1) return;
     worryShown = true;
-    root.querySelector('.cc-worry').hidden = false;
-    cueOn(root.querySelector('.cc-worry .cc-next'));
+    const w = root.querySelector('.cc-worry');
+    w.hidden = false;
+    cueOn(w.querySelector('.cc-next'));
+    if (moving()) animate(w, effects.slide, { duration: 420 });
   }
 
   /* ---------- 되감기 ---------- */
 
   function rewind() {
-    if (mode !== 'call') return;
+    if (pass !== 1) return;
+    settle();
     timers.forEach(clearTimeout); timers = [];
-    mode = 'reveal'; // 상태를 먼저 확정한다
+    pass = 2; // 상태를 먼저 확정한다
+    played = 0;
     root.classList.add('cc-second-pass');
     root.querySelector('.cc-pass').textContent = t.pass_reveal;
-    // 누른 버튼이 든 칸을 숨기기 전에 초점을 회차 목록으로 옮긴다 — 두 번째 패스는 스크롤로 진행하므로
+    // 누른 버튼이 든 칸을 숨기기 전에 초점을 회차 목록으로 옮긴다 — 두 번째 패스도 스크롤로 진행하므로
     // 키보드(Space · 아래 화살표)가 거기서 이어진다. 그대로 숨기면 초점이 페이지 밖으로 빠졌다(10/06 점검)
     const streamEl = root.querySelector('.cc-stream');
-    if (streamEl) {
-      streamEl.tabIndex = -1;
-      streamEl.focus({ preventScroll: true });
-    }
+    streamEl.tabIndex = -1;
+    streamEl.focus({ preventScroll: true });
     root.querySelector('.cc-worry').hidden = true;
     cueOn(null);
-    revealed = 0;
-    // 무대를 비운다 — 두 번째로 내려갈 때 캐릭터가 '다시' 붙어야 한다
+    // 무대를 비운다 — 두 번째로 내려갈 때 캐릭터가 '다시' 내려와야 한다(시트의 '불린 회차' 표시는 남긴다)
     rows().forEach((row) => {
       row.classList.remove('cc-filled', 'cc-revealed');
-      delete row.dataset.p2;
       row.querySelector('.cc-ep-slot').textContent = t.awaiting || '';
-    });
-    root.querySelectorAll('.cc-facet').forEach((f) => {
-      f.classList.remove('cc-on');
-      delete f.dataset.claimed;
     });
     clearFlying();
     sequence(rows().reverse().map((el, i) => ({ el, frames: [{ backgroundColor: 'rgba(85,120,150,.13)', transform: 'translateY(6px)' }, { backgroundColor: 'transparent', transform: 'none' }], at: i * 45, duration: 260 })));
     veil.classList.add('cc-on');
-    // 스트림 첫 행이 아직 트리거 라인 아래에 있도록 넉넉히 올라간다.
-    // 덜 올라가면 착지하자마자 첫 행들이 한꺼번에 걸려 버린다.
-    const stream = root.querySelector('.cc-stream');
-    const top = Math.max(0, stream.getBoundingClientRect().top + window.scrollY - window.innerHeight * TRIGGER);
+    // 연재 첫 행이 아직 트리거 줄 아래에 있도록 넉넉히 올라간다 — 덜 올라가면 착지하자마자 첫 행들이 한꺼번에 걸린다
+    const top = Math.max(0, streamEl.getBoundingClientRect().top + window.scrollY - window.innerHeight * TRIGGER);
     scrollToY(top, 650, () => after(200, () => veil.classList.remove('cc-on')));
   }
 
@@ -583,7 +649,7 @@ export function playCharacterCall(host, cfg, onComplete) {
       window.addEventListener(ev, stop, { once: true, passive: true });
     });
     stopScroll = stop;
-    if (reducedMotion()) {
+    if (reducedMotion() || document.hidden) {
       window.scrollTo(0, target);
       finish();
       return;
@@ -605,7 +671,7 @@ export function playCharacterCall(host, cfg, onComplete) {
     }, 16);
   }
 
-  /* ---------- 04 · 결과 ---------- */
+  /* ---------- 결과 ---------- */
 
   function showResult() {
     const wrap = sect(3);
@@ -641,8 +707,6 @@ export function playCharacterCall(host, cfg, onComplete) {
     wrap.appendChild(nav);
     cueOn(nav.querySelector('.cc-next'));
 
-    // 답이 나온 자리에 질문을 남겨두지 않는다
-    root.querySelector('.cc-worry').hidden = true;
     chapterEl(3).hidden = false;
     stopResult = revealOnce(res, () => [...res.querySelectorAll('.cc-rcol')].flatMap(col => [
       { el: col.querySelector('.cc-plate'), effect: 'scale', duration: 300 },
@@ -650,20 +714,26 @@ export function playCharacterCall(host, cfg, onComplete) {
     ]));
   }
 
-  /* ---------- 05 · 검증과 적용 ---------- */
+  /* ---------- 검증과 적용 ---------- */
 
+  // 같은 양식의 카드 두 장. 장이 화면에 들어오면 한 줄(이름표)만 보이다가 이벤트가 하나씩 붙고,
+  // 붙을 때마다 카드 뒤에 종이가 한 장씩 쌓인다(10/06 사용자 요청). 종이는 처음부터 깔아 두고 움직임만 얹는다 —
+  // 연출이 재생되지 않아도 화면은 다 보인다
   function buildVerify() {
     const two = el('div', 'cc-two');
     (cfg.verify || []).forEach((v) => {
-      const col = el('div');
+      const col = el('div', 'cc-vcol');
       col.style.setProperty('--cc-ink', v.ink || 'var(--cc-fg)');
       col.style.setProperty('--cc-tint', v.tint || 'var(--cc-panel)');
       col.appendChild(txt('div', v.role || '', 'cc-vrole'));
+      const sheet = el('div', 'cc-vsheet');
+      sheet.appendChild(layersBox());
       const body = el('div', 'cc-vbody');
       if (v.img) {
         const img = el('img');
         img.src = v.img;
         img.alt = '';
+        img.loading = 'lazy';
         body.appendChild(img);
       }
       const info = el('div');
@@ -678,20 +748,47 @@ export function playCharacterCall(host, cfg, onComplete) {
         chip.appendChild(txt('span', c.label || '', 'cc-vlab'));
         chip.appendChild(document.createTextNode(c.text || ''));
         chips.appendChild(chip);
+        addLayer(sheet, { dashed: !!c.optional, still: true });
       });
       info.appendChild(chips);
       if (v.stamp) info.appendChild(txt('div', v.stamp, 'cc-stamp'));
       body.appendChild(info);
-      col.appendChild(body);
+      sheet.appendChild(body);
+      col.appendChild(sheet);
       two.appendChild(col);
     });
     sect(4).appendChild(two);
+    stopApply = revealOnce(two, () => applySteps(two));
+  }
+
+  // 일레그 다음 유리에 — 카드마다 이벤트 한 줄이 붙고, 그 뒤에 종이가 한 장 깔린다
+  function applySteps(two) {
+    const steps = [];
+    let ms = 450;
+    two.querySelectorAll('.cc-vcol').forEach((col) => {
+      const layers = [...col.querySelectorAll('.cc-layers i')].reverse(); // 깔린 순서 = 이벤트 순서
+      col.querySelectorAll('.cc-vchip').forEach((chip, i) => {
+        steps.push({ el: chip, effect: 'slide', at: ms, duration: 360 });
+        const layer = layers[i];
+        if (layer) {
+          const o = layer.style.getPropertyValue('--o');
+          steps.push({ el: layer, frames: [{ transform: 'translate(0, 0)', opacity: 0 }, { transform: `translate(${o}, ${o})`, opacity: 1 }], at: ms + 260, duration: 420 });
+        }
+        ms += 650;
+      });
+      const stamp = col.querySelector('.cc-stamp');
+      if (stamp) {
+        steps.push({ el: stamp, effect: 'fade', at: ms - 150, duration: 360 });
+        ms += 300;
+      }
+    });
+    return steps;
   }
 
   /* ---------- 잡동사니 ---------- */
 
   // 지금 누를 것 — 한 번에 하나만 붙인다(style.css .cue). 할 일을 마치면 다음 할 일로 옮겨 간다.
-  // 이 페이지는 표시가 다섯 번 옮겨 가서, 화면에 들어온 뒤 세 번만 퍼지고 고정 테두리로 남는다(.cue-step).
+  // 이 페이지는 표시가 여러 번 옮겨 가서, 화면에 들어온 뒤 세 번만 퍼지고 고정 테두리로 남는다(.cue-step).
   // 누를 것 바로 앞에 놓인 말풍선(.cue-note)은 표시와 함께 보이고 함께 사라진다.
   function cueOn(target) {
     stopCue?.();
@@ -720,14 +817,14 @@ export function playCharacterCall(host, cfg, onComplete) {
       s.hidden = false;
       // 마지막 장이 열리는 순간이 이 브리프를 다 본 시점이다 — 그때 결론을 연다.
       // 스크롤은 넘기지 않는다. 아래 scrollToY가 이미 그 장으로 데려간다.
-      if (chapterIndex === (cfg.chapters || []).length - 1) onComplete({ scroll: false });
+      if (chapterIndex === chs.length - 1) onComplete({ scroll: false });
       scrollToY(s.getBoundingClientRect().top + window.scrollY - 60, 700);
     });
     return b;
   }
 
-  function button(label) {
-    const b = el('button', 'cc-next');
+  function button(label, cls = 'cc-next') {
+    const b = el('button', cls);
     b.type = 'button';
     b.textContent = label || '';
     return b;
@@ -749,6 +846,12 @@ export function playCharacterCall(host, cfg, onComplete) {
     const c = cast.get(id) || {};
     if (c.ink) node.style.setProperty('--cc-ink', c.ink);
     if (c.tint) node.style.setProperty('--cc-tint', c.tint);
+  }
+
+  function onScreen(node) {
+    if (!node) return false;
+    const r = node.getBoundingClientRect();
+    return r.width > 0 && r.bottom > 0 && r.top < innerHeight;
   }
 
   function el(tag, cls) {
@@ -787,14 +890,20 @@ export function playCharacterCall(host, cfg, onComplete) {
   }
 
   function onVisible() {
-    if (document.hidden) { cancelDrag(); stopScroll?.(); veil.classList.remove('cc-on'); }
-    else sweep();
+    if (!document.hidden) { sweep(); return; }
+    cancelDrag();
+    stopScroll?.();
+    veil.classList.remove('cc-on');
+    settle(); // 가려진 동안 남은 걸음은 움직임 없이 마친다
   }
 
   return {
     restart(before) {
       stopResult?.();
+      stopApply?.();
       if (before) before();
+      jobs.forEach((j) => clearTimeout(j.id)); // 처음부터 다시 그리므로 남은 걸음은 마치지 않고 버린다
+      jobs = [];
       timers.forEach(clearTimeout);
       timers = [];
       clearInterval(scrollIv);
@@ -803,24 +912,27 @@ export function playCharacterCall(host, cfg, onComplete) {
       root.classList.remove('cc-second-pass');
       veil.classList.remove('cc-on');
       selected = null;
-      mode = 'call';
-      filled = 0;
-      revealed = 0;
+      pass = 1;
+      played = 0;
+      suspend = false;
+      called = new Set();
+      revealed = new Set();
       matched = 0;
       worryShown = false;
-      suspend = false;
       drag = null;
       build();
       window.scrollTo(0, root.getBoundingClientRect().top + window.scrollY - 60);
       // 결론 칸(다시 해보기 버튼)이 사라지므로 초점을 처음 누를 것으로 옮긴다(10/06 점검)
-      root.querySelector('.cc-grid-note .cc-next')?.focus({ preventScroll: true });
+      root.querySelector('.cc-cards .cc-plate')?.focus({ preventScroll: true });
     },
     destroy() {
       stopResult?.();
+      stopApply?.();
       stopCue?.();
       dead = true;
       stopScroll?.();
       cancelDrag();
+      jobs.forEach((j) => clearTimeout(j.id));
       timers.forEach(clearTimeout);
       clearInterval(scrollIv);
       clearFlying();
