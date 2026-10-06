@@ -25,9 +25,10 @@ const ORIGINAL = 'https://arcana-test-nine.vercel.app/';
     assert.equal(await page.locator('.oc-lane.is-before .oc-insert').count(), 0, 'the unchanged lane gains nothing');
 
     // The original is the interactive proposal, reachable from the header before any interaction.
-    await page.evaluate(() => { window.__opened = []; window.open = u => { window.__opened.push(u); return null; }; });
-    await page.locator('.brief-head-doc button').click();
-    assert.deepEqual(await page.evaluate(() => window.__opened), [ORIGINAL]);
+    // 버튼 + window.open이 아니라 새 탭으로 여는 링크다(10/06 — 가운데 클릭 · 주소 복사가 되게)
+    const doc = page.locator('.brief-head-doc a');
+    assert.equal(await doc.getAttribute('href'), ORIGINAL);
+    assert.equal(await doc.getAttribute('target'), '_blank');
 
     // Before the first press there is one thing to press: the run button carries the cue, the prompt sits
     // beside it instead of in the header, and the relations to swap in are not offered yet.

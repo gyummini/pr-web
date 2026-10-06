@@ -99,6 +99,14 @@ export function playCharacterCall(host, cfg, onComplete) {
     s.appendChild(el('hr', 'cc-rule'));
 
     const bodyTop = el('div', 'cc-ch-top');
+    // 2~5장 머리 — 데이터의 제목과 리드. 1장은 표지와 나란히 놓으므로 buildGrid가 따로 채운다.
+    // 10/06 점검 전까지는 이 칸이 비어, 2~5장 제목 · 리드(확정 문구)가 화면에 나오지 않았다(사용자 결정으로 복원)
+    if (i > 0 && (ch.title || ch.lede)) {
+      const copy = el('div', 'cc-ch-copy');
+      if (ch.title) copy.appendChild(lines('h3', 'cc-title', ch.title));
+      if (ch.lede) copy.appendChild(lines('p', 'cc-lede', ch.lede));
+      bodyTop.appendChild(copy);
+    }
     s.appendChild(bodyTop);
 
     const body = el('div', 'cc-body');
@@ -520,6 +528,13 @@ export function playCharacterCall(host, cfg, onComplete) {
     mode = 'reveal'; // 상태를 먼저 확정한다
     root.classList.add('cc-second-pass');
     root.querySelector('.cc-pass').textContent = t.pass_reveal;
+    // 누른 버튼이 든 칸을 숨기기 전에 초점을 회차 목록으로 옮긴다 — 두 번째 패스는 스크롤로 진행하므로
+    // 키보드(Space · 아래 화살표)가 거기서 이어진다. 그대로 숨기면 초점이 페이지 밖으로 빠졌다(10/06 점검)
+    const streamEl = root.querySelector('.cc-stream');
+    if (streamEl) {
+      streamEl.tabIndex = -1;
+      streamEl.focus({ preventScroll: true });
+    }
     root.querySelector('.cc-worry').hidden = true;
     cueOn(null);
     revealed = 0;
@@ -797,6 +812,8 @@ export function playCharacterCall(host, cfg, onComplete) {
       drag = null;
       build();
       window.scrollTo(0, root.getBoundingClientRect().top + window.scrollY - 60);
+      // 결론 칸(다시 해보기 버튼)이 사라지므로 초점을 처음 누를 것으로 옮긴다(10/06 점검)
+      root.querySelector('.cc-grid-note .cc-next')?.focus({ preventScroll: true });
     },
     destroy() {
       stopResult?.();

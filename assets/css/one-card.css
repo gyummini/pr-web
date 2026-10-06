@@ -1,5 +1,9 @@
+/* 10/06 점검: 12px(.75rem) 미만이던 정보 글자(카드 이름 · 일정 · 칩 · 보상 · 안내, 9.3~11.8px)를 .75rem으로 올렸다.
+   레인이 조금 길어진다 — 칸을 줄이는 배치는 2단계(페이지별 재구성)에서 한다 */
 /* E5 — the same Journey twice, one card apart. Palette from the interactive proposal (greens on warm paper). */
 .view-one-card { --oc-ink: #202b28; --oc-mute: #586b5f; --oc-dim: #6e786d; --oc-paper: #f7f8f3; --oc-line: #cfd8cd; --oc-green: #285f4b; --oc-deep: #173b32; --oc-lime: #d5e9a8; --oc-wash: #eef4e6; --oc-off: #c5cec1; }
+/* 바탕색은 화면 전체에 칠한다 — 가운데 상자에만 칠하면 1920 화면 양옆 · 아래에 흰 띠가 남았다(10/06) */
+.view-one-card { background: var(--oc-paper); }
 .view-one-card .brief { background: var(--oc-paper); color: var(--oc-ink); }
 .oc { color: var(--oc-ink); }
 .oc *, .oc *::before, .oc *::after { box-sizing: border-box; }
@@ -16,26 +20,29 @@
 /* after a run it is no longer the next thing to do — the fill steps back, the button stays for running again */
 .oc-run.is-done { background: var(--surface); color: var(--oc-deep); border-color: #b8c6ba; box-shadow: none; font-weight: 600; }
 .oc-run.is-done:hover:not(:disabled) { background: var(--oc-wash); }
-.oc-legend { display: flex; gap: 16px; margin: 0; font-size: .74rem; color: var(--oc-mute); }
+.oc-legend { display: flex; gap: 16px; margin: 0; font-size: .75rem; color: var(--oc-mute); }
 .oc-key::before { content: ''; display: inline-block; width: 9px; height: 9px; border-radius: 2px; margin-right: 6px; vertical-align: -1px; }
 .oc-key.is-same::before { background: var(--surface); border: 1px solid #a9b9aa; }
 .oc-key.is-new::before { background: var(--oc-green); box-shadow: 0 0 0 2px var(--oc-lime); }
 
 /* two lanes share one column template, so the same moment sits in the same column */
 .oc-lanes { display: grid; gap: 12px; }
-.oc-lane { display: grid; grid-template-columns: 250px minmax(0, 1fr); gap: 18px; background: var(--surface); border: 1px solid var(--oc-line); border-radius: 6px; padding: 16px 18px 18px; }
+/* 편성 칸 250 → 280px(10/06) — 카드 이름을 12px로 올리자 카드 폭(46px)보다 긴 이름('로자리아')이 두 줄로 갈라졌다 */
+.oc-lane { display: grid; grid-template-columns: 280px minmax(0, 1fr); gap: 18px; background: var(--surface); border: 1px solid var(--oc-line); border-radius: 6px; padding: 16px 18px 18px; }
 .oc-lane.is-after { border-color: #9fbc8f; border-top: 3px solid var(--oc-green); }
 .oc-lane-head { display: flex; flex-direction: column; gap: 9px; min-width: 0; }
-.oc-lane-tag { font-size: .74rem; font-weight: 700; letter-spacing: .02em; color: var(--oc-mute); }
+.oc-lane-tag { font-size: .75rem; font-weight: 700; letter-spacing: .02em; color: var(--oc-mute); }
 .oc-lane.is-after .oc-lane-tag { color: var(--oc-green); }
 .oc-cards { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 5px; }
 .oc-card { position: relative; margin: 0; min-width: 0; }
 .oc-card img { display: block; width: 100%; aspect-ratio: 200 / 373; object-fit: cover; border-radius: 3px; border: 1px solid #d6ddd4; }
-.oc-card figcaption { font-size: .62rem; line-height: 1.3; margin-top: 3px; color: var(--oc-mute); word-break: keep-all; }
+.oc-card figcaption { font-size: .75rem; line-height: 1.3; margin-top: 3px; color: var(--oc-mute); word-break: keep-all; }
 .oc-card.is-swapped img { outline: 2px solid var(--oc-green); outline-offset: 1px; box-shadow: 0 0 0 5px var(--oc-lime); }
-.oc-card.is-swapped figcaption { color: var(--oc-deep); font-weight: 700; }
-.oc-one { position: absolute; left: 50%; top: -9px; transform: translateX(-50%); white-space: nowrap; font-style: normal; font-size: .58rem; font-weight: 700; color: var(--on-fill); background: var(--oc-green); border-radius: 3px; padding: 1px 5px; }
-.oc-counts { display: flex; flex-wrap: wrap; gap: 4px 10px; margin: 0; font-size: .72rem; color: var(--oc-mute); font-variant-numeric: tabular-nums; }
+/* 바꾼 카드의 고리(테두리 3px + 연두 5px)가 이름표 윗부분을 덮어 1.64:1이었다(10/06 점검) — 이름표를 고리 밖으로 내린다 */
+.oc-card.is-swapped figcaption { margin-top: 10px; color: var(--oc-deep); font-weight: 700; }
+/* 바꾼 카드는 늘 다섯째(맨 오른쪽) — 알약을 카드 가운데가 아니라 오른쪽 끝에 맞춘다. 12px로 키운 알약이 카드보다 넓어 편성 칸 밖으로 삐져나왔다(10/06) */
+.oc-one { position: absolute; right: -2px; top: -9px; white-space: nowrap; font-style: normal; font-size: .75rem; font-weight: 700; color: var(--on-fill); background: var(--oc-green); border-radius: 3px; padding: 1px 6px; }
+.oc-counts { display: flex; flex-wrap: wrap; gap: 4px 10px; margin: 0; font-size: .75rem; color: var(--oc-mute); font-variant-numeric: tabular-nums; }
 .oc-counts .is-on { color: var(--oc-green); font-weight: 700; }
 
 /* the route: five fixed stops, three gaps of arcana events, one empty event time */
@@ -44,37 +51,38 @@
 .oc-stop { position: relative; padding-top: 20px; min-width: 0; }
 .oc-dot { position: absolute; top: 3px; left: 0; width: 11px; height: 11px; border-radius: 50%; background: var(--oc-off); border: 2px solid var(--surface); transition: background .35s, box-shadow .35s; }
 .oc-stop strong { display: block; font-size: .78rem; line-height: 1.3; color: var(--oc-dim); word-break: keep-all; transition: color .35s; }
-.oc-stop small { display: block; font-size: .62rem; color: var(--oc-mute); margin-top: 2px; }
+.oc-stop small { display: block; font-size: .75rem; color: var(--oc-mute); margin-top: 2px; }
 .oc-stop.is-lit .oc-dot { background: var(--oc-green); box-shadow: 0 0 0 3px var(--oc-lime); }
 .oc-stop.is-lit strong { color: var(--oc-ink); }
 .oc-stop.is-next .oc-dot { background: var(--surface); border-color: #a9b9aa; }
 /* the existing events look alike in both lanes — the swapped card's own events change by the existing rule
    and are not marked, so nothing competes with the empty time */
 .oc-gap { display: flex; flex-direction: column; gap: 5px; padding: 22px 8px 0; min-width: 0; }
-.oc-chip { display: flex; align-items: center; gap: 6px; padding: 4px 6px; border: 1px dashed #b8c6ba; border-radius: 4px; background: #fbfcf8; font-size: .72rem; line-height: 1.3; opacity: .45; transition: opacity .35s, border-color .35s, background .35s; min-width: 0; }
+.oc-chip { display: flex; align-items: center; gap: 6px; padding: 4px 6px; border: 1px dashed #b8c6ba; border-radius: 4px; background: #fbfcf8; font-size: .75rem; line-height: 1.3; opacity: .45; transition: opacity .35s, border-color .35s, background .35s; min-width: 0; }
 .oc-chip img { flex: none; width: 20px; height: 34px; object-fit: cover; border-radius: 2px; }
 .oc-chip > span { min-width: 0; word-break: keep-all; }
-.oc-chip small { display: block; font-size: .6rem; color: var(--oc-mute); }
+.oc-chip small { display: block; font-size: .75rem; color: var(--oc-mute); }
 .oc-gap.is-lit .oc-chip { opacity: .9; border-style: solid; border-color: #d5ddd2; background: var(--surface); }
 
 /* the empty event time — everything the set adds gathers here, and only here */
 .oc-gap.is-slot { border: 1px dashed #b8c6ba; border-radius: 5px; margin: 16px 6px 0; padding: 8px; gap: 6px; transition: border-color .4s, background .4s, box-shadow .4s; }
-.oc-slot-label { font-size: .64rem; color: var(--oc-mute); }
-.oc-slot-same { font-size: .68rem; color: var(--oc-mute); opacity: 0; transition: opacity .35s; }
-.oc-gap.is-empty.is-lit .oc-slot-same { opacity: 1; }
+.oc-slot-label { font-size: .75rem; color: var(--oc-mute); }
+/* 진행 전에는 투명할 뿐 아니라 읽히지도 않게(visibility) — 화면 낭독기가 답을 먼저 읽었다(10/06 점검) */
+.oc-slot-same { font-size: .75rem; color: var(--oc-mute); opacity: 0; visibility: hidden; transition: opacity .35s, visibility .35s; }
+.oc-gap.is-empty.is-lit .oc-slot-same { opacity: 1; visibility: visible; }
 .oc-lane.is-after .oc-gap.is-slot.is-lit { border: 1.5px solid var(--oc-green); background: var(--oc-wash); box-shadow: 0 0 0 4px rgba(213, 233, 168, .7); }
 .oc-pay { display: grid; gap: 5px; }
-.oc-pay > * { opacity: 0; transform: translateY(6px); transition: opacity .4s, transform .4s; }
-.oc-gap.is-lit .oc-pay-tag, .oc-gap.is-lit .oc-insert, .oc-pay > .is-lit { opacity: 1; transform: none; }
-.oc-pay-tag { justify-self: start; font-size: .6rem; font-weight: 700; color: var(--oc-green); background: var(--surface); border: 1px solid #9fbc8f; border-radius: 999px; padding: 1px 7px; }
+.oc-pay > * { opacity: 0; visibility: hidden; transform: translateY(6px); transition: opacity .4s, transform .4s, visibility .4s; }
+.oc-gap.is-lit .oc-pay-tag, .oc-gap.is-lit .oc-insert, .oc-pay > .is-lit { opacity: 1; visibility: visible; transform: none; }
+.oc-pay-tag { justify-self: start; font-size: .75rem; font-weight: 700; color: var(--oc-green); background: var(--surface); border: 1px solid #9fbc8f; border-radius: 999px; padding: 1px 7px; }
 .oc-insert { padding: 8px 9px; border-radius: 4px; background: var(--oc-deep); color: #f1f7e9; }
-.oc-insert small { display: block; font-size: .6rem; color: var(--oc-lime); }
+.oc-insert small { display: block; font-size: .75rem; color: var(--oc-lime); }
 .oc-insert strong { display: block; font-size: .8rem; line-height: 1.35; word-break: keep-all; }
-.oc-reward { margin: 0; padding: 6px 9px; border-radius: 4px; background: var(--oc-lime); color: var(--oc-deep); font-size: .7rem; line-height: 1.4; word-break: keep-all; }
+.oc-reward { margin: 0; padding: 6px 9px; border-radius: 4px; background: var(--oc-lime); color: var(--oc-deep); font-size: .75rem; line-height: 1.4; word-break: keep-all; }
 .oc-reward strong { display: block; font-size: .8rem; }
 .oc-reward span { display: block; }
-.oc-pay-trait { margin: 0; padding: 6px 9px; border-radius: 4px; background: var(--surface); border: 1px solid #b7d38f; color: var(--oc-deep); font-size: .7rem; line-height: 1.4; word-break: keep-all; }
-.oc-pay-trait small { display: block; font-size: .6rem; color: var(--oc-green); }
+.oc-pay-trait { margin: 0; padding: 6px 9px; border-radius: 4px; background: var(--surface); border: 1px solid #b7d38f; color: var(--oc-deep); font-size: .75rem; line-height: 1.4; word-break: keep-all; }
+.oc-pay-trait small { display: block; font-size: .75rem; color: var(--oc-green); }
 .oc-pay-trait strong { display: block; }
 
 /* when the run ends, one line names what was seen — as E2 does — instead of explaining every rule.
@@ -86,12 +94,12 @@
 .oc-choose { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; margin-top: 14px; }
 .oc-choose-label { font-size: .78rem; color: var(--oc-mute); }
 .oc-choose-group { display: flex; flex-wrap: wrap; gap: 6px; }
-.oc-set { border: 1px solid #a9b9aa; background: var(--surface); color: var(--oc-deep); border-radius: 999px; padding: 6px 13px; font-size: .82rem; }
+.oc-set { min-height: 44px; border: 1px solid #a9b9aa; background: var(--surface); color: var(--oc-deep); border-radius: 999px; padding: 6px 14px; font-size: .82rem; } /* 누르는 높이 40 → 44px(10/06) */
 .oc-set:hover { border-color: var(--oc-green); }
 /* selected is never filled — a filled shape means "press this" — so it is an outline and a check */
 .oc-set[aria-pressed="true"] { border: 1.5px solid var(--oc-green); color: var(--oc-green); font-weight: 700; }
 .oc-set[aria-pressed="true"]::before { content: ''; display: inline-block; width: 5px; height: 9px; margin: 0 8px 3px 1px; border: solid currentColor; border-width: 0 2px 2px 0; transform: rotate(45deg); vertical-align: middle; }
-.oc-note { margin: 12px 0 0; font-size: .7rem; color: var(--oc-mute); line-height: 1.6; max-width: 72ch; }
+.oc-note { margin: 12px 0 0; font-size: .75rem; color: var(--oc-mute); line-height: 1.6; max-width: 72ch; }
 
 @media (max-width: 1100px) {
   .oc-lane { grid-template-columns: 1fr; }

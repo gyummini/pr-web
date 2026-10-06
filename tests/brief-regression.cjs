@@ -28,7 +28,9 @@ const origin = process.env.TEST_ORIGIN || 'http://127.0.0.1:4173';
     await page.waitForTimeout(500);
     assert.equal(await page.locator('.fx-node').count(), 13);
     assert.equal(await page.locator('.fx-master-table').count(), 4);
-    assert.equal(await page.locator('.brief-head-doc button').count(), 1, 'Original is always reachable');
+    // 원본 문서는 버튼이 아니라 새 탭으로 여는 링크다(10/06 — 가운데 클릭 · 주소 복사가 되게)
+    assert.equal(await page.locator('.brief-head-doc a[target="_blank"]').count(), 1, 'Original is always reachable');
+    assert.notEqual(await page.locator('.brief-head-doc a').getAttribute('href'), '#', 'Original link has a real address');
 
     // Use the real renderer/reducer with deterministic fixture timing; no production debug API.
     async function mountFlow(overrides = {}) {

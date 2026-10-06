@@ -14,6 +14,8 @@
   --fx-soft: var(--rt-ink2);
   --fx-panel: var(--rt-box);
 }
+/* 바탕색은 화면 전체에 칠한다 — 가운데 상자에만 칠하면 넓은 화면 양옆에 흰 띠가 남았다(10/06) */
+.view-retro { background: var(--rt-paper); }
 .view-retro .brief { background: var(--rt-paper); color: var(--rt-ink); max-width: 1040px; padding: 30px clamp(18px, 4vw, 48px) 60px; }
 .view-retro .brief-lead { max-width: 760px; margin-inline: auto; }
 .view-retro .brief-lead-title { font-size: clamp(1.3rem, 2.6vw, 1.7rem); letter-spacing: -.02em; word-break: keep-all; }
@@ -55,6 +57,10 @@
 .rt-toc { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 36px; padding: 12px 0; border-block: 1px solid var(--rt-line); }
 .rt-toc-item { display: inline-flex; gap: 6px; align-items: baseline; padding: 5px 11px; font: inherit; font-size: .82rem; color: var(--rt-ink2); background: transparent; border: 1px solid var(--rt-line); border-radius: 999px; cursor: pointer; }
 .rt-toc-item:hover { border-color: var(--rt-red); color: var(--rt-red); }
+/* 장으로 옮긴 뒤 초점이 오는 자리(장 제목) — 누를 것이 아니라 테두리는 두르지 않는다 */
+.rt-title:focus { outline: none; }
+/* 터치 화면의 장 목록 알약은 누르는 높이 44px(전 33px, 10/06) */
+@media (pointer: coarse) { .rt-toc-item { min-height: 44px; align-items: center; } }
 .rt-toc-no { font-weight: 700; color: var(--rt-red); font-variant-numeric: tabular-nums; }
 
 /* ---------- 장 ---------- */

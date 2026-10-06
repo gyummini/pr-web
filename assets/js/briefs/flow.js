@@ -72,8 +72,8 @@ export function playFlow(host, cfg, onComplete) {
             <div class="fx-bar"><div class="fx-bar-fill"></div></div>
             <p class="fx-rate-note"></p>
           </div>
-          <span class="fx-sub fx-sub-hand"></span>
-          <div class="fx-hand" role="group"></div>
+          <span class="fx-sub fx-sub-hand" id="fx-hand-label"></span>
+          <div class="fx-hand" role="group" aria-labelledby="fx-hand-label"></div>
           <span class="fx-sub fx-sub-deck"></span>
           <ol class="fx-deck"></ol>
         </div>
@@ -94,8 +94,11 @@ export function playFlow(host, cfg, onComplete) {
         </div>
       </section>
     </div>
-    <p class="fx-caption" aria-live="polite"></p>
+    <p class="fx-caption"></p>
+    <p class="sr-only" role="status"></p>
     <div class="fx-foot"><span class="fx-count"></span><span class="fx-legend"></span></div>`;
+  // 캡션은 흐름의 단계마다 바뀐다(한 번 누를 때 12~15번). 그대로 알리면 낭독이 겹친다 —
+  // 화면 낭독기에는 한 번의 흐름이 끝났을 때 마지막 캡션과 진행 수만 한 번 알린다(10/06 점검)
 
   const sec = cfg.sections || {};
   const mst = cfg.master || {};
@@ -129,6 +132,12 @@ export function playFlow(host, cfg, onComplete) {
   }
   const deckWrap = root.querySelector('.fx-deck');
   const caption = root.querySelector('.fx-caption');
+  const status = root.querySelector('[role="status"]');
+  function announce(text) {
+    // 같은 문장이 이어져도 다시 읽히게 비웠다가 채운다
+    status.textContent = '';
+    stepTimers.push(setTimeout(() => (status.textContent = text), 40));
+  }
   host.appendChild(root);
   const concept = document.createElement('div');
   concept.className = 'fx-concept';
@@ -208,6 +217,7 @@ export function playFlow(host, cfg, onComplete) {
         <div class="fx-tscroll"><table><thead></thead><tbody></tbody></table></div>`;
       box.querySelector('.fx-table-h b').textContent = t.label;
       box.querySelector('.fx-table-h span').textContent = t.desc || '';
+      nameTable(box, `fx-m-${t.id}`, box.querySelector('.fx-table-h b'));
       const tr = document.createElement('tr');
       (t.ko || t.cols).forEach((h, i) => {
         const th = document.createElement('th');
@@ -290,6 +300,7 @@ export function playFlow(host, cfg, onComplete) {
       box.innerHTML = `<div class="fx-table-h"></div>
         <div class="fx-tscroll"><table><thead></thead><tbody></tbody></table></div>`;
       box.querySelector('.fx-table-h').textContent = t.label;
+      nameTable(box, `fx-t-${t.id}`, box.querySelector('.fx-table-h'));
       const tr = document.createElement('tr');
       (t.ko || t.cols).forEach((h, i) => {
         const th = document.createElement('th');
@@ -301,6 +312,16 @@ export function playFlow(host, cfg, onComplete) {
       box.querySelector('thead').appendChild(tr);
       wrap.appendChild(box);
     });
+  }
+
+  // 표에 이름을 붙인다 — 화면에 보이는 표 머리(시트 이름)를 그대로 쓴다.
+  // 가로로 넘치는 표 상자는 브라우저가 Tab으로 들르게 만들므로, 그 상자에도 같은 이름을 준다.
+  function nameTable(box, id, head) {
+    head.id = id;
+    box.querySelector('table').setAttribute('aria-labelledby', id);
+    const scroller = box.querySelector('.fx-tscroll');
+    scroller.setAttribute('role', 'region');
+    scroller.setAttribute('aria-labelledby', id);
   }
 
   /* ---------- 상태 → 화면 ---------- */
@@ -319,12 +340,15 @@ export function playFlow(host, cfg, onComplete) {
     finishTrace = null;
     last = Date.now();
     caption.textContent = '';
-    root.classList.remove('fx-tracing', 'fx-returned');
+    root.classList.remove('fx-tracing', 'fx-returned', 'fx-assembled-on', 'fx-assembled-done');
     prevCells.clear();
     fillMaster(null);
     clearLit();
     drawHand();
     drawDeck();
+    // 이전 판의 값이 '방금 바뀐 값'으로 읽히지 않게 상태 표를 비우고 다시 그린다 —
+    // fill()은 화면에 남은 값을 이전 값으로 삼는다(다시 해보기 뒤 '3 → 6' 가짜 표시, 10/06 점검)
+    root.querySelectorAll('.fx-tables tbody').forEach((t) => (t.textContent = ''));
     paintTables();
     paint();
     pressed = false;
@@ -410,6 +434,11 @@ export function playFlow(host, cfg, onComplete) {
 
   function drawHand() {
     const { hand, costs } = presentation || snapshot();
+    // 흐름의 걸음마다 버튼을 새로 만든다 — 그대로 두면 키보드 초점이 페이지 밖으로 빠진다(10/06 점검: 7.5초).
+    // 초점이 있던 카드를 기억했다가 같은 카드(쓰여서 덱으로 갔으면 같은 자리의 새 카드)로 돌려준다.
+    const focused = handWrap.contains(document.activeElement) ? document.activeElement.closest('.fx-card') : null;
+    const focusAt = focused ? [...handWrap.children].indexOf(focused) : -1;
+    const focusSid = focused ? focused.dataset.sid : null;
     handWrap.textContent = '';
     hand.forEach((s) => {
       const b = document.createElement('button');
@@ -425,6 +454,11 @@ export function playFlow(host, cfg, onComplete) {
       b.addEventListener('click', () => use(s));
       handWrap.appendChild(b);
     });
+    if (focusAt >= 0) {
+      const back = handWrap.querySelector(`.fx-card[data-sid="${focusSid}"]`)
+        || handWrap.children[Math.min(focusAt, handWrap.children.length - 1)];
+      if (back) back.focus({ preventScroll: true });
+    }
   }
 
   function drawDeck() {
@@ -547,7 +581,7 @@ export function playFlow(host, cfg, onComplete) {
     const afford = cost >= costOf(s, costs);
     running = true;
     root.classList.add('fx-tracing');   // 이번 클릭과 상관없는 영역은 뒤로 물러난다
-    root.classList.remove('fx-returned');
+    root.classList.remove('fx-returned', 'fx-assembled-on', 'fx-assembled-done');
     clearLit();
     fillMaster(s.id);
     paint();
@@ -575,6 +609,7 @@ export function playFlow(host, cfg, onComplete) {
       drawHand(); drawDeck(); paintTables(); paint();
       last = Date.now();
       caption.textContent = (cfg.captions || {})[afford ? 'complete' : 'deny'] || caption.textContent;
+      announce(`${caption.textContent} ${root.querySelector('.fx-count').textContent}`);
     };
     finishTrace = finish;
     if (reducedMotion() || document.hidden) {
@@ -680,7 +715,9 @@ export function playFlow(host, cfg, onComplete) {
         mt.classList.remove('past');
       }
     }
+    // 조립된 문장은 다음 걸음에도 흐려지지 않는다 — '지금 단계' 강조(테두리)만 넘긴다(10/06 점검: 끝까지 .5로 흐렸다)
     root.classList.toggle('fx-assembled-on', !!st.assembled);
+    if (st.assembled) root.classList.add('fx-assembled-done');
 
     const n = st.n && root.querySelector(`.fx-node[data-n="${st.n}"]`);
     if (n) {

@@ -20,7 +20,9 @@ export function playRetro(host, b) {
   if (b.credits) root.appendChild(credits(b.credits));
   if (b.play) root.appendChild(play(b.play));
   const side = (b.chapters || []).length > 1 ? rail(b, root) : null;
-  if (side) root.appendChild(side.nav);
+  // 옆 목차는 본문 앞에 둔다 — 화면 위치는 CSS(절대 위치)가 정하므로 그대로이고, Tab 순서만 머리말 → 목차 → 본문이 된다.
+  // 끝에 붙어 있을 때는 본문의 출처 링크 · 플레이 버튼을 다 지나서야 목차에 닿았다(10/06 점검)
+  if (side) root.prepend(side.nav);
   host.appendChild(root);
   return { restart: null, destroy() { side?.stop(); } };
 }
@@ -61,10 +63,21 @@ function contents(chapters, root) {
     const button = el('button', 'rt-toc-item');
     button.type = 'button';
     button.append(el('span', 'rt-toc-no', ch.no), el('span', null, ch.word));
-    button.addEventListener('click', () => root.querySelector(`[data-chapter="${ch.no}"]`)?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+    button.addEventListener('click', () => goTo(root.querySelector(`[data-chapter="${ch.no}"]`)));
     nav.appendChild(button);
   });
   return nav;
+}
+
+// 장으로 옮긴다. 움직임 줄이기 설정이면 바로 옮기고(DESIGN.md 6절), 키보드로 이어 읽도록 초점을 그 장 제목으로 옮긴다.
+// 전에는 늘 부드럽게 스크롤했고 초점은 목차에 남아, Space를 눌러도 장이 아니라 목차가 기준이었다(10/06 점검)
+function goTo(target) {
+  if (!target) return;
+  const reduce = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  target.scrollIntoView({ behavior: reduce ? 'instant' : 'smooth', block: 'start' });
+  const head = target.querySelector('h2, h3, h4') || target;
+  if (!head.hasAttribute('tabindex')) head.tabIndex = -1;
+  head.focus({ preventScroll: true });
 }
 
 // PC의 옆 목차. 본문 칸 왼쪽에 붙어 스크롤을 따라 내려오고(CSS sticky), 화면 위쪽 40% 선을 지난 마지막 장을 표시한다.
@@ -80,7 +93,7 @@ function rail(b, root) {
     button.type = 'button';
     if (no) button.appendChild(el('span', 'rt-rail-no', no));
     button.appendChild(el('span', null, word));
-    button.addEventListener('click', () => find()?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+    button.addEventListener('click', () => goTo(find()));
     li.appendChild(button);
     list.appendChild(li);
     marks.push({ button, find });
@@ -109,7 +122,8 @@ function rail(b, root) {
       else m.button.removeAttribute('aria-current');
     });
   };
-  const soon = () => { if (!frame) frame = requestAnimationFrame(update); };
+  // requestAnimationFrame 대신 짧은 타이머로 모은다 — 사이트 규칙(DESIGN.md 6절: rAF 쓰지 않음, 가려진 탭에서 멈춘다)
+  const soon = () => { if (!frame) frame = setTimeout(update, 60); };
   document.addEventListener('scroll', soon, { passive: true, capture: true });
   window.addEventListener('resize', soon, { passive: true });
   soon();
@@ -118,7 +132,7 @@ function rail(b, root) {
     stop() {
       document.removeEventListener('scroll', soon, { capture: true });
       window.removeEventListener('resize', soon);
-      if (frame) cancelAnimationFrame(frame);
+      if (frame) clearTimeout(frame);
     },
   };
 }

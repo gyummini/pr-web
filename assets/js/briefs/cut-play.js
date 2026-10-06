@@ -135,6 +135,31 @@ export function playCutPlay(host, cfg, onComplete) {
   const enhanceBtn = $('.cp-enhance');
   const cutBtn = $('.cp-cut');
   const skipBtn = $('.cp-skip');
+
+  // 잠깐 누를 수 없는 버튼(바위가 다시 나오는 중 · 충전 중)을 끄면 키보드 초점이 페이지 밖으로 빠진다(10/06 점검: 끝까지 10번).
+  // 끄기 전에 버튼이 든 칸으로 초점을 옮겨 두었다가, 다시 켜지면 그 버튼으로 돌려준다.
+  // 끄는 것 자체(disabled)는 그대로다 — 회귀 테스트와 다른 화면이 그 속성을 본다
+  let parked = null;
+  function setOff(btn, off) {
+    if (off && !btn.disabled && document.activeElement === btn) {
+      const holder = btn.closest('.cp-zone, .cp-judge, .cp-game') || root;
+      holder.tabIndex = -1;
+      holder.focus({ preventScroll: true });
+      parked = { btn, holder };
+    }
+    btn.disabled = off;
+    if (!off && parked && parked.btn === btn) {
+      if (document.activeElement === parked.holder) btn.focus({ preventScroll: true });
+      parked = null;
+    }
+  }
+  // 초점을 맡아 둔 칸에 있는데 그 버튼이 끝내 돌아오지 않을 때(덜어내기처럼 한 번 내린 결정) — 다음 누를 것으로 넘긴다
+  function passFocus(next) {
+    if (!parked || document.activeElement !== parked.holder) return;
+    if (!next || next.disabled || next === parked.btn) return; // 같은 버튼이면 다시 켜질 때 setOff가 돌려준다
+    parked = null;
+    next.focus({ preventScroll: true });
+  }
   mineBtn.textContent = t.mine;
   sellBtn.textContent = t.sell;
   buyBtn.textContent = fill(t.buy_coal, { n: coalPrice });
@@ -275,9 +300,13 @@ export function playCutPlay(host, cfg, onComplete) {
     const w = state.lane.find((x) => x.id === id);
     if (!w) return;
     if (state.room.every(Boolean)) { state.msg = t.room_full; state.tone = 'short'; paint(); return; }
+    // 가져온 브레인롯의 버튼은 줄에서 사라진다 — 키보드로 가져왔으면 앉은 방 칸으로 초점을 옮긴다(10/06 점검)
+    const hadFocus = track.contains(document.activeElement);
+    const at = state.room.findIndex((b) => !b);
     state.lane = state.lane.filter((x) => x !== w);
     paintLane();
     place(w, -1);
+    if (hadFocus && room.children[at]) room.children[at].focus({ preventScroll: true });
   }
 
   // 방에 앉힌다 — at이 빈칸이면 그 칸, 아니면 첫 빈칸. 자리가 없으면 줄로 돌려보낸다.
@@ -485,14 +514,14 @@ export function playCutPlay(host, cfg, onComplete) {
     const pips = $('.cp-hp');
     while (pips.children.length < durability) pips.append(el('i'));
     [...pips.children].forEach((pip, i) => pip.classList.toggle('is-on', i < state.hp));
-    mineBtn.disabled = !first || state.broken || state.busy;
+    setOff(mineBtn, !first || state.broken || state.busy);
     // 경제
     $('.cp-chart polyline').setAttribute('points', chartPoints(state.history));
     $('.cp-price').textContent = `${fill(t.price, { n: prices[state.pi] })} ${state.trend > 0 ? '▲' : state.trend < 0 ? '▼' : '·'}`;
     $('.cp-price').dataset.trend = String(state.trend);
     $('.cp-gold').textContent = fill(t.gold, { n: state.gold });
-    sellBtn.disabled = !first || !state.iron || state.busy;
-    buyBtn.disabled = !first || state.gold < coalPrice || state.busy;
+    setOff(sellBtn, !first || !state.iron || state.busy);
+    setOff(buyBtn, !first || state.gold < coalPrice || state.busy);
     ['mining', 'economy'].forEach((id) => {
       zone(id).classList.toggle('is-cut', state.phase === 'cutting');
       zone(id).classList.toggle('is-gone', final);
@@ -511,8 +540,9 @@ export function playCutPlay(host, cfg, onComplete) {
     zone('enhance').classList.toggle('is-charging', state.busy);
     const slot = state.room[state.sel];
     const cost = slot ? (rots[slot.lvl] || {}).cost : Infinity;
-    enhanceBtn.disabled = state.phase === 'cutting' || state.busy || (final && (!slot || state.fgold < cost));
-    $('.cp-msg').textContent = state.msg;
+    setOff(enhanceBtn, state.phase === 'cutting' || state.busy || (final && (!slot || state.fgold < cost)));
+    // 알림 칸(role=status)은 문장이 바뀔 때만 쓴다 — 같은 문장을 다시 쓰면 화면 낭독기가 되풀이해 읽었다(10/06 점검: 5초에 20번)
+    if ($('.cp-msg').textContent !== state.msg) $('.cp-msg').textContent = state.msg;
     $('.cp-msg').dataset.tone = state.tone;
     $('.cp-presses').textContent = state.pressLine;
     if (state.motion) { flourish(state.motion, final); state.motion = ''; }
@@ -520,14 +550,16 @@ export function playCutPlay(host, cfg, onComplete) {
     skipBtn.hidden = !first || state.judge;
     $('.cp-judge').hidden = !state.judge;
     // 덜어낸 뒤 버튼은 내린 결정으로 남는다(체크, 다시 누를 수 없음)
-    cutBtn.disabled = !first || state.busy;
+    setOff(cutBtn, !first || state.busy);
     cutBtn.classList.toggle('is-done', !first);
     if (hint) hint.hidden = !first || state.tried || state.judge;
     if (takeHint) takeHint.hidden = !final || state.took;
     const caption = state.done ? (t.final_statement || '') : '';
     if ($('.cp-caption').textContent !== caption) $('.cp-caption').textContent = caption;
     $('.cp-kept').hidden = !state.done;
-    cueOn(cueTarget());
+    const next = cueTarget();
+    cueOn(next);
+    if (final) passFocus(next === lane ? track.querySelector('.cp-walker') || enhanceBtn : next || enhanceBtn);
   }
 
   function paintFinal() {
@@ -573,7 +605,16 @@ export function playCutPlay(host, cfg, onComplete) {
   // 지나가는 줄 — 있는 것은 그대로 두고(움직임이 끊기지 않게) 새로 나온 것만 더하고, 사라진 것만 뺀다
   function paintLane() {
     const ids = new Set(state.lane.map((w) => String(w.id)));
-    [...track.children].forEach((node) => { if (!ids.has(node.dataset.id)) node.remove(); });
+    [...track.children].forEach((node) => {
+      if (ids.has(node.dataset.id)) return;
+      // 초점이 있던 브레인롯이 줄 밖으로 나가면 다음 브레인롯(없으면 줄 자체)으로 초점을 넘긴다(10/06 점검)
+      if (node === document.activeElement) {
+        const nextWalker = [...track.children].find((n) => n !== node && ids.has(n.dataset.id));
+        if (nextWalker) nextWalker.focus({ preventScroll: true });
+        else { track.tabIndex = -1; track.focus({ preventScroll: true }); }
+      }
+      node.remove();
+    });
     const now = Date.now();
     state.lane.forEach((w) => {
       if (track.querySelector(`[data-id="${w.id}"]`)) return;
@@ -690,7 +731,11 @@ export function playCutPlay(host, cfg, onComplete) {
     [...room.children].forEach((n) => { n.dataset.lvl = 'x'; });
     paintFinal();
     paint();
+    parked = null;
+    // 다시 해보기 버튼(결론 칸)은 사라진다 — 첫 누를 것으로 초점을 옮기고 화면도 그리로 데려간다.
+    // 초점만 옮기면 버튼이 화면 밖에 있어 키보드 사용자는 아무것도 보지 못했다(10/06 점검)
     enhanceBtn.focus({ preventScroll: true });
+    enhanceBtn.scrollIntoView({ block: 'center', behavior: reducedMotion() ? 'instant' : 'smooth' });
   }
 
   function el(tag, cls = '', text) {

@@ -59,6 +59,7 @@ export function playOneCard(host, cfg, onComplete) {
   root.querySelector('.oc-note').textContent = t.note;
   const lanes = root.querySelector('.oc-lanes');
   const caption = root.querySelector('.oc-caption');
+  let parkedRun = false; // 진행 중 꺼진 버튼의 초점을 레인 칸에 맡겨 두었는지
 
   function onVisibility() { if (document.hidden && state.running) settle(); }
   document.addEventListener('visibilitychange', onVisibility);
@@ -87,7 +88,8 @@ export function playOneCard(host, cfg, onComplete) {
     formation.forEach((id) => {
       const swapped = after && id === set.swap;
       const fig = el('figure', `oc-card${swapped ? ' is-swapped' : ''}`);
-      const img = el('img'); img.src = cards[id].image; img.alt = cards[id].name; img.loading = 'lazy';
+      // 이름은 그림 설명(figcaption)이 말한다 — 그림 대체 글에도 넣으면 같은 이름을 두 번 읽었다(10/06 점검)
+      const img = el('img'); img.src = cards[id].image; img.alt = ''; img.loading = 'lazy';
       fig.append(img, el('figcaption', '', cards[id].name));
       if (swapped) fig.append(el('em', 'oc-one', t.one_card));
       row.append(fig);
@@ -161,7 +163,18 @@ export function playOneCard(host, cfg, onComplete) {
       node.classList.toggle('is-lit', state.step > order.indexOf(node.dataset.beat));
     });
     runBtn.textContent = state.running ? t.running : state.done ? t.rerun : t.run;
+    // 진행 중에는 버튼을 끈다(테스트도 이 속성을 본다). 초점이 있는 버튼을 끄면 초점이 페이지 밖으로 빠졌다(10/06 점검) —
+    // 끄기 전에 두 레인 칸으로 초점을 맡겨 두고, 끝나면 버튼으로 돌려준다
+    if (state.running && !runBtn.disabled && document.activeElement === runBtn) {
+      lanes.tabIndex = -1;
+      lanes.focus({ preventScroll: true });
+      parkedRun = true;
+    }
     runBtn.disabled = state.running;
+    if (!state.running && parkedRun) {
+      parkedRun = false;
+      if (document.activeElement === lanes) runBtn.focus({ preventScroll: true });
+    }
     // The cue and the prompt belong to the first press only. After a run the button steps back —
     // it is no longer the next thing to do.
     runBtn.classList.toggle('cue', !state.pressed);
@@ -234,8 +247,12 @@ export function playOneCard(host, cfg, onComplete) {
     onComplete({ hide: true });
     recapShown = false;
     state.set = 0; state.step = 0; state.done = false; state.running = false; state.pressed = false;
+    parkedRun = false;
     build();
+    // 다시 해보기 버튼(결론 칸)은 사라진다 — 초점을 실행 버튼으로 옮기고 화면도 그리로 데려간다.
+    // 초점만 옮기면 버튼이 화면 밖(휴대폰에서 1,349px 위)에 있어 빈 점선 칸 앞에 남았다(10/06 점검)
     runBtn.focus({ preventScroll: true });
+    runBtn.scrollIntoView({ block: 'center', behavior: reducedMotion() ? 'instant' : 'smooth' });
   }
 
   function button(label, action, cls = '') {

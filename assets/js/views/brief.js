@@ -59,6 +59,7 @@ export function renderBrief(view, eid) {
       <div class="brief-play"></div>
       <div class="brief-recap" hidden></div>
       <div class="brief-foot"></div>
+      <p class="sr-only" role="status"></p>
     </div>`;
 
   view.querySelector('.ev-kicker').textContent = T('brief.kicker', { id: ev.id, type: ev.doc_type || '' });
@@ -80,19 +81,24 @@ export function renderBrief(view, eid) {
   // 원본은 머리말에 상시 둔다. 결론까지 내려가야만 닿으면, 브리프를 건너뛰고
   // 문서만 보려는 검토자에게 인터랙션이 통행료가 된다.
   // 브리프가 곧 원문인 증거(E8)는 따로 열 원본이 없다
-  if (ev.url) view.querySelector('.brief-head-doc').appendChild(btn(T('brief.original_doc'), 'ghost', () => openDoc(ev.url)));
+  if (ev.url) view.querySelector('.brief-head-doc').appendChild(docLink(T('brief.original_doc'), 'ghost', ev.url));
 
   const recapEl = view.querySelector('.brief-recap');
+  const status = view.querySelector('.brief > [role="status"]');
   // 마운트 도중에 결론을 여는 브리프가 있다(E2 — 처음부터 열어 둔다). 그때는 play가 아직 없어
   // 다시 해보기를 둘지 모르므로, 요청만 받아 두었다가 play가 생긴 직후에 연다.
   // play를 바로 보면 초기화 전 접근(TDZ)으로 렌더가 중간에 끊기고 라우터가 렌더 중 상태로 굳는다.
   let play = null;
   let pendingRecap = null;
+  // 마운트가 끝난 뒤에 열리는 결론은 조작이 끝나서 열린 것이다 — 화면 낭독기에도 알린다(처음부터 열어 두는 E2는 알리지 않는다).
+  // showRecap보다 먼저 선언해 둔다(아래 pendingRecap 처리에서 읽는다 — 늦게 선언하면 TDZ)
+  let mounted = false;
   play = PLAYS[b.kind](view.querySelector('.brief-play'), b, (opts) => {
     if (play) showRecap(opts);
     else pendingRecap = opts || {};
   });
   if (pendingRecap) showRecap(pendingRecap);
+  mounted = true;
   view.querySelector('.brief-foot').appendChild(link(T('brief.back'), '/evidence'));
 
   // opts.scroll === false — 브리프가 처음부터 결론을 열어 둘 때 쓴다.
@@ -111,15 +117,19 @@ export function renderBrief(view, eid) {
 
     // 원본 문서는 브리프의 끝에서만 연다
     const docs = recapEl.querySelector('.brief-docs');
-    if (ev.url) docs.appendChild(btn(T('brief.original_doc'), 'accent', () => openDoc(ev.url)));
+    if (ev.url) docs.appendChild(docLink(T('brief.original_doc'), 'accent', ev.url));
     (ev.attachments || []).forEach((att) => {
-      docs.appendChild(btn(att.label, 'ghost', () => openDoc(att.url)));
+      docs.appendChild(docLink(att.label, 'ghost', att.url));
     });
     if (play.restart) docs.appendChild(btn(T('brief.restart'), 'ghost', () => play.restart(hideRecap)));
 
     recapEl.hidden = false;
     recapEl.classList.add('on');
     animate(recapEl, effects.slide);
+    if (mounted) {
+      status.textContent = '';
+      setTimeout(() => (status.textContent = [r.title, r.line].filter(Boolean).join(' — ')), 40);
+    }
     if (!opts || opts.scroll !== false) {
       recapEl.scrollIntoView({ behavior: reducedMotion() ? 'instant' : 'smooth', block: 'nearest' });
     }
@@ -145,6 +155,20 @@ export function renderBrief(view, eid) {
     a.className = 'btn ghost';
     a.href = href;
     a.textContent = label;
+    return a;
+  }
+
+  // 원본 문서 · 첨부는 버튼이 아니라 링크다 — 가운데 클릭 · 주소 복사 · 새 탭이 브라우저대로 된다(10/06 점검).
+  // 아직 주소가 없는 문서(PLACEHOLDER)만 예전처럼 안내 알림을 띄운다
+  function docLink(label, kind, url) {
+    const a = document.createElement('a');
+    a.className = `btn ${kind}`;
+    a.textContent = label;
+    a.target = '_blank';
+    a.rel = 'noopener';
+    const pending = !url || String(url).startsWith('PLACEHOLDER');
+    a.href = pending ? '#' : url;
+    if (pending) a.addEventListener('click', (e) => { e.preventDefault(); openDoc(url); });
     return a;
   }
 
