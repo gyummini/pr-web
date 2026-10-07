@@ -74,7 +74,9 @@ export function renderBrief(view, eid) {
   view.querySelector('.ev-sub').textContent = ev.subtitle || '';
   const stopCover = evidenceHeader(view.querySelector('.brief-head'), ev);
   view.querySelector('.brief-lead-title').textContent = lead.title || '';
-  view.querySelector('.brief-lead-line').textContent = lead.line || '';
+  // 리드 문장이 없는 페이지(E8 — 10/07 사용자 지시로 뺐다)는 자리도 두지 않는다
+  if (lead.line) view.querySelector('.brief-lead-line').textContent = lead.line;
+  else view.querySelector('.brief-lead-line').remove();
   // 안내를 머리말 구석의 회색 알약에 두면 공지처럼 읽히고 누를 것과 멀다(10/03 피드백).
   // prompt_at: 'action'인 요약 페이지는 본체가 첫 행동 옆에 직접 붙인다 — 문구는 같다.
   const prompt = view.querySelector('.brief-prompt');
@@ -117,17 +119,20 @@ export function renderBrief(view, eid) {
   function showRecap(opts) {
     if (opts?.hide) { hideRecap(); return; }
     const r = b.recap || {};
-    recapEl.innerHTML = `
-      <h3 class="brief-recap-title"></h3>
-      <p class="brief-recap-line"></p>
-      <p class="brief-closing"></p>
-      <div class="brief-docs"></div>`;
-    recapEl.querySelector('.brief-recap-title').textContent = r.title || '';
-    recapEl.querySelector('.brief-recap-line').textContent = r.line || '';
-    recapEl.querySelector('.brief-closing').textContent = r.closing || '';
+    // 결론 칸의 세 줄은 있는 것만 둔다 — 10/07 사용자 지시로 E2는 셋 다, E5는 마지막 줄을 뺐다(빈 줄의 여백이 남지 않게)
+    recapEl.replaceChildren();
+    for (const [tag, cls, text] of [['h3', 'brief-recap-title', r.title], ['p', 'brief-recap-line', r.line], ['p', 'brief-closing', r.closing]]) {
+      if (!text) continue;
+      const node = document.createElement(tag);
+      node.className = cls;
+      node.textContent = text;
+      recapEl.appendChild(node);
+    }
+    const docs = document.createElement('div');
+    docs.className = 'brief-docs';
+    recapEl.appendChild(docs);
 
     // 원본 문서는 브리프의 끝에서만 연다
-    const docs = recapEl.querySelector('.brief-docs');
     if (ev.url) docs.appendChild(docLink(T('brief.original_doc'), 'accent', ev.url));
     (ev.attachments || []).forEach((att) => {
       docs.appendChild(docLink(att.label, 'ghost', att.url));

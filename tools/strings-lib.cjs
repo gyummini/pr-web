@@ -60,6 +60,10 @@ const NOT_SHOWN = [
   // 10/07 사용자 결정으로 문서만 모아보기(/docs)와 보관함의 그 버튼을 뺐다 — 문구는 확정본이라 남겨 둠(지울지는 사용자 결정).
   /^ui\.docs\./,
   /^ui\.evidence\.to_docs$/,
+  // 10/07 사용자 문구로 동대륙 세트에도 이벤트 이름('동대륙의 일상')이 생겨, 이름 없는 세트에 쓰던 '내용 미정'이 나올 자리가 없다(확정 문구라 남겨 둠).
+  /^E5\.brief\.labels\.tbd$/,
+  // 10/07 사용자 의견으로 E1 장 머리줄('CHAPTER 01 · 역설 … 01 / 05')을 뺐다 — 장 사이는 선만(확정 문구라 남겨 둠).
+  /^E1\.brief\.chapters\.\d+\.(no|name|mark)$/,
 ];
 const shown = (key) => !NOT_SHOWN.some((re) => re.test(key));
 

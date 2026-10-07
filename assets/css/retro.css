@@ -43,8 +43,6 @@
 .view-retro .brief-lead-title { margin: 0; font-size: 1.8rem; line-height: 1.28; letter-spacing: -.025em; text-wrap: balance; }
 .view-retro .brief-lead-line { max-width: none; margin: 9px 0 0; font-size: 1rem; line-height: 1.65; color: var(--rt-ink2); }
 
-/* ---------- 붉은 세로줄: 첫 장의 머리에서 장마다 결정으로 가지를 내고, 직접 플레이 버튼에서 끝난다(옆 목차가 매달리는 줄) ---------- */
-.lg-spine { display: none; position: absolute; left: calc(var(--lg-pad) + var(--lg-m) + var(--lg-g) / 2 - .75px); width: 1.5px; background: var(--rt-red); pointer-events: none; }
 .lg-no { font-weight: 800; color: var(--rt-red); font-variant-numeric: tabular-nums; }
 .lg-word { color: var(--rt-ink2); }
 
@@ -151,7 +149,6 @@
 .lg-ch-title { margin: 3px 0 16px; font-size: 1.6rem; line-height: 1.35; letter-spacing: -.02em; text-wrap: balance; }
 .lg-ch-title:focus { outline: none; }
 .lg-decision { position: relative; font-size: 1.1rem; font-weight: 700; line-height: 1.72; }
-.lg-decision::before { content: ''; position: absolute; left: calc(var(--lg-g) / -2); top: .86em; width: 12px; height: 1.5px; background: var(--rt-red); }
 .lg-mine { margin-top: 14px; padding: 11px 16px 12px; background: var(--rt-pink); border-radius: 6px; }
 .lg-mine strong { display: block; margin-bottom: 2px; font-size: .8rem; }
 .lg-mine p { font-size: 1rem; line-height: 1.7; }
@@ -198,7 +195,8 @@
 /* 점수 막대처럼 아주 납작한 결과는 위에 전체 폭으로, 참고는 아래 작게 */
 .lg-stack .lg-frame-bar { overflow: hidden; background: var(--surface); border: 1px solid var(--rt-ink2); border-radius: 4px; }
 .lg-stack .lg-frame-bar img { display: block; width: 100%; height: auto; }
-.lg-stack .lg-side.ref { width: 46%; margin-top: 14px; }
+.lg-stack .lg-side.ref { width: 46%; }
+.lg-stack .lg-side.result { margin-top: 14px; }
 .lg-stack .lg-side.ref img { display: block; width: 100%; height: auto; border: 1px solid var(--rt-line); border-radius: 4px; }
 
 /* 그림 한 장 */
@@ -226,23 +224,22 @@
 .lg-ai strong { font-size: .78rem; color: var(--rt-ink2); white-space: nowrap; }
 .lg-ai p { font-size: .84rem; line-height: 1.6; color: var(--rt-ink2); }
 
-/* ---------- 옆 목차: 장부 여백에서 세로줄에 매달린다(넓은 화면만) ---------- */
+/* ---------- 옆 목차: 장부 여백(넓은 화면만). 지금 장은 굵게 · 번호 빨강 — 세로줄로 잇는 선은 10/07 사용자 의견으로 뺐고, 글자를 키웠다 ---------- */
 .lg-rail { display: none; }
 .lg-rail ol { list-style: none; margin: 0; padding: 0; }
 .lg-rail-item {
-  position: relative; display: block; width: 100%; padding: 4px 10px 4px 0;
-  font-size: .8rem; line-height: 1.4; text-align: right; color: var(--rt-ink2);
-  background: none; border: 0; cursor: pointer; text-wrap: balance;
+  position: relative; display: block; width: 100%; padding: 5px 0;
+  font-size: .9rem; line-height: 1.4; text-align: right; color: var(--rt-ink2);
+  background: none; border: 0; cursor: pointer; white-space: nowrap; /* 96px 칸에서 '저작권과 출처'가 두 줄로 갈라지지 않게 — 장 칸에 따로 여백이 있다 */
 }
 .lg-rail-item:hover { color: var(--rt-ink); }
 .lg-rail-no { margin-right: 5px; font-variant-numeric: tabular-nums; }
 .lg-rail-item.on { color: var(--rt-ink); font-weight: 700; }
 .lg-rail-item.on .lg-rail-no { color: var(--rt-red); }
-.lg-rail-item.on::after { content: ''; position: absolute; right: calc(var(--lg-g) / -2); top: 50%; width: calc(var(--lg-g) / 2 + 8px); height: 1.5px; background: var(--rt-red); }
 .lg-rail-top { margin-bottom: 10px; }
 .lg-rail-end { margin-top: 10px; }
 
-/* ---------- 끝: 세로줄이 직접 플레이 버튼으로 들어가며 장부를 닫는다 ---------- */
+/* ---------- 끝: 저작권과 출처, 직접 플레이 버튼으로 장부를 닫는다 ---------- */
 .lg-close { scroll-margin-top: calc(var(--header-h) + 8px); }
 .lg-close::before { content: ''; display: block; height: 0; border-top: 4px double var(--rt-ink2); margin: 0 0 30px; }
 .lg-end-play { position: relative; padding: 15px 30px; font-size: 1.08rem; font-weight: 700; }
@@ -290,7 +287,6 @@
   .lg-close { grid-column: 1 / -1; grid-row: 5; }
   .view-retro .brief-recap { grid-column: 1 / -1; grid-row: 6; }
   .view-retro .brief-foot { grid-column: 1 / -1; grid-row: 7; padding-left: calc(var(--lg-m) + var(--lg-g)); }
-  .lg-spine:not([hidden]) { display: block; }
 
   .lg-rail { display: block; grid-column: 1; }
   .lg-rail ol { position: sticky; top: calc(var(--header-h) + 28px); }
@@ -309,7 +305,6 @@
   .lg-close::before { grid-column: 2 / -1; grid-row: 1; }
   .lg-close-main { grid-column: 3; grid-row: 2; }
   .lg-close-side { grid-column: 5; grid-row: 2; }
-  .lg-end-play::before { content: ''; position: absolute; left: calc(var(--lg-g) / -2 - 1px); top: 50%; width: calc(var(--lg-g) / 2 + 1px); height: 1.5px; background: var(--rt-red); }
 }
 
 /* ---------- 좁은 화면(~1180px): 한 단. 세로줄은 장부와 장의 왼쪽 테두리가 된다 ---------- */
@@ -325,7 +320,7 @@
   .lg-ch-head, .lg-ch-body { padding-left: 18px; border-left: 1.5px solid var(--rt-red); }
   .lg-ch-head { padding-top: 24px; border-top: 0; }
   .lg-ch-body { padding-bottom: 56px; } /* 장 사이 여백(10/07 — 전 28px) */
-  .lg-decision::before { left: -18px; width: 10px; }
+  .lg-decision::before { content: ''; position: absolute; left: -18px; top: .86em; width: 10px; height: 1.5px; background: var(--rt-red); }
   .lg-ev { margin: 16px 0 0; padding: 14px; }
   .lg-pair { gap: 10px; }
   .lg-close { margin-top: 8px; }

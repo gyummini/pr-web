@@ -65,16 +65,17 @@ const ch = (no) => `.lg-ch[data-chapter="${no}"]`;
       assert.equal(await a.getAttribute('rel'), 'noopener');
       assert.equal(await a.innerText(), B.play.label);
     }
-    // 장의 글 첫 글자가 머리말 제목과 같은 세로선에 서고, 붉은 세로줄이 첫 장의 머리에서 끝의 직접 플레이 버튼까지 내려간다
+    // 장의 글 첫 글자가 머리말 제목과 같은 세로선에 선다. 넓은 화면의 붉은 세로줄(직접 플레이 버튼 · 옆 목차 · 결정 문장에 잇던 선)은 10/07 사용자 의견으로 뺐다
     const line = await page.evaluate(() => {
       const r = (s) => document.querySelector(s).getBoundingClientRect();
-      const spine = document.querySelector('.lg-spine');
-      return { title: r('.brief-head .ev-title').left, decision: r('.lg-decision').left, hidden: spine.hidden,
-        top: r('.lg-spine').top - r('.lg-ch').top, end: r('.lg-spine').bottom - (r('.lg-end-play').top + r('.lg-end-play').height / 2) };
+      const red = (s, pseudo) => { const n = document.querySelector(s); return n ? getComputedStyle(n, pseudo).content : 'none'; };
+      return { title: r('.brief-head .ev-title').left, decision: r('.lg-decision').left, spine: !!document.querySelector('.lg-spine'),
+        ticks: [red('.lg-decision', '::before'), red('.lg-end-play', '::before'), red('.lg-rail-item', '::after')].every((c) => c === 'none' || c === 'normal') };
     });
     assert.equal(line.title, line.decision);
-    assert.equal(line.hidden, false);
-    assert.ok(Math.abs(line.top) < 1 && Math.abs(line.end) < 1, `spine from the first chapter to the end button ${JSON.stringify(line)}`);
+    assert.deepEqual({ spine: line.spine, ticks: line.ticks }, { spine: false, ticks: true }, 'no red spine or connectors on wide screens');
+    // E8 머리말에는 리드 문장을 두지 않는다(10/07 사용자 지시)
+    assert.equal(await page.locator('.brief-lead-line').count(), 0);
 
     // 지도의 장 → 그 장으로, 초점은 장 제목
     await page.locator('.lg-node').nth(2).click();
@@ -154,7 +155,7 @@ const ch = (no) => `.lg-ch[data-chapter="${no}"]`;
       assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false, `overflows at ${width}`);
     }
     await page.setViewportSize({ width: 390, height: 844 });
-    await page.waitForFunction(() => document.querySelector('.lg-spine').hidden);
+    await page.waitForFunction(() => getComputedStyle(document.querySelector('.lg-rail')).display === 'none');
     assert.equal(await page.locator('.lg-rail').isHidden(), true);
     // 휴대폰: 팩 → 기준 → 두 갈래로 갈라져 장 네 개씩(왼쪽 01~04, 오른쪽 05~08). 두 갈래의 첫 장은 같은 높이에서 시작한다 —
     // 장 제목 길이가 달라도(10/07: 짧은 쪽 칸이 늘어나 오른쪽 첫 장이 4~8px 내려가던 것을 CSS로 고침. 문구로 맞추지 않는다)
@@ -285,6 +286,6 @@ const ch = (no) => `.lg-ch[data-chapter="${no}"]`;
     await live.waitForFunction(() => [...document.querySelectorAll('.lg video')].every(v => v.paused), null, { timeout: 3000 });
 
     assert.deepEqual(errors, []);
-    console.log('PASS E8 retro: map (pack, core, four a side, joins at the pack), cover panel stays with the cover, play links never clicked, spine, map and rail jumps with focus, mine/AI split, tabs and keys, same-size pair, videos (reduced motion, toggle, play only in view, tab switch), notice open and credits folded, tables and sources, 320–1920px, shelf and popup labels (try vs read), shelf summary popup (no collect, memo compass = map, find in statement, unlock to page or document, remaining-evidence button), play chip lands on the play button.');
+    console.log('PASS E8 retro: map (pack, core, four a side, joins at the pack), cover panel stays with the cover, play links never clicked, no red spine or connectors, no lead line, map and rail jumps with focus, mine/AI split, tabs and keys, same-size pair, videos (reduced motion, toggle, play only in view, tab switch), notice open and credits folded, tables and sources, 320–1920px, shelf and popup labels (try vs read), shelf summary popup (no collect, memo compass = map, find in statement, unlock to page or document, remaining-evidence button), play chip lands on the play button.');
   } finally { await browser.close(); }
 })().catch(e => { console.error(e); process.exitCode = 1; });

@@ -558,6 +558,8 @@ export function playCutPlay(host, cfg, onComplete) {
     cueOn(next);
     placeGuide(next);
     if (final) passFocus(next === lane ? track.querySelector('.cp-walker') || enhanceBtn : next || enhanceBtn);
+    // 출시한 게임으로 넘어가면 판단 칸은 할 일을 마쳤다 — 숨긴다(10/07 사용자). 초점을 다음 누를 것으로 넘긴 뒤에 숨겨야 초점이 사라지지 않는다
+    if (final) $('.cp-judge').hidden = true;
   }
 
   function paintFinal() {

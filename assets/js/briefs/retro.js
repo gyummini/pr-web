@@ -23,15 +23,12 @@ let uid = 0; // 증거 패널의 탭 ↔ 그림 짝(aria-controls)
 
 const media = (q) => typeof matchMedia === 'function' && matchMedia(q).matches;
 const reduce = () => media('(prefers-reduced-motion: reduce)');
-const wide = () => media('(min-width: 1181px)');
 
 export function playRetro(host, b, _onComplete, ev = {}) {
   L = b.labels || {};
   const chapters = b.chapters || [];
   const clips = videos();
   const root = el('div', 'lg');
-  const spine = el('div', 'lg-spine');
-  spine.setAttribute('aria-hidden', 'true');
 
   const secs = chapters.map((ch) => chapter(ch, clips));
   const atlas = map(chapters, compassCore(ev), b.cover?.pack, (i) => goTo(secs[i]));
@@ -59,18 +56,10 @@ export function playRetro(host, b, _onComplete, ev = {}) {
   secs.forEach((s) => list.appendChild(s));
   body.appendChild(list);
 
-  root.append(spine, cover, body, end.el);
+  // 넓은 화면의 붉은 세로줄(첫 장 머리 → 직접 플레이 버튼, 옆 목차 · 결정 문장에 매달리던 선)은 10/07 사용자 의견으로 뺐다.
+  // 좁은 화면에서 장의 왼쪽 테두리가 되는 붉은 선은 장을 묶어 주므로 남겨 둔다(retro.css)
+  root.append(cover, body, end.el);
   host.appendChild(root);
-
-  // 세로줄은 첫 장의 머리에서 끝의 직접 플레이 버튼 가운데까지(옆 목차가 매달리는 구간). 글 · 그림이 자리를 잡거나
-  // 탭 · 접힌 글이 바뀌어 문서 높이가 달라질 때마다 다시 잰다(ResizeObserver — 그리기 주기마다 도는 루프가 아니다)
-  const frame = host.closest('.brief') || host;
-  const spineTop = () => (secs[0] || body).getBoundingClientRect().top;
-  const place = () => placeSpine(spine, frame, spineTop, end.button);
-  const ro = typeof ResizeObserver === 'function' ? new ResizeObserver(place) : null;
-  ro?.observe(frame);
-  window.addEventListener('resize', place);
-  place();
   clips.start();
   // 보관함의 '직접 플레이' 칩으로 왔으면 첫 화면의 직접 플레이 버튼(안내문 옆)으로 — 키는 그 버튼을 눌러야 발급된다.
   // 라우터가 그린 뒤 머리말 제목에 초점을 두므로 그다음 차례에 옮기고, '지금 누를 것' 테두리를 세 번만 퍼지게 붙인다
@@ -90,8 +79,6 @@ export function playRetro(host, b, _onComplete, ev = {}) {
     restart: null,
     destroy() {
       side?.stop();
-      ro?.disconnect();
-      window.removeEventListener('resize', place);
       clips.stop();
     },
   };
@@ -310,15 +297,16 @@ function item(it, clips) {
     return box;
   }
   if (it.kind === 'stack') {
-    // 점수 막대처럼 아주 납작한 결과는 위에 전체 폭으로, 참고는 아래 작게
+    // 점수 막대처럼 아주 납작한 결과 — 참고(작게)를 먼저, 결과(전체 폭)를 아래에. 다른 패널과 같은 '참고 → 결과' 순서
+    // (10/07 사용자 — 이 패널만 결과가 위에 있어 이상하다는 의견)
     const box = el('div', 'lg-item lg-stack');
+    const ref = el('figure', 'lg-side ref');
+    ref.append(img(it.ref), caption(it.ref));
     const res = el('figure', 'lg-side result');
     const bar = el('div', 'lg-frame-bar');
     bar.appendChild(img(it.res));
     res.append(bar, caption(it.res));
-    const ref = el('figure', 'lg-side ref');
-    ref.append(img(it.ref), caption(it.ref));
-    box.append(res, ref);
+    box.append(ref, res);
     return box;
   }
   const f = it.fig;
@@ -641,18 +629,6 @@ function rail(b, { atlas, secs, credits, play }) {
       if (timer) clearTimeout(timer);
     },
   };
-}
-
-// 붉은 세로줄: 넓은 화면에서만. 기준 알약 아래(from — 화면 기준 y) → 끝의 직접 플레이 버튼 가운데
-function placeSpine(spine, frame, from, to) {
-  if (!wide() || !to) { spine.hidden = true; return; }
-  const base = frame.getBoundingClientRect().top;
-  const top = from() - base;
-  const r = to.getBoundingClientRect();
-  const bottom = r.top + r.height / 2 - base;
-  spine.hidden = false;
-  spine.style.top = `${top}px`;
-  spine.style.height = `${Math.max(0, bottom - top)}px`;
 }
 
 function el(tag, cls, text) {

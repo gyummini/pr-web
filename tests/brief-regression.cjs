@@ -59,7 +59,7 @@ const UNLOCK = UI.popup.unlock.replace('{action}', UI.common.to_interactive);
       const b = document.querySelector('#regression-host .fx-card');
       b.click(); b.click(); // Interrupt before the spend presentation step; the cast must still be committed exactly once.
     });
-    assert.match(await test.locator('.fx-count').innerText(), /^1 \/ 4/);
+    assert.equal(await test.locator('.fx').first().getAttribute('data-used'), '1', 'one press spends once'); // 진행 수는 화면에서 뺐다(10/07) — 숨은 값으로 본다
     assert.match(await test.locator('.fx-cost').innerText(), /7\.00/);
     assert.equal(await test.locator('.fx-deck-item').last().getAttribute('data-sid'), 'himari');
     assert.equal(await test.locator('.fx-card').first().getAttribute('data-sid'), 'tomoe');
@@ -70,7 +70,7 @@ const UNLOCK = UI.popup.unlock.replace('{action}', UI.common.to_interactive);
     await test.locator('.fx-card').first().evaluate(el => el.click());
     // 판이 펼쳐진 뒤에 흐름이 걷는다 — 고정 시간 대신 흐름이 끝날 때까지 기다린다
     await page.waitForFunction(() => !document.querySelector('#regression-host .fx-tracing'));
-    assert.match(await test.locator('.fx-count').innerText(), /^0 \/ 4/);
+    assert.equal(await test.locator('.fx').first().getAttribute('data-used'), '0', 'a denied press spends nothing');
     assert.match(await test.locator('.fx-cost').innerText(), /1\.00/);
     assert.equal(await test.locator('.fx-paths path[data-to="deny"]').getAttribute('class'), 'on');
     assert.equal(await test.locator('.fx-paths path[data-to="spend"]').getAttribute('class'), null);

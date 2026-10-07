@@ -33,7 +33,6 @@ export function playFlow(host, cfg, onComplete) {
   const labels = cfg.labels; // 화면에 붙는 고정 문구(손패·덱·Cost 표시)
   const byId = new Map((play.students || []).map((s) => [s.id, s]));
   const nodeById = new Map(((cfg.chart || {}).nodes || []).map((n) => [n.id, n]));
-  const total = Number(play.uses) || 0;
   const max = Number(play.max_cost) || 10;
   const baseRate = Number(play.rate) || 0;
   const boostRate = Number(play.boosted_rate) || baseRate;
@@ -101,9 +100,9 @@ export function playFlow(host, cfg, onComplete) {
     </div>
     <p class="fx-caption"></p>
     <p class="sr-only" role="status"></p>
-    <div class="fx-foot"><span class="fx-count"></span><span class="fx-legend"></span></div>`;
+    <div class="fx-foot"><span class="fx-legend"></span></div>`;
   // 캡션은 흐름의 단계마다 바뀐다(한 번 누를 때 12~15번). 그대로 알리면 낭독이 겹친다 —
-  // 화면 낭독기에는 한 번의 흐름이 끝났을 때 마지막 캡션과 진행 수만 한 번 알린다(10/06 점검)
+  // 화면 낭독기에는 한 번의 흐름이 끝났을 때 마지막 캡션만 한 번 알린다(10/06 점검). 진행 수('1 / 4')는 10/07 사용자 의견으로 화면에서 뺐다
 
   const sec = cfg.sections || {};
   const mst = cfg.master || {};
@@ -442,8 +441,7 @@ export function playFlow(host, cfg, onComplete) {
         td.dataset.v = v;
       });
     }
-    const more = used >= total && play.more_note ? ` · ${play.more_note}` : '';
-    root.querySelector('.fx-count').textContent = `${used} / ${total}${more}`;
+    root.dataset.used = String(used); // 화면에는 보이지 않는 사용 횟수 — 회귀 테스트가 '한 번 누르면 한 번만 쓴다'를 여기서 본다
     const envCell = root.querySelector('.fx-table[data-t="env"] [data-c="current_cost"]');
     if (envCell && !running) {
       envCell.textContent = cost.toFixed(2);
@@ -639,7 +637,7 @@ export function playFlow(host, cfg, onComplete) {
       drawHand(); drawDeck(); paintTables(); paint();
       last = Date.now();
       caption.textContent = (cfg.captions || {})[afford ? 'complete' : 'deny'] || caption.textContent;
-      announce(`${caption.textContent} ${root.querySelector('.fx-count').textContent}`);
+      announce(caption.textContent);
     };
     finishTrace = finish;
     if (reducedMotion() || document.hidden) {

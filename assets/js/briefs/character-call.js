@@ -106,14 +106,7 @@ export function playCharacterCall(host, cfg, onComplete) {
     s.dataset.n = String(di);
     if (di >= OPEN_AT_START) s.hidden = true;
 
-    const head = el('div', 'cc-head');
-    head.appendChild(txt('span', `${ch.no} · ${ch.name}`));
-    const right = el('span');
-    const b = el('b');
-    b.textContent = ch.mark || '';
-    right.append(b, document.createTextNode(` / ${String(chs.length).padStart(2, '0')}`));
-    head.appendChild(right);
-    s.appendChild(head);
+    // 장 사이는 선 하나로만 가른다 — 'CHAPTER 01 · 역설 … 01 / 05' 머리줄은 10/07 사용자 의견으로 뺐다(데이터의 no · name · mark는 남겨 둠)
     s.appendChild(el('hr', 'cc-rule'));
 
     const bodyTop = el('div', 'cc-ch-top');
@@ -157,7 +150,7 @@ export function playCharacterCall(host, cfg, onComplete) {
     const wrap = el('div', 'cc-hero');
     const copy = el('div', 'cc-hero-copy');
     copy.appendChild(lines('h3', 'cc-title', ch.title));
-    copy.appendChild(lines('p', 'cc-lede', ch.lede));
+    if (ch.lede) copy.appendChild(lines('p', 'cc-lede', ch.lede)); // 10/07 사용자 지시로 첫 장 리드를 뺐다 — 데이터가 비면 자리도 두지 않는다
     wrap.appendChild(copy);
 
     const names = g.names || [];
@@ -183,7 +176,7 @@ export function playCharacterCall(host, cfg, onComplete) {
         strip.appendChild(c);
       });
       copy.appendChild(strip);
-      copy.appendChild(txt('p', g.note || '', 'cc-mono cc-strip-note'));
+      if (g.note) copy.appendChild(txt('p', g.note, 'cc-mono cc-strip-note')); // 그림 설명 줄 — 10/07 사용자 지시로 뺐다
     }
 
     hero.appendChild(wrap);
@@ -200,7 +193,7 @@ export function playCharacterCall(host, cfg, onComplete) {
     const s = m.side || {};
     side.appendChild(txt('div', s.label || '', 'cc-quiz-lab'));
     side.appendChild(lines('p', 'cc-quiz-t', s.title));
-    side.appendChild(lines('p', 'cc-quiz-note', s.note));
+    if (s.note) side.appendChild(lines('p', 'cc-quiz-note', s.note)); // '셋 다 맞히면 …' — 10/07 사용자 지시로 뺐다
     const main = el('div', 'cc-quiz-main');
     quiz.append(side, main);
     sect(1).appendChild(quiz);
