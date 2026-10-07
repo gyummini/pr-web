@@ -98,7 +98,7 @@
   ],
   "playRecord": {
     "label": "플레이 기록",
-    "summary": "274개 · 플레이 시간순",
+    "summary": "플레이 시간순",
     "note": "플레이한 게임 기록(플레이 시간순)",
     "url": "https://minimap.net/user/gyummini/library?vm=LIST&ipp=s&sort=PLAYTIME&l=kr"
   },
