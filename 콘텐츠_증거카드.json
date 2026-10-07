@@ -3,11 +3,11 @@
   "groups": [
     {
       "id": "doc",
-      "label": "문서"
+      "label": "기획 문서"
     },
     {
       "id": "game",
-      "label": "게임"
+      "label": "직접 만든 게임"
     },
     {
       "id": "extra",
@@ -18,11 +18,11 @@
   "evidences": [
     {
       "id": "E1",
-      "doc_type": "캐릭터 분석서",
+      "doc_type": "캐릭터 기획",
       "group": "doc",
       "thumb": "/assets/img/thumb_e1.jpg",
       "title": "서브컬처 캐릭터 매력 분석서",
-      "subtitle": "『100명의 그녀』로 분석한 미소녀 게임 캐릭터 디자인 방법론",
+      "subtitle": "『100명의 그녀』 분석에서 신규 캐릭터 기획까지",
       "chapters": [
         "CASE01"
       ],
@@ -385,7 +385,7 @@
     },
     {
       "id": "E2",
-      "doc_type": "시스템 역기획서",
+      "doc_type": "시스템 기획",
       "group": "doc",
       "thumb": "/assets/img/thumb_e2.jpg",
       "title": "블루아카이브 Cost 시스템 역기획서",
@@ -1117,10 +1117,10 @@
     },
     {
       "id": "E3",
-      "doc_type": "개발 회고",
+      "doc_type": "게임 개발",
       "group": "game",
       "thumb": "/assets/img/thumb_e3.jpg",
-      "title": "로블록스 브레인롯 강화 개발회고",
+      "title": "로블록스 '브레인롯 강화하기' 개발 회고",
       "subtitle": "덜어내며 찾은 재미 — 기획·개발·출시 전 과정",
       "brief": {
         "kind": "cut_play",
@@ -2012,7 +2012,7 @@
         }
       },
       "chapters": [
-        "CASE04"
+        "CASE03"
       ],
       "summary": "채굴 게임을 브레인롯 강화 게임으로 바꾸고 출시하기까지의 과정을 담은 개인 프로젝트 회고입니다. '이 게임의 재미는 어디서 오는가'를 되물으며 시스템을 덜어내고 핵심 플레이를 찾았습니다. 개발에는 MCP 기반 AI 개발 파이프라인을 사용했습니다.",
       "url": "https://docs.google.com/document/d/1eqXiLJeAdRR7NuultVD4wbd-a65xVbrYCL1-4aQWsQo/edit?usp=sharing",
@@ -2081,7 +2081,7 @@
     },
     {
       "id": "E4",
-      "doc_type": "개선 제안서",
+      "doc_type": "콘텐츠 기획",
       "group": "extra",
       "thumb": "/assets/img/thumb_e4.jpg",
       "title": "에픽세븐 오토마톤 타워 개선 제안서",
@@ -2133,10 +2133,10 @@
     },
     {
       "id": "E5",
-      "doc_type": "시스템 기획서",
+      "doc_type": "시스템 기획",
       "group": "doc",
       "thumb": "/assets/img/thumb_e6.jpg",
-      "title": "아르카나 세트 시스템 제안서",
+      "title": "스타세이비어 아르카나 세트 시스템 제안서",
       "subtitle": "기존 구조를 유지하면서 캐릭터의 매력을 더하는 신규 시스템",
       "chapters": [
         "CASE02"
@@ -2444,13 +2444,13 @@
     },
     {
       "id": "E6",
-      "doc_type": "활용 보고서",
+      "doc_type": "AI 활용",
       "group": "extra",
       "thumb": "/assets/img/thumb_e5.jpg",
       "title": "AI 문서 작성 효율화 보고서",
       "subtitle": "기획 문서 작성에 AI 활용하기",
       "chapters": [
-        "CASE03"
+        "CASE04"
       ],
       "summary": "기획 문서를 작성하는 과정에 AI 도구를 도입하고 효율이 얼마나 달라졌는지 살펴본 보고서입니다. 'AI는 속도를 높이지만, 무엇을 만들지는 기획자의 몫'이라는 결론을 담았습니다.",
       "url": "https://app.notion.com/p/AI-36caa7a78d1180dd8382f1bb96896b76?source=copy_link",
@@ -2502,14 +2502,14 @@
     },
     {
       "id": "E8",
-      "doc_type": "개발 회고",
+      "doc_type": "게임 개발",
       "group": "game",
       "thumb": "/assets/img/thumb_e8.jpg",
       "title": "PokeCollect 개발 회고",
       "subtitle": "포켓몬 스킨에서 출발한 카드 수집 게임",
       "chapters": [
         "CASE02",
-        "CASE03"
+        "CASE04"
       ],
       "summary": "포켓몬 스킨 하나로 보드게임이 더 재밌어진 경험에서 출발해, 카드팩을 뜯고 도감을 채우는 수집 게임을 2주 만에 웹으로 공개했습니다. 구현과 검증은 AI 도구에 맡기고, 결정이 필요할 때마다 '팩을 뜯는 재미'를 기준으로 판단한 과정을 담았습니다.",
       "url": null,
