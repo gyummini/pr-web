@@ -1,0 +1,1 @@
+E5.brief.labels.pick_hint = 한 장 골라 보세요!

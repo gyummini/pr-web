@@ -1,0 +1,1 @@
+E2.brief.lead.prompt = 손패에서 스킬 하나를 눌러 보세요!

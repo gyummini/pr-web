@@ -37,12 +37,13 @@ export function renderDetail(view, eid) {
             : ''
         }
         ${
-          // 이미 수집한 증거를 주소로 직접 열었을 때 — 조사로 바로 갈 수 있어야 한다
-          collected && hasBrief(ev)
-            ? `<a class="btn accent" href="/evidence/${ev.id}/interactive">${TH('common.to_interactive')}</a>`
+          // 이미 수집한 증거를 주소로 직접 열었을 때 — 조사로 바로 갈 수 있어야 한다.
+          // 페이지가 곧 원문인 증거(E8)는 수집 여부와 상관없이 이 버튼 하나로 연다(아래 '문서 바로 열기 ↗'와 같은 곳이라 겹치지 않게)
+          (collected || !ev.url) && hasBrief(ev)
+            ? `<a class="btn accent" href="/evidence/${ev.id}/interactive">${TH(briefOpenKey(ev, 'detail'))}</a>`
             : ''
         }
-        <button type="button" class="btn ghost open-doc">${TH('detail.open_doc')}</button>
+        ${hasBrief(ev) && !ev.url ? '' : `<button type="button" class="btn ghost open-doc">${TH('detail.open_doc')}</button>`}
         <a class="btn ghost" href="/evidence">${TH('common.back_to_evidence')}</a>
       </div>
     </div>`;
@@ -62,7 +63,7 @@ export function renderDetail(view, eid) {
     attWrap.appendChild(a);
   });
 
-  // 브리프가 곧 원문인 증거(E8)는 브리프를 연다
-  view.querySelector('.open-doc').addEventListener('click', () => (ev.url || !hasBrief(ev) ? openDoc(ev.url) : navigate(`/evidence/${ev.id}/interactive`)));
+  // 브리프가 곧 원문인 증거(E8)는 위의 '회고 읽기' 버튼 하나만 둔다 — 원본 문서 버튼이 없다
+  view.querySelector('.open-doc')?.addEventListener('click', () => (ev.url || !hasBrief(ev) ? openDoc(ev.url) : navigate(`/evidence/${ev.id}/interactive`)));
   return { destroy: stopCover };
 }

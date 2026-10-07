@@ -1,0 +1,6 @@
+E3.brief.labels.guide_mine = 바위를 깨서 철광석을 모으세요!
+E3.brief.labels.guide_sell = 남는 철광석을 팔아 골드를 모으세요!
+E3.brief.labels.guide_buy = 골드로 석탄을 사세요!
+E3.brief.labels.guide_enhance = 재료가 모였으니 다시 강화해 보세요!
+E3.brief.labels.guide_cut = 채굴과 경제를 덜어내 보세요!
+E3.brief.labels.guide_final = 내 방의 브레인롯을 강화해 보세요!

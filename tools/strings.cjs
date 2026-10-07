@@ -53,10 +53,15 @@ function request(only) {
 
   for (const [screen, rows] of screens) {
     out.push(`## ${screen}`, '', '### 다시 쓸 문구', '');
-    // 모든 문구에 똑같이 붙은 맥락은 한 번만 적는다
+    // 여러 문구에 똑같이 붙은 맥락은 한 번만 적는다. 모두가 같으면 '모든 문구에 공통', 절반 넘게 같으면 '따로 적지 않으면 공통' —
+    // 화면 하나를 통째로 다시 검수할 때(10/07 E8) 같은 '전할 것 · 변경 사유'가 문구마다 되풀이되어 요청문이 1,400줄이 됐다.
+    // 문구마다 다른 맥락(같은 이름표 — 예: 새 자리의 '전할 것')은 그 문구 아래에 그대로 적혀 공통을 대신한다.
     const parts = (r) => r.context.split(' | ');
-    const common = rows.length > 1 ? parts(rows[0]).filter((p) => rows.every((r) => parts(r).includes(p))) : [];
-    if (common.length) out.push('모든 문구에 공통:', '', ...common.map((p) => `- ${p}`), '');
+    const seen = new Map();
+    rows.forEach((r) => new Set(parts(r)).forEach((p) => seen.set(p, (seen.get(p) || 0) + 1)));
+    const common = rows.length > 1 ? [...seen].filter(([, n]) => n > 1 && n * 2 > rows.length).map(([p]) => p) : [];
+    const everyone = common.length && common.every((p) => seen.get(p) === rows.length);
+    if (common.length) out.push(everyone ? '모든 문구에 공통:' : '따로 적지 않으면 아래가 공통입니다(문구 아래에 다른 내용이 적혀 있으면 그것을 따릅니다):', '', ...common.map((p) => `- ${p}`), '');
     const printed = new Set();
     const item = (r, kind) => {
       out.push(`- \`${r.key}\`${kind ? ` · ${kind}` : ''}`, `  - 지금: ${r.text}`);
@@ -119,10 +124,11 @@ function isReference(key, rows, used) {
   return /^brief\.(lead|recap)\./.test(rest);
 }
 
-// 장 안 문구가 화면 어디에 놓이는지 — 블록 이름은 assets/js/briefs/retro.js가 그리는 대로 쓴다.
+// 장 안 문구가 화면 어디에 놓이는지 — 블록 이름은 assets/js/briefs/retro.js가 그리는 대로 쓴다
+// (10/07 결정 장부: 첫 화면은 여덟 장의 지도, 결정 · 제가 한 일은 장 머리, 그림은 오른쪽 증거 패널, AI가 한 일은 패널 바닥).
 function blockKind(pre, sub, labels) {
-  if (sub === 'word') return '장 이름(장 목록과 옆 목차에 쓰이는 한 단어)';
-  if (sub === 'title') return '장 제목';
+  if (sub === 'word') return '장 이름(첫 화면 지도와 옆 목차에 쓰이는 한 단어)';
+  if (sub === 'title') return '장 제목(첫 화면 지도에도 실린다)';
   const m = sub.match(/^blocks\.(\d+)\.(.+)$/);
   if (!m) return sub;
   const bk = L.nodeAt(`${pre}.blocks.${m[1]}`) || {};
@@ -130,13 +136,16 @@ function blockKind(pre, sub, labels) {
   // 그림 설명 앞에는 '참고'·'결과' 같은 꼬리표가 붙기도 한다
   const tag = (f) => (f && f.tag && labels[`tag_${f.tag}`] ? `(앞에 '${labels[`tag_${f.tag}`]}' 꼬리표)` : '');
   let x;
-  if (p === 'verdict') return '장 첫 문단(이 장의 결정과 이유)';
+  if (p === 'verdict') return '장 제목 바로 아래 굵은 문단(이 장의 결정과 이유)';
   if (p === 'h') return '소제목';
   if (p === 'p') return '본문 문단';
   if (/^list\.\d+$/.test(p)) return '글머리표 항목';
-  if (p === 'figure.caption') return `그림 설명${tag(bk.figure)}`;
-  if ((x = p.match(/^pair\.(\d+)\.caption$/))) return `나란히 놓인 두 그림 중 ${['앞', '뒤'][x[1]] || `${Number(x[1]) + 1}번째`} 그림 설명${tag(bk.pair[x[1]])}`;
-  if ((x = p.match(/^roles\.(mine|ai)$/))) return `장 끝 '${bk.roles[`${x[1]}_label`] || labels[x[1]]}' 칸`;
+  if (p === 'figure.caption') return `증거 패널의 그림 설명${tag(bk.figure)}`;
+  if ((x = p.match(/^pair\.(\d+)\.caption$/))) return `증거 패널에 나란히 놓인 두 그림 중 ${['앞', '뒤'][x[1]] || `${Number(x[1]) + 1}번째`} 그림 설명${tag(bk.pair[x[1]])}`;
+  if ((x = p.match(/^roles\.(mine|ai)$/))) {
+    const head = bk.roles[`${x[1]}_label`] || labels[x[1]];
+    return x[1] === 'mine' ? `결정 문단 바로 아래 '${head}' 칸` : `증거 패널 바닥의 '${head}' 한 줄`;
+  }
   if (/^table\.head\.\d+$/.test(p)) return '표 머리';
   if ((x = p.match(/^table\.rows\.\d+\.(\d+)$/))) return `표 칸('${bk.table.head[x[1]]}' 열)`;
   if (/^sources\.\d+\.label$/.test(p)) return '출처 링크 이름';

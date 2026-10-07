@@ -44,6 +44,10 @@ const wait = (ms) => new Promise((r) => setTimeout(r, ms));
     await page.locator('.cp-enhance').click();
     assert.equal(await page.locator('.cp-msg').innerText(), t.short, 'no materials yet');
     assert.deepEqual(await cueClass(page), ['cp-mine'], 'the cue moves to mining');
+    // 단계 안내 말풍선은 하나 — 지금 누를 것을 따라 옮겨 가며 문구가 바뀐다(10/07)
+    assert.equal(await page.locator('.cp-guide:not([hidden])').count(), 1);
+    assert.equal(await page.locator('.cp-guide').innerText(), t.guide_mine);
+    assert.equal(await page.locator('.cp-guide').evaluate((g) => g.nextElementSibling?.classList.contains('cp-mine')), true, 'the bubble sits right above the cue');
     // 표시를 따라 누르면 강화까지 간다 — 바위가 다시 나오는 동안은 기다린다
     for (let i = 0; i < 40 && (await page.locator('.cp-judge').isHidden()); i += 1) {
       const cue = page.locator('.cue').first();
@@ -59,6 +63,7 @@ const wait = (ms) => new Promise((r) => setTimeout(r, ms));
     // ② 판단 — 근거·질문이 열리고, 지금 누를 것은 덜어내기
     assert.equal(await page.locator('.cp-question').innerText(), E3.chapters[2].title.replace(/\n/g, '\n'));
     assert.deepEqual(await cueClass(page), ['cp-cut']);
+    assert.equal(await page.locator('.cp-guide').innerText(), t.guide_cut);
     await page.locator('.cp-cut').click();
     await wait(100);
     assert.equal(await page.locator('.cp').getAttribute('data-phase'), 'final', 'reduced motion lands the cut at once');

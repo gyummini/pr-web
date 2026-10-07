@@ -174,10 +174,9 @@ export function playCutPlay(host, cfg, onComplete) {
   skipBtn.addEventListener('click', () => { if (state.phase === 'first') { state.judge = true; paint(); } });
   // 처음 누를 것: 처음 게임은 강화, 출시한 게임은 지나가는 줄. 안내는 껍데기가 머리말에서 뺐을 때만 붙는다(첫 행동까지만).
   const actionHints = cfg.lead?.prompt_at === 'action';
-  const hint = actionHints && t.run_hint ? el('p', 'cue-note points-down', t.run_hint) : null;
-  if (hint) $('.cp-go').prepend(hint);
-  const takeHint = actionHints && t.take_hint ? el('p', 'cue-note points-down', t.take_hint) : null;
-  if (takeHint) $('.cp-lanebox').insertBefore(takeHint, lane);
+  // 단계 안내(10/07 사용자 결정 — 튜토리얼처럼): 말풍선 하나가 '지금 누를 것'을 따라 옮겨 가며 지금 할 일을 한 줄로 말한다.
+  // 누를 것 바로 위(글 흐름 안)에 끼워 넣어 아무것도 덮지 않는다. 문구는 brief.labels(첫 강화 · 줄은 원래 문구 그대로)
+  const guide = actionHints ? el('p', 'cue-note points-down cp-guide') : null;
   drawPickaxe();
   // 방의 칸 — 비어 있거나, 가져온 브레인롯이 앉는다. 누르면 그 브레인롯이 강화대에 오른다.
   for (let i = 0; i < slots; i += 1) {
@@ -552,13 +551,12 @@ export function playCutPlay(host, cfg, onComplete) {
     // 덜어낸 뒤 버튼은 내린 결정으로 남는다(체크, 다시 누를 수 없음)
     setOff(cutBtn, !first || state.busy);
     cutBtn.classList.toggle('is-done', !first);
-    if (hint) hint.hidden = !first || state.tried || state.judge;
-    if (takeHint) takeHint.hidden = !final || state.took;
     const caption = state.done ? (t.final_statement || '') : '';
     if ($('.cp-caption').textContent !== caption) $('.cp-caption').textContent = caption;
     $('.cp-kept').hidden = !state.done;
     const next = cueTarget();
     cueOn(next);
+    placeGuide(next);
     if (final) passFocus(next === lane ? track.querySelector('.cp-walker') || enhanceBtn : next || enhanceBtn);
   }
 
@@ -692,6 +690,23 @@ export function playCutPlay(host, cfg, onComplete) {
     }
     if (state.phase === 'final' && !state.done) return filled() < 2 ? lane : enhanceBtn;
     return null;
+  }
+
+  // 말풍선의 자리와 문구 — 누를 것이 든 줄 바로 위. 같은 자리 · 같은 문구면 건드리지 않는다(화면이 흔들리지 않게)
+  function placeGuide(target) {
+    if (!guide) return;
+    const first = state.phase === 'first';
+    let text = '';
+    let before = target;
+    if (target === enhanceBtn) text = first ? (state.tried ? t.guide_enhance : t.run_hint) : t.guide_final;
+    else if (target === mineBtn) text = t.guide_mine;
+    else if (target === sellBtn || target === buyBtn) { text = target === sellBtn ? t.guide_sell : t.guide_buy; before = target.parentElement; }
+    else if (target === cutBtn) text = t.guide_cut;
+    else if (target === lane) text = t.take_hint;
+    if (!target || !text) { guide.hidden = true; return; }
+    guide.hidden = false;
+    if (guide.textContent !== text) guide.textContent = text;
+    if (before !== guide && guide.nextSibling !== before) before.parentElement.insertBefore(guide, before);
   }
 
   // 표시가 여러 번 옮겨 가는 페이지라 화면에 들어온 뒤 세 번만 퍼지고 고정 테두리로 남는다(.cue-step, E1과 같다)

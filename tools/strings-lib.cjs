@@ -53,6 +53,10 @@ const NOT_SHOWN = [
   /^E3\.brief\.systems\.(mining|economy)\.(tag|detail|status|cut)$/, // 남는 것은 칸 이름(title)과 설명(note)
   /^E3\.brief\.systems\.market\./,
   /^E3\.brief\.(economy_rules|comparison|targets|rhythm|lessons)\./,
+  // 10/07 E8을 '결정 장부'로 다시 짜며 화면에서 빠진 것 — 좁은 화면의 장 목록 알약(첫 화면의 장부가 대신한다). 확정 문구라 지우지 않았다.
+  /^E8\.brief\.labels\.toc$/,
+  // 10/07 사용자 지시로 08장의 '시기 | 있었던 일' 표와 출처 목록을 뺐다 — 출처 목록의 머리 라벨만 남았다(확정 문구라 지우지 않음).
+  /^E8\.brief\.labels\.sources$/,
 ];
 const shown = (key) => !NOT_SHOWN.some((re) => re.test(key));
 

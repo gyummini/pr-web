@@ -6,7 +6,7 @@ import { addPending, landOne, flyFromRect } from './ui.js';
 import { checkChapterToasts, fmtCase } from './collect.js';
 import { navigate } from './router.js';
 import { hasMemo, renderMemo } from './memo.js';
-import { hasBrief } from './views/brief.js';
+import { hasBrief, briefOpenKey } from './views/brief.js';
 import { T, TH } from './text.js';
 
 // 닫기 단추의 ✕ — 글자 기호 대신 선 두께가 정해진 그림으로 그린다(글꼴마다 굵기 · 위치가 달랐다)
@@ -132,7 +132,7 @@ export function openEvidencePopup(eid) {
   // 그 자리는 브리프의 끝이다. 팝업은 자소서를 읽는 중에 뜨므로 갈림길을 둘로만 둔다.
   const actions = overlay.querySelector('.popup-actions');
   const deeper = hasBrief(ev)
-    ? action(T('common.to_interactive'), wasNew ? 'ghost' : 'accent', () => {
+    ? action(T(briefOpenKey(ev, 'popup')), wasNew ? 'ghost' : 'accent', () => {
         close();
         navigate(`/evidence/${ev.id}/interactive`);
       })

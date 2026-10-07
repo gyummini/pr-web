@@ -202,3 +202,7 @@
 @media (pointer: coarse) {
   .view-cut-play .brief-head-doc .btn, .cp-skip { min-height: 44px; display: inline-flex; align-items: center; }
 }
+
+/* 단계 안내 말풍선(10/07) — 누를 것 바로 위에 글 흐름으로 끼운다. 칸 폭만큼 늘어나지 않고 문구 길이만큼 */
+.cp-guide { align-self: flex-start; width: fit-content; max-width: 100%; margin-bottom: 2px; word-break: keep-all; }
+.cp-guide[hidden] { display: none; }

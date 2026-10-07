@@ -483,11 +483,16 @@ button { font-family: inherit; }
   border-style: dashed; color: var(--ink-soft);
 }
 .att-chip.card:hover { border-style: solid; border-color: var(--accent); color: var(--accent); }
+/* 직접 플레이 칩(E8 — 10/07): 첨부 칩과 같은 모양, 앞에 클립 대신 재생 모양(CSS 삼각형) */
+.att-chip.card.play-chip::before { content: ""; display: inline-block; margin-right: 6px; border-left: 7px solid currentColor; border-top: 4.5px solid transparent; border-bottom: 4.5px solid transparent; vertical-align: -1px; }
 
 .ev-foot {
-  display: flex; align-items: baseline; justify-content: space-between; gap: 10px;
+  display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 6px 10px;
   margin-top: auto; padding-top: 12px;
 }
+/* 행동 문구 + 원본 지름길은 한 묶음. 증거 코드 옆에 다 안 들어가면 묶음째 다음 줄 오른쪽으로 내려간다(10/07 — 긴 행동 문구에 밀려
+   '원본 ↗'이 카드 밖으로 잘렸다). 묶음 하나도 안 들어가는 좁은 칸이면 그 안에서 다시 줄을 나눈다 */
+.ev-acts { display: inline-flex; flex-wrap: wrap; justify-content: flex-end; align-items: baseline; gap: 6px 8px; margin-left: auto; }
 .ev-code { font-size: .7rem; letter-spacing: .06em; color: var(--muted); white-space: nowrap; }
 .ev-open { font-size: .82rem; font-weight: 700; color: var(--accent); white-space: nowrap; }
 

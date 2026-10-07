@@ -29,6 +29,13 @@ export function hasBrief(ev) {
   return !!(ev && ev.brief && PLAYS[ev.brief.kind]);
 }
 
+// 브리프로 가는 이름표(10/07 사용자 결정): 해 보는 페이지(E1 · E2 · E3 · E5)와 읽는 회고(E8 — 페이지가 곧 원문)를 가른다.
+// 보관함 카드는 evidence.open_*, 진술 팝업 · 증거 상세는 common.to_interactive(같은 문구)
+export function briefOpenKey(ev, where = 'card') {
+  if (ev?.brief?.kind === 'retro') return 'evidence.open_retro';
+  return where === 'card' ? 'evidence.open_interactive' : 'common.to_interactive';
+}
+
 export function renderBrief(view, eid) {
   const ev = getCard(eid);
   if (!ev || ev.hidden || !hasBrief(ev)) {
@@ -84,6 +91,9 @@ export function renderBrief(view, eid) {
   if (ev.url) view.querySelector('.brief-head-doc').appendChild(docLink(T('brief.original_doc'), 'ghost', ev.url));
 
   const recapEl = view.querySelector('.brief-recap');
+  // 결론 칸의 제자리(본체 다음, 하단 액션 앞). 본체가 결론 자리를 따로 두면(E3 — 장부 아래) 그리로 옮겼다가 닫을 때 돌려놓는다
+  const recapHome = { parent: recapEl.parentElement, next: recapEl.nextElementSibling };
+  let docsSlot = null; // 원본 문서 · 다시 해보기를 본체의 다른 자리에 열었을 때(E3 — 장부 가운데)
   const status = view.querySelector('.brief > [role="status"]');
   // 마운트 도중에 결론을 여는 브리프가 있다(E2 — 처음부터 열어 둔다). 그때는 play가 아직 없어
   // 다시 해보기를 둘지 모르므로, 요청만 받아 두었다가 play가 생긴 직후에 연다.
@@ -93,10 +103,11 @@ export function renderBrief(view, eid) {
   // 마운트가 끝난 뒤에 열리는 결론은 조작이 끝나서 열린 것이다 — 화면 낭독기에도 알린다(처음부터 열어 두는 E2는 알리지 않는다).
   // showRecap보다 먼저 선언해 둔다(아래 pendingRecap 처리에서 읽는다 — 늦게 선언하면 TDZ)
   let mounted = false;
+  // 넷째 값은 증거 카드 전체 — 본체가 브리프 밖의 데이터(요약 메모의 단계 이름 등)를 그대로 쓸 때(E3)
   play = PLAYS[b.kind](view.querySelector('.brief-play'), b, (opts) => {
     if (play) showRecap(opts);
     else pendingRecap = opts || {};
-  });
+  }, ev);
   if (pendingRecap) showRecap(pendingRecap);
   mounted = true;
   view.querySelector('.brief-foot').appendChild(link(T('brief.back'), '/evidence'));
@@ -122,6 +133,9 @@ export function renderBrief(view, eid) {
       docs.appendChild(docLink(att.label, 'ghost', att.url));
     });
     if (play.restart) docs.appendChild(btn(T('brief.restart'), 'ghost', () => play.restart(hideRecap)));
+    // opts.into — 본체가 마련한 결론 자리, opts.docsInto — 버튼 줄만 따로 둘 자리(E3: 결론 문장 바로 옆)
+    if (opts?.into) opts.into.appendChild(recapEl);
+    if (opts?.docsInto) { docsSlot = opts.docsInto; docsSlot.replaceChildren(docs); }
 
     recapEl.hidden = false;
     recapEl.classList.add('on');
@@ -139,6 +153,9 @@ export function renderBrief(view, eid) {
     recapEl.hidden = true;
     recapEl.classList.remove('on');
     recapEl.textContent = '';
+    // 본체 안으로 옮겨 둔 결론은 제자리로 — 다시 해보기가 본체를 다시 그려도 함께 지워지지 않게
+    if (recapEl.parentElement !== recapHome.parent) recapHome.parent.insertBefore(recapEl, recapHome.next);
+    if (docsSlot) { docsSlot.replaceChildren(); docsSlot = null; }
   }
 
   function btn(label, kind, onClick) {

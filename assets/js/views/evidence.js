@@ -2,7 +2,8 @@ import { DB, groupCards } from '../data.js';
 import { BASE_EVIDENCE_IDS, state, baseUnlocked, collectedBaseCount } from '../state.js';
 import { addPending, landOne, flyFromRect, openDoc } from '../ui.js';
 import { checkChapterToasts, fmtCase } from '../collect.js';
-import { hasBrief } from './brief.js';
+import { hasBrief, briefOpenKey } from './brief.js';
+import { landOn } from '../briefs/retro.js';
 import { navigate } from '../router.js';
 import { T, TH } from '../text.js';
 
@@ -67,6 +68,9 @@ function esc(s) {
   return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
+// 페이지 안에서 직접 플레이할 수 있는 증거 — 브리프에 플레이 주소(play.href)가 있다(E8). E2의 brief.play는 체험 설정이라 주소가 없다
+const canPlay = (ev) => hasBrief(ev) && !!ev.brief.play?.href;
+
 function cardHtml(ev) {
   const got = state.collected.has(ev.id);
   const thumb = ev.thumb
@@ -85,20 +89,22 @@ function cardHtml(ev) {
         ${
           // 첨부(실측 데이터·플레이 링크 등)는 목록에서 바로 열 수 있어야 한다.
           // 카드 본체 클릭은 본문 열기이므로 칩은 이벤트를 가로챈다.
-          (ev.attachments || []).length
+          // 페이지 안에서 직접 플레이할 수 있는 증거(E8)는 '직접 플레이' 칩 — E3의 플레이 링크 칩과 같은 자리(10/07)
+          (ev.attachments || []).length || (canPlay(ev))
             ? `<div class="ev-card-atts">${(ev.attachments || [])
                 .map((_, i) => `<button type="button" class="att-chip card" data-att="${i}"></button>`)
-                .join('')}</div>`
+                .join('')}${canPlay(ev) ? `<button type="button" class="att-chip card play-chip">${TH('evidence.play')}</button>` : ''}</div>`
             : ''
         }
         <div class="ev-foot">
           <span class="ev-code">${esc(code)}</span>
-          <span class="ev-open">${TH(hasBrief(ev) ? 'evidence.open_interactive' : got ? 'common.open_doc' : 'evidence.open_summary')}</span>
-          ${
+          <span class="ev-acts"><span class="ev-open">${TH(hasBrief(ev) ? briefOpenKey(ev) : got ? 'common.open_doc' : 'evidence.open_summary')}</span>${
             // 절대원칙 1(2클릭 내 도달) 유지 — 본문이 브리프로 가더라도
             // 원본 문서로 바로 가는 길은 카드 안에 남겨둔다.
-            got && ev.url ? `<button type="button" class="ev-direct" title="${TH('evidence.direct_title')}">${TH('evidence.direct')}</button>` : ''
-          }
+            // 행동 문구와 한 묶음(.ev-acts) — 자리가 모자라면 묶음째 다음 줄로 내려간다(10/07: 긴 문구에 밀려 카드 밖으로 잘렸다).
+            // 수집 여부와 상관없이 원본이 있으면 붙인다(10/07 사용자 요청 — 전에는 수집한 카드에만)
+            ev.url ? `<button type="button" class="ev-direct" title="${TH('evidence.direct_title')}">${TH('evidence.direct')}</button>` : ''
+          }</span>
         </div>
       </div>
     </div>`;
@@ -127,7 +133,7 @@ function wireCard(el) {
     img.addEventListener('error', () => img.remove(), { once: true });
   }
   // 첨부 칩: 라벨은 데이터 그대로, 클릭은 카드 본체로 전파되지 않게 막는다
-  el.querySelectorAll('.att-chip.card').forEach((chip) => {
+  el.querySelectorAll('.att-chip.card[data-att]').forEach((chip) => {
     const att = (ev.attachments || [])[Number(chip.dataset.att)];
     if (!att) {
       chip.remove();
@@ -146,6 +152,21 @@ function wireCard(el) {
       }
     });
   });
+
+  // 직접 플레이 칩 — 개인 키를 여기서 발급하지 않는다. 그 증거 페이지를 열고 '직접 플레이하기' 버튼(안내문과 함께)으로 데려간다
+  const play = el.querySelector('.play-chip');
+  if (play) {
+    const go = (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      landOn('play');
+      navigate(`/evidence/${ev.id}/interactive`);
+    };
+    play.addEventListener('click', go);
+    play.addEventListener('keydown', (e) => {
+      if (e.code === 'Enter' || e.code === 'Space') go(e);
+    });
+  }
 
   // 수집된 증거의 원본 문서로 가는 지름길 (카드 본체 클릭과 분리)
   const direct = el.querySelector('.ev-direct');
