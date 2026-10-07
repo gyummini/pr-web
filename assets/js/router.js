@@ -9,7 +9,6 @@ import { renderBrief } from './views/brief.js';
 import { renderEnding } from './views/ending.js';
 import { renderMaking } from './views/making.js';
 import { renderNotebook } from './views/notebook.js';
-import { renderDocs } from './views/docs.js';
 import { renderNotFound } from './views/notfound.js';
 import { T } from './text.js';
 
@@ -164,7 +163,8 @@ function renderRoute(path, restoreScroll) {
         current = renderNotebook(view);
         break;
       case 'docs':
-        current = renderDocs(view);
+        // 문서만 모아보기는 10/07 사용자 결정으로 뺐다 — 예전 링크는 보관함으로(원본은 카드마다 '원본 ↗')
+        navigate('/evidence', { replace: true });
         break;
       default:
         current = renderNotFound(view, path);
@@ -203,8 +203,6 @@ function renderRoute(path, restoreScroll) {
     heading.focus({ preventScroll: true });
   }
 
-  // 문서 목록은 컨셉 없는 열람용 — 상단 탭 바(사건 파일 UI)를 노출하지 않는다
-  document.body.classList.toggle('plain-mode', seg[0] === 'docs');
   updateTabs(seg[0]);
   syncBadge();
 

@@ -69,7 +69,7 @@ export function renderMemo(host, ev) {
   m.rows.forEach((row) => {
     if (row.block) {
       const fn = BLOCKS[row.block.kind];
-      if (fn) lines.appendChild(fn(row.block));
+      if (fn) lines.appendChild(fn(row.block, ev));
       return;
     }
     lines.appendChild(memoRow(row));
@@ -172,20 +172,48 @@ function blockReduce(cfg) {
 }
 
 /* ---------- 블록: 갈림길마다 돌아오는 기준 ----------
-   기준(알약)에서 내려오는 붉은 등뼈에 갈림길이 하나씩 매달린다. 등뼈 끝의 화살표는 기준 쪽을 가리킨다 —
-   결정할 때마다 그리로 돌아왔다는 뜻. 물음과 답은 위아래로 쌓아 좁은 화면에서도 넘치지 않는다. */
+   E8 페이지 첫 화면의 지도와 같은 그림(10/07 사용자 요청 — 전에는 알약에서 내려오는 등뼈): 가운데 실제 게임의 팩,
+   양쪽에 갈림길이 반씩. 갈림길마다 가지가 세로줄로 모이고 그 가운데에서 화살촉이 팩을 가리킨다 — 결정할 때마다 이 재미로 돌아왔다.
+   기준 문구는 팩 아래. 메모 칸이 좁으면 팩 → 기준 → 줄기가 두 갈래로 갈라져 갈림길을 매단다(컨테이너 쿼리) */
 
-function blockCompass(cfg) {
+function blockCompass(cfg, ev) {
   const box = el('div', 'memo-cmp');
+  const turns = cfg.turns || [];
+  const half = Math.ceil(turns.length / 2);
+  box.style.setProperty('--rows', String(half)); // 모으는 세로줄의 길이(첫 갈림길 가운데 ~ 끝 갈림길 가운데)
+  // 기준은 문서 순서로 맨 앞(화면 낭독기가 기준부터 읽는다), 화면에서는 팩 아래(CSS 격자)
   box.appendChild(el('div', 'memo-cmp-core', cfg.core));
-  const list = el('div', 'memo-cmp-list');
-  (cfg.turns || []).forEach((t) => {
-    const row = el('div', 'memo-cmp-row');
-    row.append(el('span', 'memo-cmp-q', t.q), el('span', 'memo-cmp-a', t.a));
-    list.appendChild(row);
-  });
-  box.appendChild(list);
+  const side = (part, cls) => {
+    const list = el('div', `memo-cmp-side ${cls}`);
+    part.forEach((t) => {
+      const row = el('div', 'memo-cmp-row');
+      row.append(el('span', 'memo-cmp-q', t.q), el('span', 'memo-cmp-a', t.a));
+      list.appendChild(row);
+    });
+    return list;
+  };
+  const join = (cls) => {
+    const j = el('span', `memo-cmp-join ${cls}`);
+    j.setAttribute('aria-hidden', 'true');
+    return j;
+  };
+  const pack = el('span', 'memo-cmp-pack');
+  pack.setAttribute('aria-hidden', 'true');
+  if (!packCrop(pack, ev?.brief?.cover?.pack)) box.classList.add('no-pack');
+  box.append(side(turns.slice(0, half), 'is-left'), join('is-left'), pack, join('is-right'), side(turns.slice(half), 'is-right'));
   return box;
+}
+
+// 팩 개봉 첫 장면에서 팩만 잘라 배경으로 보인다(데이터 cover.pack의 box — 원본 화소의 x · y · 폭 · 높이). 새 그림을 싣지 않는다.
+// E8 페이지의 지도(briefs/retro.js)와 이 메모의 나침반이 같은 팩을 쓴다
+export function packCrop(node, pack) {
+  if (!pack?.src || !pack.box) return false;
+  const [x, y, w, h] = pack.box;
+  node.style.backgroundImage = `url("${pack.src}")`;
+  node.style.backgroundSize = `${(pack.w / w) * 100}% auto`;
+  node.style.backgroundPosition = `${(x / (pack.w - w)) * 100}% ${(y / (pack.h - h)) * 100}%`;
+  node.style.aspectRatio = `${w} / ${h}`;
+  return true;
 }
 
 /* ---------- 블록: 화면 ↔ 판단 대응 ----------

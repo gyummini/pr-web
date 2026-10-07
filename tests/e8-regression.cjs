@@ -7,7 +7,8 @@ const { chromium } = require('playwright');
 const fs = require('node:fs');
 const path = require('node:path');
 // 문구는 데이터에서 읽는다 — GPT가 문구를 바꿔도 테스트는 그대로 돈다
-const EV = JSON.parse(fs.readFileSync(path.join(__dirname, '..', '콘텐츠_증거카드.json'), 'utf8')).evidences.find(e => e.id === 'E8');
+const EVS = JSON.parse(fs.readFileSync(path.join(__dirname, '..', '콘텐츠_증거카드.json'), 'utf8')).evidences;
+const EV = EVS.find(e => e.id === 'E8');
 const B = EV.brief;
 const t = B.labels;
 const origin = process.env.TEST_ORIGIN || 'http://127.0.0.1:4173';
@@ -180,9 +181,62 @@ const ch = (no) => `.lg-ch[data-chapter="${no}"]`;
     shelf.on('pageerror', e => errors.push(e.message));
     await shelf.goto(origin + '/evidence');
     await shelf.locator('.ev-grid').waitFor();
-    for (const id of ['E1', 'E2', 'E3', 'E5']) assert.equal(await shelf.locator(`.ev-card[data-eid="${id}"] .ev-open`).innerText(), UI.evidence.open_interactive, id);
-    assert.equal(await shelf.locator('.ev-card[data-eid="E8"] .ev-open').innerText(), UI.evidence.open_retro);
+    // 아직 모으지 않은 카드는 블러 그대로 '요약 확인' — 누르면 수집하지 않고 요약 팝업이 뜬다(10/07 사용자 결정)
+    for (const id of ['E1', 'E2', 'E3', 'E4', 'E5', 'E6', 'E8']) assert.equal(await shelf.locator(`.ev-card[data-eid="${id}"] .ev-open`).innerText(), UI.evidence.open_summary, id);
     assert.equal(await shelf.locator('.play-chip').count(), 1, 'only E8 plays inside its page');
+    const unlock = (action) => UI.popup.unlock.replace('{action}', action);
+    const badge = () => shelf.locator('#badge').innerText();
+    const before = await badge();
+    for (const [id, action] of [['E5', UI.common.to_interactive], ['E8', UI.evidence.open_retro], ['E4', UI.common.open_doc]]) {
+      await shelf.locator(`.ev-card[data-eid="${id}"]`).click();
+      assert.deepEqual(await shelf.locator('.popup-actions .btn').allInnerTexts(), [UI.popup.to_statement, unlock(action)], `${id} shelf popup buttons`);
+      assert.equal(await shelf.locator('.popup .ev-memo .memo').count(), 1, `${id} shows the summary memo`);
+      if (id === 'E8') {
+        // 요약 메모의 나침반 = E8 페이지 지도와 같은 그림: 가운데 팩(자른 그림), 양쪽 둘씩 모여 팩을 가리킨다, 기준은 팩 아래
+        const cmp = await shelf.locator('.memo-cmp').evaluate((box) => {
+          const r = (n) => n.getBoundingClientRect();
+          const pack = r(box.querySelector('.memo-cmp-pack'));
+          const core = r(box.querySelector('.memo-cmp-core'));
+          const sides = [...box.querySelectorAll('.memo-cmp-side')].map((s) => s.querySelectorAll('.memo-cmp-row').length);
+          const joins = [...box.querySelectorAll('.memo-cmp-join')].filter((j) => j.getClientRects().length).length;
+          return { packed: /url\(/.test(box.querySelector('.memo-cmp-pack').style.backgroundImage), sides, joins, coreBelow: core.top >= pack.bottom, inside: box.scrollWidth <= box.clientWidth };
+        });
+        assert.deepEqual(cmp, { packed: true, sides: [2, 2], joins: 2, coreBelow: true, inside: true }, 'memo compass draws the map');
+      }
+      await shelf.keyboard.press('Escape');
+      await shelf.locator('.modal-overlay').waitFor({ state: 'detached' });
+    }
+    assert.equal(await badge(), before, 'looking at a summary does not collect');
+    assert.equal(await shelf.locator('.ev-card.unknown').count(), 7);
+    // '남은 증거 찾기' — 첫 미수집 증거(E1)의 요약 팝업, 증거 상세 화면으로 넘어가지 않는다
+    await shelf.locator('.hidden-find').click();
+    await shelf.locator('.popup').waitFor();
+    assert.equal(new URL(shelf.url()).pathname, '/evidence');
+    assert.equal(await shelf.locator('.popup .ev-title').innerText(), EVS.find((e) => e.id === 'E1').title);
+    // 자기소개서에서 확인하기 — 그 증거가 처음 나오는 장의 그 문장으로 내려가 표시 · 초점, 수집은 문장을 눌러서
+    await shelf.getByRole('button', { name: UI.popup.to_statement, exact: true }).click();
+    await shelf.waitForURL('**/case/01');
+    await shelf.waitForFunction(() => document.activeElement?.matches('.anchor.found[data-eid="E1"]'));
+    assert.equal(await shelf.locator('.anchor.found').count(), 1);
+    assert.equal(await shelf.locator('.anchor.found').evaluate((a) => { const r = a.getBoundingClientRect(); return r.top > 0 && r.bottom < innerHeight; }), true, 'the sentence is on screen');
+    assert.equal(await badge(), before, 'landing does not collect');
+    // 장을 떠나면 그 장의 증거는 자동 수집된다(원래 규칙) — 보관함으로 돌아오면 E1이 수집돼 있다
+    await shelf.locator('#tabs a[data-tab="evidence"]').click();
+    await shelf.locator('.ev-card.collected[data-eid="E1"]').waitFor();
+    // 잠금해제하고 ○○ — 수집하고 바로 연다: 원본 문서(E4)는 새 탭 + 카드가 수집으로 뒤집힌다, 인터랙티브(E2)는 그 페이지로
+    await shelf.evaluate(() => { window.__opened = []; window.open = (u) => { window.__opened.push(u); return null; }; });
+    await shelf.locator('.ev-card[data-eid="E4"]').click();
+    await shelf.getByRole('button', { name: unlock(UI.common.open_doc), exact: true }).click();
+    await shelf.locator('.ev-card.collected[data-eid="E4"]').waitFor();
+    assert.deepEqual(await shelf.evaluate(() => window.__opened), [EVS.find((e) => e.id === 'E4').url]);
+    assert.equal(await shelf.locator('.ev-card[data-eid="E4"] .ev-open').innerText(), UI.common.open_doc);
+    assert.equal(await shelf.locator('.hidden-progress').innerText(), UI.evidence.hidden_progress.replace('{n}', '2').replace('{total}', '7'));
+    await shelf.locator('.ev-card[data-eid="E2"]').click();
+    await shelf.getByRole('button', { name: unlock(UI.common.to_interactive), exact: true }).click();
+    await shelf.waitForURL('**/evidence/E2/interactive');
+    await shelf.locator('#tabs a[data-tab="evidence"]').click();
+    await shelf.locator('.ev-card.collected[data-eid="E2"]').waitFor();
+    assert.equal(await shelf.locator('.ev-card[data-eid="E2"] .ev-open').innerText(), UI.evidence.open_interactive);
     // '원본 ↗'은 수집하지 않은 카드에도 — 원본이 있는 증거 전부(E8은 페이지가 곧 원문이라 없다)(10/07 사용자 요청)
     assert.equal(await shelf.locator('.ev-card.unknown .ev-direct').count(), await shelf.locator('.ev-card.unknown:not([data-eid="E8"])').count(), 'every uncollected card with an original has the shortcut');
     assert.equal(await shelf.locator('.ev-card[data-eid="E8"] .ev-direct').count(), 0);
@@ -200,7 +254,9 @@ const ch = (no) => `.lg-ch[data-chapter="${no}"]`;
     }
     // 수집한 카드에는 '원본 ↗'이 붙는다 — 긴 행동 문구에 밀려 카드 밖으로 잘리지 않는다(10/07 사용자 발견). 보관함은 탭으로 옮겨 수집 상태를 지킨다
     await shelf.locator('#tabs a[data-tab="evidence"]').click();
-    await shelf.locator('.ev-card[data-eid="E5"] .ev-direct').waitFor();
+    await shelf.locator('.ev-card.collected[data-eid="E5"] .ev-direct').waitFor();
+    assert.equal(await shelf.locator('.ev-card[data-eid="E5"] .ev-open').innerText(), UI.evidence.open_interactive);
+    assert.equal(await shelf.locator('.ev-card[data-eid="E8"] .ev-open').innerText(), UI.evidence.open_retro);
     for (const width of [1440, 1100, 760, 390, 320]) {
       await shelf.setViewportSize({ width, height: 900 });
       const inside = await shelf.locator('.ev-card[data-eid="E5"]').evaluate((c) => {
@@ -229,6 +285,6 @@ const ch = (no) => `.lg-ch[data-chapter="${no}"]`;
     await live.waitForFunction(() => [...document.querySelectorAll('.lg video')].every(v => v.paused), null, { timeout: 3000 });
 
     assert.deepEqual(errors, []);
-    console.log('PASS E8 retro: map (pack, core, four a side, joins at the pack), cover panel stays with the cover, play links never clicked, spine, map and rail jumps with focus, mine/AI split, tabs and keys, same-size pair, videos (reduced motion, toggle, play only in view, tab switch), notice open and credits folded, tables and sources, 320–1920px, shelf and popup labels (try vs read), play chip lands on the play button.');
+    console.log('PASS E8 retro: map (pack, core, four a side, joins at the pack), cover panel stays with the cover, play links never clicked, spine, map and rail jumps with focus, mine/AI split, tabs and keys, same-size pair, videos (reduced motion, toggle, play only in view, tab switch), notice open and credits folded, tables and sources, 320–1920px, shelf and popup labels (try vs read), shelf summary popup (no collect, memo compass = map, find in statement, unlock to page or document, remaining-evidence button), play chip lands on the play button.');
   } finally { await browser.close(); }
 })().catch(e => { console.error(e); process.exitCode = 1; });

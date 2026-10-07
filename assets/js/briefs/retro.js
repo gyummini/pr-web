@@ -14,13 +14,12 @@
 // 영상을 못 트는 브라우저는 원래 움짤(gif)을 쓴다.
 // 넓은 화면(1181px~)에서 껍데기의 머리말(.brief-head · .brief-lead)과 지도 · 표지 패널이 한 격자에 놓이는 것은 retro.css가 정한다.
 import { track } from '../analytics.js';
+import { takeLanding } from '../landing.js';
+import { packCrop } from '../memo.js';
 
 // 화면에 붙는 고정 문구(옆 목차 · 역할 머리 · 출처 · 그림 꼬리표 · 영상 단추) — brief.labels. 한 번에 한 화면만 그리므로 모듈에 둔다.
 let L = {};
 let uid = 0; // 증거 패널의 탭 ↔ 그림 짝(aria-controls)
-// 다른 화면에서 '직접 플레이'로 들어올 때 내려앉을 자리(보관함 카드의 칩 — 10/07). 라우터가 주소의 해시를 지우므로 한 번 쓰고 버리는 값으로 넘긴다
-let landing = null;
-export function landOn(where) { landing = where; }
 
 const media = (q) => typeof matchMedia === 'function' && matchMedia(q).matches;
 const reduce = () => media('(prefers-reduced-motion: reduce)');
@@ -75,8 +74,7 @@ export function playRetro(host, b, _onComplete, ev = {}) {
   clips.start();
   // 보관함의 '직접 플레이' 칩으로 왔으면 첫 화면의 직접 플레이 버튼(안내문 옆)으로 — 키는 그 버튼을 눌러야 발급된다.
   // 라우터가 그린 뒤 머리말 제목에 초점을 두므로 그다음 차례에 옮기고, '지금 누를 것' 테두리를 세 번만 퍼지게 붙인다
-  if (landing === 'play') {
-    landing = null;
+  if (takeLanding('retro') === 'play') {
     const target = root.querySelector('.lg-cta a') || end.button;
     if (target) {
       setTimeout(() => {
@@ -139,14 +137,7 @@ function map(chapters, core, pack, go) {
   const join = (cls) => { const j = el('span', `lg-map-join ${cls}`); j.setAttribute('aria-hidden', 'true'); return j; };
   const hub = el('span', 'lg-map-pack');
   hub.setAttribute('aria-hidden', 'true');
-  // 팩 개봉 첫 장면에서 팩만 잘라 보인다(데이터의 box — 원본 화소의 x · y · 폭 · 높이). 새 그림을 싣지 않는다
-  if (pack?.src && pack.box) {
-    const [x, y, w, h] = pack.box;
-    hub.style.backgroundImage = `url("${pack.src}")`;
-    hub.style.backgroundSize = `${(pack.w / w) * 100}% auto`;
-    hub.style.backgroundPosition = `${(x / (pack.w - w)) * 100}% ${(y / (pack.h - h)) * 100}%`;
-    hub.style.aspectRatio = `${w} / ${h}`;
-  }
+  packCrop(hub, pack); // 팩 개봉 첫 장면에서 팩만 잘라 보인다 — 요약 메모의 나침반과 같은 팩
   nav.append(side(chapters.slice(0, half), 1, 'is-left'), join('is-left'), hub, join('is-right'), side(chapters.slice(half), half + 1, 'is-right'));
   return nav;
 }

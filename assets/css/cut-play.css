@@ -3,8 +3,8 @@
 /* 바탕색은 화면 전체에 칠한다 — 가운데 상자에만 칠하면 1920 화면 양옆 · 아래에 흰 띠가 남았다(10/06) */
 .view-cut-play { background: var(--rd-paper); }
 .view-cut-play .brief { background: var(--rd-paper); color: var(--rd-ink); max-width: 1480px; padding: 26px 34px 50px; }
-.view-cut-play .brief-head { display: grid; grid-template-columns: 66px 1fr; column-gap: 14px; align-items: start; }
-.view-cut-play .evidence-cover { grid-row: 1 / 5; height: 94px; margin: 0; }
+/* 표지 칸 · 크기는 다섯 페이지 공통(style.css '.view-brief .brief-head' — 그림 비율 그대로, 칸 96px) */
+.view-cut-play .brief-head { display: grid; grid-template-columns: 96px 1fr; column-gap: 14px; align-items: start; }
 .view-cut-play .brief-head .ev-title { font-size: 1rem; margin-top: 4px; }
 .view-cut-play .brief-head .ev-sub { font-size: .76rem; }
 .view-cut-play .brief-head-doc { grid-column: 2; margin-top: 10px; }

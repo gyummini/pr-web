@@ -367,6 +367,13 @@ button { font-family: inherit; }
 .anchor:hover { background-color: var(--highlight); }
 .anchor-tail { white-space: nowrap; }
 .anchor-ic { font-size: .8em; margin-left: 3px; }
+/* 보관함 요약 팝업의 '자기소개서에서 확인하기'로 내려앉은 문장(10/07) — 형광펜을 세 번 깜빡이고 칠한 채로 둔다. 누르면(수집) 지운다 */
+.anchor.found {
+  background-color: var(--highlight); outline: 2px solid var(--accent); outline-offset: 2px;
+  animation: anchor-found .8s ease-in-out 3;
+}
+@keyframes anchor-found { 50% { background-color: transparent; } }
+@media (prefers-reduced-motion: reduce) { .anchor.found { animation: none; } }
 
 .chapter-nav {
   display: flex; justify-content: space-between; align-items: center;
@@ -1589,28 +1596,42 @@ body.plain-mode #view { min-height: 100vh; }
   margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--nb-rule); text-align: center;
 }
 
-/* E8 compass — 기준(알약)에서 내려오는 붉은 등뼈에 갈림길이 하나씩 매달린다.
-   등뼈 끝 꺾쇠는 기준 쪽을 가리킨다: 결정할 때마다 그리로 돌아왔다 */
-.memo-cmp-core {
-  width: fit-content; max-width: 100%; padding: 5px 14px; text-align: center;
-  border: 1.5px solid var(--nb-red); border-radius: 999px; background: var(--accent-soft);
+/* E8 compass — E8 페이지 첫 화면의 지도(retro.css '.lg-map')와 같은 그림(10/07 사용자 요청 — 전에는 알약에서 내려오는 등뼈).
+   가운데 실제 게임의 팩, 양쪽에 갈림길이 반씩. 갈림길마다 가지가 세로줄로 모이고 그 가운데 화살촉이 팩을 가리킨다 —
+   결정할 때마다 이 재미로 돌아왔다. 기준 문구는 팩 아래. 갈림길 수(한쪽)는 memo.js가 --rows로 넣는다 */
+.memo-cmp {
+  display: grid; grid-template-columns: minmax(0, 1fr) 26px 58px 26px minmax(0, 1fr);
+  --cmp-line: linear-gradient(var(--nb-red), var(--nb-red));
 }
-.memo-cmp-list {
-  position: relative; display: grid; gap: 9px;
-  margin-left: 18px; padding: 14px 0 2px 18px; border-left: 1.5px solid var(--nb-red);
+.memo-cmp-side { grid-row: 1; display: grid; grid-auto-rows: 1fr; }
+.memo-cmp-side.is-left { grid-column: 1; text-align: right; }
+.memo-cmp-side.is-right { grid-column: 5; }
+.memo-cmp-row { position: relative; display: flex; flex-direction: column; justify-content: center; gap: 1px; padding: 7px 0; }
+.memo-cmp-side.is-left .memo-cmp-row { padding-right: 5px; }
+.memo-cmp-side.is-right .memo-cmp-row { padding-left: 5px; }
+.memo-cmp-q { font-size: .75rem; color: var(--nb-muted); text-wrap: balance; }
+.memo-cmp-a { font-size: .8rem; font-weight: 600; color: var(--nb-ink-soft); text-wrap: balance; }
+/* 갈림길마다 세로줄로 뻗는 가지 */
+.memo-cmp-row::after { content: ''; position: absolute; top: 50%; width: 11px; height: 1.5px; background: var(--nb-red); }
+.memo-cmp-side.is-left .memo-cmp-row::after { right: -11px; }
+.memo-cmp-side.is-right .memo-cmp-row::after { left: -11px; }
+/* 모으는 세로줄(첫 갈림길 가운데 ~ 끝 갈림길 가운데)과 그 가운데에서 팩으로 들어가는 줄 */
+.memo-cmp-join { grid-row: 1; position: relative; --span: calc(100% - 100% / var(--rows, 2)); }
+.memo-cmp-join.is-left { grid-column: 2; background: var(--cmp-line) 10px 50% / 1.5px var(--span) no-repeat, var(--cmp-line) 10px 50% / 16px 1.5px no-repeat; }
+.memo-cmp-join.is-right { grid-column: 4; background: var(--cmp-line) calc(100% - 10px) 50% / 1.5px var(--span) no-repeat, var(--cmp-line) 0 50% / 16px 1.5px no-repeat; }
+/* 화살촉 — 팩 쪽을 가리킨다 */
+.memo-cmp-join::after { content: ''; position: absolute; top: 50%; margin-top: -4.5px; border: 4.5px solid transparent; }
+.memo-cmp-join.is-left::after { right: 0; border-right: 0; border-left: 6px solid var(--nb-red); }
+.memo-cmp-join.is-right::after { left: 0; border-left: 0; border-right: 6px solid var(--nb-red); }
+/* 팩 — 그림 · 자르기 값은 memo.js가 데이터(E8 cover.pack)에서 넣는다. 데이터가 없으면 붉은 점 하나 */
+.memo-cmp-pack {
+  grid-row: 1; grid-column: 3; align-self: center; display: block; width: 100%; aspect-ratio: 200 / 378;
+  border-radius: 4px; background-repeat: no-repeat;
+  filter: drop-shadow(0 5px 9px rgba(0, 0, 0, .22));
 }
-.memo-cmp-list::before {
-  content: ''; position: absolute; left: -5.25px; top: 0; width: 9px; height: 9px;
-  border-left: 2px solid var(--nb-red); border-top: 2px solid var(--nb-red);
-  transform: rotate(45deg);
-}
-.memo-cmp-row { position: relative; display: grid; gap: 1px; }
-/* 등뼈에서 갈라지는 가지 */
-.memo-cmp-row::before {
-  content: ''; position: absolute; left: -18px; top: .7em; width: 12px; height: 1.5px; background: var(--nb-red);
-}
-.memo-cmp-q { font-size: .75rem; color: var(--nb-muted); }
-.memo-cmp-a { font-size: .8rem; font-weight: 600; color: var(--nb-ink-soft); }
+.memo-cmp.no-pack .memo-cmp-pack { justify-self: center; width: 12px; aspect-ratio: 1; border-radius: 50%; background: var(--nb-red); filter: none; }
+.memo-cmp-core { grid-row: 2; grid-column: 1 / -1; justify-self: center; max-width: 16em; margin-top: 10px; text-align: center; }
+.memo-cmp-core::before { content: ''; display: block; width: 22px; height: 2px; margin: 0 auto 6px; background: var(--nb-red); }
 
 /* E2 mapping — 요소마다 요구되는 것으로 화살표, 세 줄을 아래에서 묶는 괄호가 결론으로 모인다 */
 .memo-map-head, .memo-map-row {
@@ -1742,6 +1763,24 @@ body.plain-mode #view { min-height: 100vh; }
   .memo-bri-link.from::before { top: auto; bottom: 100%; }
   .memo-bri-link.to::after { top: 100%; }
   .memo-map-head, .memo-map-row { grid-template-columns: 5.2em 16px minmax(0, 1fr); column-gap: 6px; }
+  /* 나침반: 팩 → 기준 → 줄기가 두 갈래로 갈라져 갈림길을 반씩 매단다(┌─┴─┐). 줄기 끝 화살촉은 위(기준 쪽) — E8 페이지 지도의 좁은 칸과 같다 */
+  .memo-cmp { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  .memo-cmp-pack { grid-row: 1; grid-column: 1 / -1; justify-self: center; width: 46px; }
+  .memo-cmp-core { grid-row: 2; position: relative; margin-top: 8px; padding-bottom: 19px; }
+  .memo-cmp-core::before {
+    position: absolute; left: 50%; bottom: 11px; width: 0; height: 0; margin: 0 0 0 -4.5px;
+    background: none; border: 4.5px solid transparent; border-top: 0; border-bottom: 6px solid var(--nb-red);
+  }
+  .memo-cmp-core::after { content: ''; position: absolute; left: calc(50% - .75px); bottom: 0; width: 1.5px; height: 12px; background: var(--nb-red); }
+  .memo-cmp-join { display: none; }
+  .memo-cmp-side { grid-row: 3; grid-auto-rows: auto; align-self: start; }
+  .memo-cmp-side::before { content: ''; display: block; height: 8px; border-top: 1.5px solid var(--nb-red); }
+  .memo-cmp-side.is-left { grid-column: 1; padding-right: 8px; text-align: left; }
+  .memo-cmp-side.is-left::before { margin: 0 -8px 0 calc(50% + 4px); border-left: 1.5px solid var(--nb-red); border-top-left-radius: 4px; }
+  .memo-cmp-side.is-right { grid-column: 2; padding-left: 8px; }
+  .memo-cmp-side.is-right::before { margin: 0 calc(50% + 4px) 0 -8px; border-right: 1.5px solid var(--nb-red); border-top-right-radius: 4px; }
+  .memo-cmp-side.is-left .memo-cmp-row, .memo-cmp-side.is-right .memo-cmp-row { padding: 6px 0; }
+  .memo-cmp-row::after { display: none; }
 }
 @container memo-lines (max-width: 240px) {
   /* 분담표: 위 칸 → 아래 칸, 꺾쇠는 아래를 가리킨다 */
@@ -2182,11 +2221,15 @@ body.plain-mode #view { min-height: 100vh; }
 /* 머리말 — 작은 표지를 제목 왼쪽에 둔다(E3에서 쓰던 배치를 다섯 페이지 공통으로).
    표지가 머리말 칸 폭(400px) 띠로 놓여 왼쪽 칸이 264px까지 길어지고, 그만큼 첫 조작이 아래로 밀렸다(10/06 점검 — 1440 첫 화면의 약 3할).
    표지의 '훑어보기' 연출(evidence-header.js)은 그대로다 */
+/* 표지는 그림 비율 그대로(10/07 사용자 지적 — 가로 그림을 세로 틀 66×88에 넣어 위아래가 빈 띠로 남았다).
+   칸은 96px로 고정한다 — 다섯 페이지의 제목이 같은 자리에서 시작하고, 그림이 늦게 와도 글이 밀리지 않는다.
+   틀은 그림에 맞춰 줄어든다(가로 그림 96×54 · E8 96×45 · E3 세로 그림 74×96) */
 .view-brief .brief-head {
-  display: grid; grid-template-columns: 66px minmax(0, 1fr); column-gap: 14px; align-items: start;
+  display: grid; grid-template-columns: 96px minmax(0, 1fr); column-gap: 14px; align-items: start;
 }
 .view-brief .brief-head > * { grid-column: 2; }
-.view-brief .brief-head > .evidence-cover { grid-column: 1; grid-row: 1 / span 4; width: 66px; height: 88px; margin: 0; }
+.view-brief .brief-head > .evidence-cover { grid-column: 1; grid-row: 1 / span 4; width: fit-content; height: auto; margin: 0; }
+.view-brief .brief-head > .evidence-cover img { width: auto; height: auto; max-width: 96px; max-height: 96px; }
 .view-brief .brief-head .ev-title { margin: 3px 0 2px; font-size: 1.2rem; text-wrap: balance; }
 .view-brief .brief-head .ev-sub { text-wrap: balance; }
 .view-brief .brief-head-doc { margin-top: 10px; }

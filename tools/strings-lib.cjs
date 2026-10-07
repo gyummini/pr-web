@@ -57,6 +57,9 @@ const NOT_SHOWN = [
   /^E8\.brief\.labels\.toc$/,
   // 10/07 사용자 지시로 08장의 '시기 | 있었던 일' 표와 출처 목록을 뺐다 — 출처 목록의 머리 라벨만 남았다(확정 문구라 지우지 않음).
   /^E8\.brief\.labels\.sources$/,
+  // 10/07 사용자 결정으로 문서만 모아보기(/docs)와 보관함의 그 버튼을 뺐다 — 문구는 확정본이라 남겨 둠(지울지는 사용자 결정).
+  /^ui\.docs\./,
+  /^ui\.evidence\.to_docs$/,
 ];
 const shown = (key) => !NOT_SHOWN.some((re) => re.test(key));
 
@@ -158,7 +161,7 @@ function allStrings({ hangulOnly = true, includeHidden = false } = {}) {
 
 // 키를 받아 사람이 알아보는 화면 이름을 돌려준다 — GPT 요청문을 화면 단위로 묶을 때 쓴다.
 const UI_SCREENS = {
-  common: '여러 화면 공통', basic: '기본 사항', dossier: '세부 사항(진술 기록)', evidence: '증거 보관함',
+  common: '여러 화면 공통', basic: '이력서', dossier: '자기소개서(진술 기록)', evidence: '포트폴리오(증거 보관함)',
   detail: '증거 상세', brief: '인터랙티브 페이지 공통', popup: '증거 팝업', docs: '문서만 모아보기(/docs)',
   notebook: '클루의 수사 수첩', notfound: '없는 주소', toast: '알림', opening: '오프닝 표지', error: '오류 화면',
   pdf: 'PDF(이력서·자기소개서)',
@@ -170,9 +173,9 @@ function screenOf(key) {
     if (s[1] === 'memo') return `${s[0]} 요약 메모(팝업)`;
     return `${s[0]} 증거 카드`;
   }
-  if (s[0] === 'groups') return '증거 보관함';
+  if (s[0] === 'groups') return '포트폴리오(증거 보관함)';
   if (s[0] === 'ui') return UI_SCREENS[s[1]] || `화면 문구 · ${s[1]}`;
-  return { intro: '인트로 대화', ending: '엔딩 대화', notebook: '클루의 수사 수첩', resume: '기본 사항(이력서)', html: '머리글 · 링크 미리보기', essay: '세부 사항(진술 기록)' }[s[0]] || s[0];
+  return { intro: '인트로 대화', ending: '엔딩 대화', notebook: '클루의 수사 수첩', resume: '이력서', html: '머리글 · 링크 미리보기', essay: '자기소개서(진술 기록)' }[s[0]] || s[0];
 }
 
 // --- Text/strings.csv ---------------------------------------------------------------

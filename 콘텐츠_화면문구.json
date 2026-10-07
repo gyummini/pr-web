@@ -4,8 +4,8 @@
     "skip": "SKIP ≫",
     "case_label": "CASE {n}",
     "epilogue_label": "EPILOGUE",
-    "back_to_evidence": "← 증거 보관함으로",
-    "to_interactive": "요약 인터렉티브 페이지 보기 →",
+    "back_to_evidence": "← 포트폴리오로",
+    "to_interactive": "요약 인터랙티브 페이지 보기 →",
     "open_doc": "문서 열기 ↗",
     "full_pdf": "이력서·자기소개서 PDF ⬇",
     "portfolio_count": "포트폴리오 {main}건",
@@ -19,7 +19,7 @@
   },
   "basic": {
     "stamp": "인물 신상 조서",
-    "title": "기본 사항",
+    "title": "이력서",
     "personal": "인적사항",
     "name": "이름",
     "birth": "생년월일",
@@ -35,22 +35,22 @@
     "skills": "보유 기술",
     "experience": "경력사항 및 사회경험",
     "play_link": "기록 보기 ↗",
-    "to_dossier": "세부 사항 보기 →",
+    "to_dossier": "자기소개서 보기 →",
     "resume_pdf": "이력서 PDF 다운로드 ⬇"
   },
   "dossier": {
     "stamp": "진술 기록",
-    "to_evidence": "수집된 증거 확인하기 →",
-    "index_title": "진술 기록 목차"
+    "to_evidence": "포트폴리오 확인하기 →",
+    "index_title": "자기소개서 목차"
   },
   "evidence": {
     "stamp": "증거 보관함",
-    "title": "수집된 증거",
+    "title": "포트폴리오",
     "lead": "{count} — 자기소개서의 각 진술을 뒷받침하는 실제 작업물",
     "to_docs": "문서만 모아보기 →",
     "code": "{id} · {chapters}",
     "code_unknown": "{id} · 미확인 증거",
-    "open_interactive": "요약 인터렉티브 페이지 보기 →",
+    "open_interactive": "요약 인터랙티브 페이지 보기 →",
     "open_retro": "회고 읽기 →",
     "play": "직접 플레이 →",
     "open_summary": "요약 확인 →",
@@ -70,20 +70,22 @@
     "kicker": "증거 {id} · 첫 등장: {chapter}",
     "no_chapter": "-",
     "summary": "요약",
-    "to_statement": "진술에서 확인하기 ({case}) →",
+    "to_statement": "자기소개서에서 확인하기 ({case}) →",
     "open_doc": "문서 바로 열기 ↗"
   },
   "brief": {
     "kicker": "증거 {id} · {type}",
     "original_doc": "원본 문서 ↗",
-    "back": "← 증거 보관함",
+    "back": "← 포트폴리오",
     "restart": "다시 해보기"
   },
   "popup": {
     "close": "닫기",
     "kicker": "증거 {id} · {chapters}",
     "speaker": "클루",
-    "collect": "증거 수집"
+    "collect": "증거 수집",
+    "to_statement": "자기소개서에서 확인하기 →",
+    "unlock": "잠금해제하고 {action}"
   },
   "docs": {
     "title": "{name} — 게임 기획 포트폴리오",
@@ -105,7 +107,7 @@
     "stamp": "단서 없음",
     "kicker": "조회한 경로",
     "sub": "사건 파일에서 요청하신 문서를 찾지 못했습니다.",
-    "to_basic": "기본 사항으로 →"
+    "to_basic": "이력서로 →"
   },
   "error": {
     "route_title": "이 화면을 여는 데 실패했습니다",

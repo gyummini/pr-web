@@ -28,6 +28,9 @@ export function evidenceHeader(scope, ev) {
       ], { duration: 560, easing: 'linear' });
     }
   });
-  observer.observe(frame);
-  return () => { observer.disconnect(); motion?.cancel(); };
+  // 틀이 그림 크기에 맞춰 줄어드는 자리(인터랙티브 페이지 머리말)에서는 그림이 오기 전 높이가 0이다 — 그림이 온 뒤에 훑는다
+  let stopped = false;
+  if (img.complete) observer.observe(frame);
+  else img.addEventListener('load', () => { if (!stopped) observer.observe(frame); }, { once: true });
+  return () => { stopped = true; observer.disconnect(); motion?.cancel(); };
 }

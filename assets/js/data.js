@@ -1,7 +1,7 @@
 // 모든 콘텐츠는 데이터 파일에서 로드한다. 코드에 텍스트 하드코딩 금지 (명세서 8).
 export const DB = {
   cards: null,     // 콘텐츠_증거카드.json → evidences 배열
-  groups: null,    // 콘텐츠_증거카드.json → groups (보관함·/docs의 묶음 순서)
+  groups: null,    // 콘텐츠_증거카드.json → groups (보관함의 묶음 순서)
   intro: null,     // 스크립트_인트로.json
   ending: null,    // 스크립트_엔딩.json
   chapters: null,  // 콘텐츠_자기소개서.md 파싱 결과 (CASE01~04 + EPILOGUE)

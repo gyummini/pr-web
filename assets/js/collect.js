@@ -7,6 +7,11 @@ export function fmtCase(chId) {
   return T('common.case_label', { n: chId.slice(4) });
 }
 
+// 장 id → 세부 사항 주소 (CASE02 → /case/02, EPILOGUE → /case/epilogue)
+export function casePath(chId) {
+  return chId === 'EPILOGUE' ? '/case/epilogue' : `/case/${chId.slice(4)}`;
+}
+
 export function chapterEvidence(chId) {
   return DB.cards.filter((c) => !c.hidden && (c.chapters || []).includes(chId));
 }

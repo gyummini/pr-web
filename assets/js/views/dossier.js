@@ -3,6 +3,7 @@ import { state } from '../state.js';
 import { openEvidencePopup } from '../popup.js';
 import { autoCollectChapter } from '../collect.js';
 import { navigate } from '../router.js';
+import { takeLanding } from '../landing.js';
 import { T, TH } from '../text.js';
 
 // 세부 사항 — 진술 기록 (CASE 01~04 + EPILOGUE)
@@ -53,15 +54,32 @@ export function renderDossier(view, routePart) {
     </div>`;
 
   view.querySelectorAll('.anchor').forEach((btn) => {
-    btn.addEventListener('click', () => openEvidencePopup(btn.dataset.eid));
+    const open = () => {
+      btn.classList.remove('found'); // 찾아온 표시는 할 일을 마쳤다
+      openEvidencePopup(btn.dataset.eid);
+    };
+    btn.addEventListener('click', open);
     // span 기반이므로 키보드 활성화를 직접 처리
     btn.addEventListener('keydown', (e) => {
       if (e.code === 'Enter' || e.code === 'Space') {
         e.preventDefault();
-        openEvidencePopup(btn.dataset.eid);
+        open();
       }
     });
   });
+
+  // 보관함 요약 팝업의 '자기소개서에서 확인하기'로 왔으면 그 증거의 진술 문장으로 내려가 형광펜을 두어 번 깜빡인다.
+  // 라우터가 그린 뒤 장 제목에 초점을 두므로 그다음 차례에 옮긴다. 수집은 여기서 하지 않는다 — 문장을 누르는 것이 수집이다
+  const want = takeLanding('dossier');
+  const spot = want && [...view.querySelectorAll('.anchor')].find((a) => a.dataset.eid === want);
+  if (spot) {
+    setTimeout(() => {
+      if (!spot.isConnected) return;
+      spot.scrollIntoView({ block: 'center', behavior: 'instant' });
+      spot.focus({ preventScroll: true });
+      spot.classList.add('found');
+    }, 0);
+  }
 
   return {
     // 챕터 이탈 시 미클릭 증거 자동 일괄 수집.

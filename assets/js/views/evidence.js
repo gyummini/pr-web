@@ -3,7 +3,8 @@ import { BASE_EVIDENCE_IDS, state, baseUnlocked, collectedBaseCount } from '../s
 import { addPending, landOne, flyFromRect, openDoc } from '../ui.js';
 import { checkChapterToasts, fmtCase } from '../collect.js';
 import { hasBrief, briefOpenKey } from './brief.js';
-import { landOn } from '../briefs/retro.js';
+import { landAt } from '../landing.js';
+import { openEvidencePopup } from '../popup.js';
 import { navigate } from '../router.js';
 import { T, TH } from '../text.js';
 
@@ -29,7 +30,6 @@ export function renderEvidence(view) {
       ${
         DB.resume && DB.resume.fullPdf
           ? `<div class="ev-doc-actions">
-               <a class="btn ghost" href="/docs">${TH('evidence.to_docs')}</a>
                <a class="btn ghost" href="${DB.resume.fullPdf}" download>${TH('common.full_pdf')}</a>
              </div>`
           : ''
@@ -37,7 +37,7 @@ export function renderEvidence(view) {
     </div>`;
 
   wireCards(view);
-  renderHiddenSlot(view.querySelector('.hidden-slot-wrap'), hidden);
+  renderHiddenSlot(view.querySelector('.hidden-slot-wrap'), view, hidden);
 
   // 예외 규칙: 최종 증거가 등장하는 CASE04의 증거는 이 페이지 진입 시 자동 수집
   // (CASE04를 열람한 경우만).
@@ -98,7 +98,7 @@ function cardHtml(ev) {
         }
         <div class="ev-foot">
           <span class="ev-code">${esc(code)}</span>
-          <span class="ev-acts"><span class="ev-open">${TH(hasBrief(ev) ? briefOpenKey(ev) : got ? 'common.open_doc' : 'evidence.open_summary')}</span>${
+          <span class="ev-acts"><span class="ev-open">${TH(!got ? 'evidence.open_summary' : hasBrief(ev) ? briefOpenKey(ev) : 'common.open_doc')}</span>${
             // 절대원칙 1(2클릭 내 도달) 유지 — 본문이 브리프로 가더라도
             // 원본 문서로 바로 가는 길은 카드 안에 남겨둔다.
             // 행동 문구와 한 묶음(.ev-acts) — 자리가 모자라면 묶음째 다음 줄로 내려간다(10/07: 긴 문구에 밀려 카드 밖으로 잘렸다).
@@ -111,10 +111,36 @@ function cardHtml(ev) {
 }
 
 function wireCards(view) {
-  view.querySelectorAll('.ev-card[data-eid]').forEach(wireCard);
+  view.querySelectorAll('.ev-card[data-eid]').forEach((el) => wireCard(el, view));
 }
 
-function wireCard(el) {
+// 아직 모으지 않은 증거 — 수집하지 않고 요약 팝업만 연다(10/07 사용자 결정: 블러는 그대로).
+// 잠금해제하면 배지에 내려앉은 뒤 그 카드와 보너스 칸을 다시 그린다. 인터랙티브 페이지로 넘어갔으면 돌아올 때 새로 그려진다
+function openShelf(view, id) {
+  openEvidencePopup(id, {
+    shelf: true,
+    onCollected() {
+      const ev = DB.cards.find((c) => c.id === id);
+      if (ev) refreshCard(view, ev);
+      const wrap = view.querySelector('.hidden-slot-wrap');
+      if (wrap) renderHiddenSlot(wrap, view, DB.cards.find((c) => c.hidden));
+    },
+  });
+}
+
+// 카드 하나만 다시 그린다(수집 상태로 뒤집기). 초점이 그 카드에 있었으면 새 카드로 옮긴다
+function refreshCard(view, ev) {
+  const el = view.querySelector(`.ev-card[data-eid="${ev.id}"]`);
+  if (!el) return;
+  const focused = el.contains(document.activeElement);
+  el.outerHTML = cardHtml(ev);
+  const fresh = view.querySelector(`.ev-card[data-eid="${ev.id}"]`);
+  if (!fresh) return;
+  wireCard(fresh, view);
+  if (focused) fresh.focus({ preventScroll: true });
+}
+
+function wireCard(el, view) {
   const ev = DB.cards.find((c) => c.id === el.dataset.eid);
   // 텍스트는 textContent로 주입 (데이터 파일 내용 그대로)
   const typeEl = el.querySelector('.ev-type');
@@ -159,7 +185,7 @@ function wireCard(el) {
     const go = (e) => {
       e.preventDefault();
       e.stopPropagation();
-      landOn('play');
+      landAt('retro', 'play');
       navigate(`/evidence/${ev.id}/interactive`);
     };
     play.addEventListener('click', go);
@@ -178,15 +204,11 @@ function wireCard(el) {
   }
 
   const act = () => {
-    // 브리프가 있으면 수집 여부와 무관하게 그리로 간다 — 진술에서 못 만난 문서도
-    // 여기서 바로 조사할 수 있어야 한다 (절대원칙 2: 게임적 경험은 선택)
-    if (hasBrief(ev)) {
-      navigate(`/evidence/${ev.id}/interactive`);
-    } else if (!el.classList.contains('collected')) {
-      navigate(`/evidence/${ev.id}`); // 브리프가 아직 없는 미수집 증거: 등장 챕터 안내 + 요약
-    } else {
-      openDoc(ev.url);
-    }
+    // 아직 모으지 않은 증거는 요약 팝업 — 진술에서 찾아가거나 잠금해제하고 바로 연다.
+    // 진술에서 못 만난 문서도 여기서 두 번 만에 열린다 (절대원칙 2: 게임적 경험은 선택)
+    if (!state.collected.has(ev.id)) openShelf(view, ev.id);
+    else if (hasBrief(ev)) navigate(`/evidence/${ev.id}/interactive`);
+    else openDoc(ev.url);
   };
   el.addEventListener('click', act);
   el.addEventListener('keydown', (e) => {
@@ -197,7 +219,7 @@ function wireCard(el) {
   });
 }
 
-function renderHiddenSlot(wrap, hidden) {
+function renderHiddenSlot(wrap, view, hidden) {
   const unlocked = baseUnlocked();
   const n = collectedBaseCount();
   const total = BASE_EVIDENCE_IDS.length;
@@ -221,9 +243,10 @@ function renderHiddenSlot(wrap, hidden) {
       </div>`;
     wrap.querySelector('.hidden-title').textContent = hidden.title;
     wrap.querySelector('.hidden-sub').textContent = hidden.subtitle || '';
-    const missing = BASE_EVIDENCE_IDS.find((id) => !state.collected.has(id));
+    // 아직 모으지 않은 첫 증거의 요약 팝업 — 그 카드를 누른 것과 같다(10/07: 전에는 증거 상세 화면으로 넘어갔다)
     wrap.querySelector('.hidden-find').addEventListener('click', () => {
-      navigate(missing ? `/evidence/${missing}` : '/evidence');
+      const missing = BASE_EVIDENCE_IDS.find((id) => !state.collected.has(id));
+      if (missing) openShelf(view, missing);
     });
     return;
   }
@@ -277,11 +300,7 @@ function collectFinalChapter(view) {
       flyFromRect(rect, () => {
         landOne();
         // 카드가 수집 상태로 뒤집히도록 해당 카드만 갱신 (중복 바인딩 방지)
-        if (el && view.isConnected) {
-          el.outerHTML = cardHtml(ev);
-          const fresh = view.querySelector(`.ev-card[data-eid="${ev.id}"]`);
-          if (fresh) wireCard(fresh);
-        }
+        refreshCard(view, ev);
       });
     }, i * 200);
   });
@@ -289,8 +308,8 @@ function collectFinalChapter(view) {
   setTimeout(() => {
     checkChapterToasts();
     // 히든 해금 여부가 바뀌었을 수 있으므로 슬롯 갱신 (페이지 이탈 시 생략)
-    if (!view.isConnected) return;
-    const hidden = DB.cards.find((c) => c.hidden);
-    renderHiddenSlot(view.querySelector('.hidden-slot-wrap'), hidden);
+    const wrap = view.querySelector('.hidden-slot-wrap');
+    if (!wrap) return;
+    renderHiddenSlot(wrap, view, DB.cards.find((c) => c.hidden));
   }, rest.length * 200 + 850);
 }

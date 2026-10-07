@@ -6,6 +6,8 @@ const path = require('node:path');
 // 화면 문구는 GPT가 바꿀 수 있다 — 버튼 이름은 데이터에서 읽는다
 const UI = JSON.parse(fs.readFileSync(path.join(__dirname, '..', '콘텐츠_화면문구.json'), 'utf8'));
 const origin = process.env.TEST_ORIGIN || 'http://127.0.0.1:4173';
+// 보관함의 아직 모으지 않은 카드는 요약 팝업을 연다 — '잠금해제하고 요약 인터랙티브 페이지 보기'로 넘어간다(10/07)
+const UNLOCK = UI.popup.unlock.replace('{action}', UI.common.to_interactive);
 (async () => {
   const browser = await chromium.launch({ headless: true });
   const page = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
@@ -21,6 +23,7 @@ const origin = process.env.TEST_ORIGIN || 'http://127.0.0.1:4173';
     await page.waitForTimeout(600);
     assert.equal(await page.locator('.ev-grid').count(), 1, 'Cancel pending route back to source');
     await page.locator('.ev-card[data-eid="E2"]').click();
+    await page.getByRole('button', { name: UNLOCK, exact: true }).click();
     await page.locator('.fx-card').first().waitFor();
     await page.waitForTimeout(500);
     await page.goBack(); await page.locator('.ev-grid').waitFor();
@@ -159,7 +162,8 @@ const origin = process.env.TEST_ORIGIN || 'http://127.0.0.1:4173';
     assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);
     await page.evaluate(() => { document.startViewTransition = undefined; });
     await page.locator('.brief-foot a').click(); await page.locator('.ev-grid').waitFor();
-    await page.locator('.ev-card[data-eid="E2"]').click(); await page.locator('.fx').waitFor();
+    await page.locator('.ev-card[data-eid="E2"]').click();
+    await page.getByRole('button', { name: UNLOCK, exact: true }).click(); await page.locator('.fx').waitFor();
     assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);
     assert.equal(await page.locator('.fx-concept b').allTextContents().then(x => x.join(' ')), 'READ WRITE');
     await page.waitForTimeout(600);
