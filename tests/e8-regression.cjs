@@ -266,6 +266,13 @@ const ch = (no) => `.lg-ch[data-chapter="${no}"]`;
       });
       assert.equal(inside, true, `the card foot stays inside the card at ${width}px`);
     }
+    // 증거 상세(수첩의 증거 링크 · 주소로 직접 열기) — 브리프가 있는 증거는 인터랙티브 페이지로 가는 버튼이 나온다.
+    // 10/07 최종 점검에서 E8과 '수집한' 브리프 증거의 상세가 오류 화면이었다(briefOpenKey를 불러오지 않았다). 여기서는 E5 · E8이 이미 수집돼 있다
+    for (const [id, label] of [['E8', UI.evidence.open_retro], ['E5', UI.common.to_interactive]]) {
+      await shelf.evaluate(async (to) => { const { navigate } = await import('/assets/js/router.js'); navigate(to); }, `/evidence/${id}`);
+      await shelf.locator('.detail').waitFor();
+      assert.equal(await shelf.locator(`.detail-actions a[href="/evidence/${id}/interactive"]`).innerText(), label, `${id} detail opens its page`);
+    }
     await shelf.close();
 
     // 움직임 그대로 — 보일 때만 결과 영상이 돈다. 참고 영상은 멈춰 있고, 탭을 바꾸거나 화면을 떠나면 멈춘다

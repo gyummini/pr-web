@@ -3,7 +3,7 @@ import { state } from '../state.js';
 import { openDoc } from '../ui.js';
 import { fmtCase } from '../collect.js';
 import { navigate } from '../router.js';
-import { hasBrief } from './brief.js';
+import { hasBrief, briefOpenKey } from './brief.js';
 import { evidenceHeader } from '../motion/evidence-header.js';
 import { T, TH } from '../text.js';
 
