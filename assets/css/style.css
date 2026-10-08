@@ -2259,7 +2259,12 @@ body.plain-mode #view { min-height: 100vh; }
 .fx-master-note { margin: 9px 0 0; font-size: .62rem; line-height: 1.5; color: var(--fx-mute); }
 .fx-master-table { opacity: .55; transition: opacity .3s ease, border-color .3s ease, box-shadow .3s ease; }
 .fx-master-table.past { opacity: .8; }
-.fx-master-table.on { opacity: 1; border-color: #4a9fd8; box-shadow: 0 0 0 3px rgba(74, 159, 216, .18); }
+/* 지금 읽는 표 — 페이지의 다른 '지금 단계'(상태 표 · 노드 · 조립 결과)와 같은 도장 빨강, 테두리는 바깥 고리로 두껍게(표 크기가 흔들리지 않게).
+   10/09 사용자: 하늘색 1px은 하늘색 머리 바와 섞여 잘 안 보였다 */
+.fx-master-table.on {
+  opacity: 1; border-color: var(--fx-accent);
+  box-shadow: 0 0 0 2px var(--fx-accent), 0 0 0 6px rgba(178, 58, 47, .14);
+}
 .fx-master-table .fx-table-h {
   display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap;
   background: var(--fx-data);
