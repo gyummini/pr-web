@@ -83,8 +83,12 @@ function resumeHtml(r) {
   const sec = (title, body) => `<section class="sec"><h2>${esc(title)}</h2>${body}</section>`;
   const out = [];
 
+  // 사이트 주소 — PDF만 전달받은 검토자가 포트폴리오로 올 길(10/08 사용자 요청). 새 문구 없이 주소만 링크로(플레이 기록 링크와 같은 꼴)
+  const site = has(r.site)
+    ? `\n    <p class="site"><a href="${esc(r.site)}">${esc(r.site.replace(/^https?:\/\//, ''))} ↗</a></p>`
+    : '';
   out.push(`<header class="who"><h1>${esc(r.name)}</h1>
-    <p>${esc(fill(ui.pdf.resume_head, { email: r.email, phone: r.phone }))}</p></header>`);
+    <p>${esc(fill(ui.pdf.resume_head, { email: r.email, phone: r.phone }))}</p>${site}</header>`);
 
   out.push(
     sec(
@@ -193,6 +197,7 @@ const CSS = `
   .resume { page: resume; color: #1c1b18; font-size: 10.5pt; }
   .who h1 { font-size: 20pt; margin: 0; font-weight: 700; }
   .who p { margin: 8pt 0 0; font-size: 10pt; color: #5d594f; }
+  .who p.site { margin-top: 3pt; }
   .sec { margin-top: 22pt; break-inside: avoid; }
   .sec h2 { font-size: 12pt; margin: 0; padding-bottom: 8pt; border-bottom: 1.2pt solid #1c1b18; }
   table { width: 100%; border-collapse: collapse; margin-top: 10pt; }
