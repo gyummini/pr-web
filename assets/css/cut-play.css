@@ -5,12 +5,12 @@
 .view-cut-play .brief { background: var(--rd-paper); color: var(--rd-ink); max-width: 1480px; padding: 26px 34px 50px; }
 /* 표지 칸 · 크기는 다섯 페이지 공통(style.css '.view-brief .brief-head' — 그림 비율 그대로, 칸 96px) */
 .view-cut-play .brief-head { display: grid; grid-template-columns: 96px 1fr; column-gap: 14px; align-items: start; }
-.view-cut-play .brief-head .ev-title { font-size: 1rem; margin-top: 4px; }
-.view-cut-play .brief-head .ev-sub { font-size: .76rem; }
+.view-cut-play .brief-head .ev-title { font-size: var(--text-base); margin-top: 4px; }
+.view-cut-play .brief-head .ev-sub { font-size: var(--text-xs); }
 .view-cut-play .brief-head-doc { grid-column: 2; margin-top: 10px; }
-.view-cut-play .brief-head-doc .btn { padding: 5px 10px; font-size: .75rem; }
+.view-cut-play .brief-head-doc .btn { padding: 5px 10px; font-size: var(--text-xs); }
 .view-cut-play .brief-lead-title { font: 800 clamp(23px, 3vw, 38px)/1.1 ui-monospace, Consolas, monospace; letter-spacing: -.06em; color: var(--rd-ink); }
-.view-cut-play .brief-lead-line { font-size: .84rem; }
+.view-cut-play .brief-lead-line { font-size: var(--text-md); }
 .view-cut-play .brief-recap { border-color: var(--rd-core); }
 .view-cut-play .brief-recap-title { color: var(--rd-core); }
 .cp { color: var(--rd-ink); margin-top: 22px; }
@@ -22,15 +22,15 @@
 /* 게임 판 — 처음 게임은 세 칸(채굴 · 경제 · 강화), 덜어낸 뒤에는 두 칸이 빈자리로 남고 강화 칸이 넓어진다 */
 .cp-game { background: var(--surface); border: 1px solid var(--rd-line); border-radius: 8px; padding: 18px 20px 16px; }
 .cp-game-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 14px; margin-bottom: 14px; }
-.cp-game-title { margin: 0; font-size: 1.05rem; }
-.cp-game-line { margin: 0; font-size: .8rem; color: var(--rd-mute); }
+.cp-game-title { margin: 0; font-size: var(--text-lg); }
+.cp-game-line { margin: 0; font-size: var(--text-sm); color: var(--rd-mute); }
 .cp-zones { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.3fr); gap: 12px; transition: grid-template-columns .5s; }
 .cp-zone { position: relative; display: flex; flex-direction: column; gap: 8px; min-width: 0; padding: 14px; border-radius: 6px; border: 1px solid var(--rd-line); background: #fafaf7; }
 .cp-zone[data-system="mining"] { background: #f1f7ef; border-color: #cfe0cb; }
 .cp-zone[data-system="economy"] { background: #f5f1f9; border-color: #dcd1e8; }
-.cp-zone h5 { margin: 0; font-size: .95rem; }
-.cp-zone-note { margin: 0; font-size: .75rem; line-height: 1.5; color: var(--rd-mute); word-break: keep-all; }
-.cp-stock { display: flex; flex-wrap: wrap; gap: 4px 12px; margin: 2px 0 0; font-size: .84rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+.cp-zone h5 { margin: 0; font-size: var(--text-ui); }
+.cp-zone-note { margin: 0; font-size: var(--text-xs); line-height: 1.5; color: var(--rd-mute); word-break: keep-all; }
+.cp-stock { display: flex; flex-wrap: wrap; gap: 4px 12px; margin: 2px 0 0; font-size: var(--text-md); font-weight: 700; font-variant-numeric: tabular-nums; }
 .cp-act { align-self: flex-start; padding: 9px 14px; border-radius: 6px; border: 1px solid #9aa3a0; background: var(--surface); color: var(--rd-ink); font-weight: 700; }
 .cp-act:hover:not(:disabled) { background: #f0f1ed; }
 .cp-act:disabled { opacity: .45; cursor: default; }
@@ -66,22 +66,22 @@
 .cp-target { display: flex; align-items: center; gap: 12px; }
 .cp-art { flex: none; width: 72px; height: 54px; display: grid; place-items: center; color: var(--rd-core); }
 .cp-art svg { width: 64px; height: 48px; }
-.cp-level { font-size: 1.3rem; font-variant-numeric: tabular-nums; }
-.cp-need, .cp-rate, .cp-income, .cp-fcost { margin: 0; font-size: .78rem; color: var(--rd-mute); font-variant-numeric: tabular-nums; }
+.cp-level { font-size: var(--text-xl); font-variant-numeric: tabular-nums; }
+.cp-need, .cp-rate, .cp-income, .cp-fcost { margin: 0; font-size: var(--text-sm); color: var(--rd-mute); font-variant-numeric: tabular-nums; }
 .cp-need.is-short, .cp-fcost.is-short { color: var(--accent); }
 .cp-income { color: #2f7d3a; font-weight: 700; }
 .cp-go { display: flex; flex-direction: column; align-items: flex-start; gap: 12px; margin-top: 4px; }
 .cp-enhance { padding: 11px 28px; border-radius: 6px; border: 1px solid #1c428f; background: var(--rd-core); color: var(--on-fill); font-weight: 800; box-shadow: 0 3px 0 #1c428f; }
 .cp-enhance:hover:not(:disabled) { background: #2f67d6; }
 .cp-enhance:disabled { opacity: .6; cursor: default; box-shadow: none; }
-.cp-msg { min-height: 1.4em; margin: 0; font-size: .9rem; font-weight: 800; word-break: keep-all; }
+.cp-msg { min-height: 1.4em; margin: 0; font-size: var(--text-ui); font-weight: 800; word-break: keep-all; }
 .cp-msg[data-tone="up"] { color: var(--rd-core); }
 .cp-msg[data-tone="stay"] { color: #6c7378; }
 .cp-msg[data-tone="down"] { color: var(--accent); }
-.cp-msg[data-tone="short"] { color: var(--accent); font-weight: 600; font-size: .8rem; }
-.cp-presses { margin: 0; font-size: .8rem; color: var(--rd-ink); }
+.cp-msg[data-tone="short"] { color: var(--accent); font-weight: 600; font-size: var(--text-sm); }
+.cp-presses { margin: 0; font-size: var(--text-sm); color: var(--rd-ink); }
 .cp-presses:empty { display: none; }
-.cp-skip { margin-top: 12px; padding: 0; border: 0; background: none; color: var(--rd-mute); font-size: .75rem; text-decoration: underline; text-underline-offset: 4px; }
+.cp-skip { margin-top: 12px; padding: 0; border: 0; background: none; color: var(--rd-mute); font-size: var(--text-xs); text-decoration: underline; text-underline-offset: 4px; }
 
 /* 결과를 기다리는 짧은 긴장 — 대상이 떨린다 */
 .cp-core.is-charging .cp-art, .cp-core.is-charging .cp-rot-icon { animation: cp-shake .11s linear infinite; }
@@ -90,7 +90,7 @@
 
 /* 출시한 게임 — 지나가는 줄 → 내 방 8칸 → 강화대 */
 .cp-final { gap: 10px; }
-.cp-label { font: 600 12px ui-monospace, Consolas, monospace; letter-spacing: .04em; color: var(--rd-mute); }
+.cp-label { font: 600 var(--text-xs) ui-monospace, Consolas, monospace; letter-spacing: .04em; color: var(--rd-mute); }
 .cp-lanebox { display: flex; flex-direction: column; gap: 6px; }
 .cp-lane { position: relative; border-radius: 8px; }
 .cp-track { position: relative; height: 108px; overflow: hidden; border-radius: 8px; background: repeating-linear-gradient(90deg, #b8322b 0 22px, #c43a32 22px 44px); box-shadow: inset 0 -4px 0 rgba(0,0,0,.12); }
@@ -108,29 +108,29 @@
 @keyframes cp-walk { from { left: 100%; } to { left: -100px; } }
 .cp-walker-face { font-size: 36px; line-height: 1; width: 58px; height: 54px; object-fit: contain; display: grid; place-items: center; }
 /* 이름 · 단계는 12px — 9.6px였다(10/06). 한 줄에 다 안 들어가는 이름은 두 줄까지 */
-.cp-walker-name { max-width: 100%; font-size: .75rem; line-height: 1.15; font-weight: 700; text-align: center; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
-.cp-walker-level { font: 700 .75rem ui-monospace, Consolas, monospace; color: var(--rd-core); }
+.cp-walker-name { max-width: 100%; font-size: var(--text-xs); line-height: 1.15; font-weight: 700; text-align: center; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+.cp-walker-level { font: 700 var(--text-xs) ui-monospace, Consolas, monospace; color: var(--rd-core); }
 .cp-roomhead { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 14px; margin-top: 4px; }
-.cp-fgold { font-size: .82rem; font-weight: 800; font-variant-numeric: tabular-nums; }
+.cp-fgold { font-size: var(--text-sm); font-weight: 800; font-variant-numeric: tabular-nums; }
 .cp-room { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
 .cp-slot { min-height: 82px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; padding: 4px; border: 1.5px dashed #c9d2e6; border-radius: 6px; background: rgba(255,255,255,.55); color: var(--rd-ink); }
 .cp-slot.is-filled { border-style: solid; border-color: #c9d6f2; background: var(--surface); }
 .cp-slot.is-selected { border-color: var(--rd-core); box-shadow: 0 0 0 2px rgba(39, 90, 193, .25); }
 .cp-slot:disabled { cursor: default; }
 .cp-slot-face { font-size: 28px; line-height: 1; width: 48px; height: 46px; object-fit: contain; display: grid; place-items: center; }
-.cp-slot-name { max-width: 100%; font-size: .75rem; line-height: 1.15; text-align: center; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
-.cp-slot-level { font: 700 .75rem ui-monospace, Consolas, monospace; color: var(--rd-core); }
+.cp-slot-name { max-width: 100%; font-size: var(--text-xs); line-height: 1.15; text-align: center; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+.cp-slot-level { font: 700 var(--text-xs) ui-monospace, Consolas, monospace; color: var(--rd-core); }
 .cp-stand { display: flex; flex-direction: column; gap: 6px; margin-top: 4px; }
 /* 강화대 — 성공하면 다음 브레인롯으로 바뀐다 */
 .cp-rot { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 14px; padding: 12px 14px; background: var(--surface); border: 1px solid #c9d6f2; border-radius: 8px; }
 .cp-stand.is-empty .cp-rot { border-style: dashed; background: transparent; }
-.cp-stand.is-empty .cp-rot-name { font-size: .8rem; font-weight: 600; color: var(--rd-mute); }
+.cp-stand.is-empty .cp-rot-name { font-size: var(--text-sm); font-weight: 600; color: var(--rd-mute); }
 .cp-rot-icon { font-size: 46px; line-height: 1; width: 80px; height: 80px; object-fit: contain; display: grid; place-items: center; }
 .cp-rot-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
-.cp-rot-name { font-size: 1.15rem; line-height: 1.3; overflow-wrap: break-word; }
-.cp-rot-level { font: 700 .8rem ui-monospace, Consolas, monospace; color: var(--rd-core); }
-.cp-next { display: flex; flex-direction: column; align-items: center; gap: 2px; font-size: .75rem; color: var(--rd-mute); }
-.cp-next-icon { display: grid; place-items: center; width: 30px; height: 30px; border: 2px dashed #b9c3d8; border-radius: 50%; font: 800 16px/1 ui-monospace, Consolas, monospace; color: var(--rd-next); }
+.cp-rot-name { font-size: var(--text-lg); line-height: 1.3; overflow-wrap: break-word; }
+.cp-rot-level { font: 700 var(--text-sm) ui-monospace, Consolas, monospace; color: var(--rd-core); }
+.cp-next { display: flex; flex-direction: column; align-items: center; gap: 2px; font-size: var(--text-xs); color: var(--rd-mute); }
+.cp-next-icon { display: grid; place-items: center; width: 30px; height: 30px; border: 2px dashed #b9c3d8; border-radius: 50%; font: 800 var(--text-base)/1 ui-monospace, Consolas, monospace; color: var(--rd-next); }
 /* 그림이 없을 때의 빈 자리 — 이모지로 대신하지 않는다 */
 .is-blank { display: block; border: 2px dashed #c9d2e6; border-radius: 10px; background: rgba(255,255,255,.6); }
 
@@ -144,32 +144,32 @@
 .cp-gone { display: none; }
 .cp-zone.is-gone { justify-content: center; align-items: center; min-height: 56px; background: transparent; border: 1.5px dashed #d8c4bf; }
 .cp-zone.is-gone > :not(.cp-gone) { display: none; }
-.cp-zone.is-gone .cp-gone { display: block; margin: 0; font-size: .8rem; font-weight: 700; color: var(--accent); text-align: center; word-break: keep-all; }
+.cp-zone.is-gone .cp-gone { display: block; margin: 0; font-size: var(--text-sm); font-weight: 700; color: var(--accent); text-align: center; word-break: keep-all; }
 .cp[data-phase="final"] .cp-zones { grid-template-columns: minmax(0, .5fr) minmax(0, .5fr) minmax(0, 2fr); }
 
 /* 판단 — 처음 게임을 해 본 뒤에 열린다 */
 .cp-judge { margin-top: 18px; padding: 18px 20px; border-left: 3px solid var(--rd-ink); background: #f0f1ed; }
-.cp-judge-eyebrow { display: block; font: 600 12px ui-monospace, Consolas, monospace; letter-spacing: .04em; color: var(--rd-mute); margin-bottom: 10px; }
+.cp-judge-eyebrow { display: block; font: 600 var(--text-xs) ui-monospace, Consolas, monospace; letter-spacing: .04em; color: var(--rd-mute); margin-bottom: 10px; }
 .cp-evidence { display: grid; gap: 6px; margin: 0 0 14px; }
 .cp-evidence div { display: flex; flex-wrap: wrap; gap: 2px 12px; align-items: baseline; }
-.cp-evidence dt { font-size: .75rem; color: var(--rd-mute); min-width: 128px; }
-.cp-evidence dd { margin: 0; font-size: .95rem; font-weight: 700; word-break: keep-all; }
-.cp-question { margin: 0; font-size: 1.15rem; line-height: 1.5; white-space: pre-line; word-break: keep-all; }
-.cp-observe { margin: 6px 0 14px; font-size: .92rem; color: #4b565b; }
+.cp-evidence dt { font-size: var(--text-xs); color: var(--rd-mute); min-width: 128px; }
+.cp-evidence dd { margin: 0; font-size: var(--text-ui); font-weight: 700; word-break: keep-all; }
+.cp-question { margin: 0; font-size: var(--text-lg); line-height: 1.5; white-space: pre-line; word-break: keep-all; }
+.cp-observe { margin: 6px 0 14px; font-size: var(--text-ui); color: #4b565b; }
 .cp-cut { padding: 11px 18px; border: 1px solid var(--rd-ink); background: var(--rd-ink); color: var(--rd-paper); font-weight: 700; border-radius: 4px; }
 .cp-cut::before { content: ''; display: inline-block; width: 12px; border-top: 1px solid currentColor; margin-right: 10px; vertical-align: middle; }
 /* 내린 결정 — 칠을 빼고 체크로 남는다 */
 .cp-cut.is-done { background: transparent; color: var(--rd-ink); border-color: #9aa3a0; cursor: default; }
 .cp-cut.is-done::before { content: '✓'; width: auto; border: 0; margin-right: 8px; color: var(--accent); font-weight: 800; }
 
-.cp-caption { margin: 18px 0 0; font-size: 1.02rem; font-weight: 700; line-height: 1.6; word-break: keep-all; }
+.cp-caption { margin: 18px 0 0; font-size: var(--text-base); font-weight: 700; line-height: 1.6; word-break: keep-all; }
 .cp-caption:empty { display: none; }
 .cp-kept { margin: 12px 0 0; max-width: 560px; }
-.cp-kept-tag { display: block; margin-bottom: 6px; font: 600 11px ui-monospace, Consolas, monospace; letter-spacing: .06em; color: var(--rd-core); }
+.cp-kept-tag { display: block; margin-bottom: 6px; font: 600 var(--text-xs) ui-monospace, Consolas, monospace; letter-spacing: .06em; color: var(--rd-core); }
 .cp-kept img { display: block; width: 100%; height: auto; border: 1px solid var(--rd-line); border-radius: 4px; }
-.cp-kept figcaption { margin-top: 6px; font-size: .72rem; color: var(--rd-mute); }
-.cp-note { margin: 16px 0 0; font-size: .75rem; color: var(--rd-mute); }
-.cp-credit { margin: 4px 0 0; font-size: .75rem; line-height: 1.6; color: var(--rd-mute); }
+.cp-kept figcaption { margin-top: 6px; font-size: var(--text-xs); color: var(--rd-mute); }
+.cp-note { margin: 16px 0 0; font-size: var(--text-xs); color: var(--rd-mute); }
+.cp-credit { margin: 4px 0 0; font-size: var(--text-xs); line-height: 1.6; color: var(--rd-mute); }
 .cp-credit a { color: inherit; text-underline-offset: 2px; }
 
 @media (max-width: 860px) {
