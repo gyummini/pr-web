@@ -26,7 +26,9 @@ html, body { margin: 0; padding: 0; }
 body {
   background: var(--paper-dark);
   color: var(--ink);
-  font-family: "Pretendard", "Malgun Gothic", "Apple SD Gothic Neo", system-ui, sans-serif;
+  /* Pretendard는 index.html이 싣는다(assets/fonts/pretendard — 10/09). 전에는 이름만 적고 싣지 않아
+     Windows는 맑은 고딕, Mac은 Apple SD Gothic Neo로 방문자마다 다르게 보였다. 뒤의 글꼴은 받기 전 · 실패했을 때만 쓴다 */
+  font-family: "Pretendard Variable", "Pretendard", "Malgun Gothic", "Apple SD Gothic Neo", system-ui, sans-serif;
   line-height: 1.6;
   /* 한국어는 어절 단위로 줄을 바꾼다. 기본값(글자 단위)이면 좁은 화면에서 '세/트', '더합니/다'처럼
      낱말이 쪼개진다(10/04). 한 줄보다 긴 낱말(메일 주소·영문 식별자)만 넘칠 때 끊는다. PDF도 같은 규칙이다. */
@@ -993,8 +995,8 @@ body.plain-mode #view { min-height: 100vh; }
   --nb-rule: #ddd6c2;
   --nb-hl: var(--highlight);
   --nb-navy: #2c4a6e; /* 본편 연결 요소 전용 컬러 */
-  --nb-font-hand: 'Kyobo Handwriting 2025 lyb', 'Malgun Gothic', sans-serif;
-  --nb-font-body: 'Gowun Dodum', 'Malgun Gothic', sans-serif;
+  --nb-font-hand: 'Kyobo Handwriting 2025 lyb', 'Pretendard Variable', 'Malgun Gothic', sans-serif;
+  --nb-font-body: 'Gowun Dodum', 'Pretendard Variable', 'Malgun Gothic', sans-serif;
 }
 
 .view-notebook { overflow: hidden; }

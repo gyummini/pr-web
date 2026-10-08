@@ -1,10 +1,10 @@
 ---
 # PR_web 디자인 규칙 — AI 작업자(Claude · Codex 등)가 화면을 만들거나 고치기 전에 읽는 파일.
 # 아래 값은 2026-10-05 기준 실제 CSS(assets/css/*.css)에서 옮겼다. 기준은 CSS다 — CSS를 바꾸면 여기도 같이 고친다.
-# 상태: 초안. '정리 제안' 절의 1 · 2단계는 10/05에 적용했고, 3단계부터는 사용자 결정 대기.
+# 상태: 초안. '정리 제안' 절의 1 · 2단계는 10/05에, 7단계(본문 글꼴)는 10/09에 적용했다. 나머지는 11절.
 name: 사건 파일 — 지원자 김경민
 version: 0.2-draft
-updated: 2026-10-06
+updated: 2026-10-09
 
 color:
   # 사이트 공통 (style.css :root)
@@ -98,9 +98,9 @@ color:
     paper: "#fffdf8"
 
 font:
-  body: '"Pretendard", "Malgun Gothic", "Apple SD Gothic Neo", system-ui, sans-serif'  # 주의: Pretendard 파일을 싣지 않는다
-  hand: "'Kyobo Handwriting 2025 lyb', 'Malgun Gothic', sans-serif"   # assets/fonts — 수첩 · 도장
-  notebook-body: "'Gowun Dodum', 'Malgun Gothic', sans-serif"         # Google Fonts, 수첩에서만
+  body: '"Pretendard Variable", "Pretendard", "Malgun Gothic", "Apple SD Gothic Neo", system-ui, sans-serif'  # assets/fonts/pretendard(동적 서브셋, 10/09)
+  hand: "'Kyobo Handwriting 2025 lyb', 'Pretendard Variable', 'Malgun Gothic', sans-serif"   # assets/fonts — 수첩 · 도장
+  notebook-body: "'Gowun Dodum', 'Pretendard Variable', 'Malgun Gothic', sans-serif"         # Google Fonts, 수첩에서만
   mono-e1: '"Courier New", Courier, monospace'                        # E1 원본 지면
   mono-ui: "ui-monospace, Consolas, monospace"
   line-height-body: 1.6
@@ -180,8 +180,11 @@ motion:
 ## 3. 글꼴과 글자
 
 - 본문은 고딕 계열, 수첩과 도장은 교보 손글씨, 수첩 본문은 고운돋움.
-- **주의(현재 상태)**: 본문 첫 글꼴로 적힌 Pretendard는 사이트가 싣지 않는다. 방문자 PC에 설치되어 있지 않으면
-  Windows는 맑은 고딕, Mac은 Apple SD Gothic Neo로 보인다. 실제로 보이는 본문 글꼴은 방문자마다 다르다.
+- **본문 글꼴은 Pretendard를 사이트가 싣는다**(10/09 — `assets/fonts/pretendard/`, `index.html`의 링크 하나). 전에는 이름만 적혀 있어
+  Windows는 맑은 고딕, Mac은 Apple SD Gothic Neo로 방문자마다 다르게 보였다. 이제 운영체제와 상관없이 같은 글꼴 · 같은 줄바꿈이다.
+  동적 서브셋이라 92개 조각(전체 3.1MB) 중 그 화면에 나온 글자의 조각만 받는다 — 한 페이지에 11~22조각. 글꼴은 OFL(`LICENSE.txt` 같이 둔다).
+  맑은 고딕 · Apple SD Gothic Neo는 받기 전 · 실패했을 때만 보인다(`font-display: swap`). 수첩의 손글씨 · 고운돋움도 실패하면 Pretendard로 떨어진다.
+  PDF(`tools/build-pdf.cjs`)는 자기 CSS로 맑은 고딕을 쓴다 — 사이트 글꼴과 따로다.
 - 한국어 줄바꿈은 어절 단위(`word-break: keep-all`)다. 좁은 화면에서 '세/트', '더합니/다'처럼 낱말이 쪼개지지 않게 한다. PDF도 같다.
 - E1은 원본 분석서(PDF)에서 잰 치수를 그대로 쓴다(대제목 34.5 · 강조 17.4 · 이름 16.5 · 러닝헤드 13.5 · 라벨 11.2px).
   이 px 값들은 정리 대상이 아니다.
@@ -338,7 +341,7 @@ motion:
 4. **모서리 5단계** — 3 · 6 · 8 · 999px · 50%. 2 · 4 · 5 · 7 · 10 · 12px을 가까운 값으로.
 5. **화면 폭 기준 4개** — 예: 1180 · 760 · 600 · 360px. 17가지를 가까운 값으로.
 6. **움직임 시간** — `--motion-fast`(180ms) · `--motion-page`(380ms)에 느린 단계 하나를 더해 쓰기.
-7. **본문 글꼴 결정** — Pretendard를 실제로 싣거나(용량 증가), 첫 글꼴에서 빼서 보이는 그대로 적거나.
+7. ~~본문 글꼴 결정~~ **(10/09 적용 — 사용자 결정)** — Pretendard를 실제로 싣는다(자체 호스팅 동적 서브셋). 3절.
 8. **이모지 원칙** — E3처럼 사이트 전체에서 뺄지.
 
 ## 12. 이 파일을 쓰는 법
