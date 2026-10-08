@@ -2355,7 +2355,12 @@ body.plain-mode #view { min-height: 100vh; }
   }
 }
 
-/* 기본 사항 — 플레이 기록 링크 */
+/* 기본 사항 — 플레이 기록: 강조할 게임 줄 · 링크 */
+.play-item { line-height: 1.55; }
+.play-item + .play-item { margin-top: 4px; }
+.play-note { margin-top: 8px; font-size: .88rem; line-height: 1.5; color: var(--ink-soft); }
+/* '— 설명'은 넓은 화면에서 한 덩어리로 줄을 바꾼다(좁은 화면은 칸이 좁아 자유롭게) */
+@media (min-width: 821px) { .play-tail { white-space: nowrap; } }
 .play-link {
   display: inline-block; margin-top: 6px;
   font-size: .88rem; font-weight: 700; color: var(--accent);

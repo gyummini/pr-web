@@ -55,19 +55,34 @@ function skillsSection(list) {
 }
 
 // 플레이 기록 — 자소서·수첩의 진술을 뒷받침하는 외부 기록. 비면 렌더링하지 않는다.
+// 강조할 게임(highlights)을 글로 적는다. minimap 링크는 link: true인 줄 안에 참고로 붙고,
+// 그런 줄이 없으면 맨 아래 따로 '플레이 시간순' 줄로 나온다(10/09).
 function playSection(p) {
-  if (!p || !(p.url || '').trim()) return '';
+  if (!p) return '';
+  const rows = (p.highlights || []).filter((h) => (h.name || '').trim() && (h.items || []).length);
+  const url = (p.url || '').trim();
+  if (!rows.length && !url) return '';
+  const linkHtml = `${p.note ? `<div class="play-note">${esc(p.note)}</div>` : ''}
+              <a class="play-link" href="${esc(url)}" target="_blank" rel="noopener">${TH('basic.play_link')}</a>`;
+  const inRow = url && rows.some((h) => h.link);
+  // '게임 — 설명' 줄은 넓은 화면에서 '—' 앞에서만 줄을 바꾼다('대부분의 / 콘텐츠를'처럼 설명 중간에서 끊기지 않게)
+  const line = (t) => {
+    const i = t.indexOf(' — ');
+    return i < 0 ? esc(t) : `${esc(t.slice(0, i))} <span class="play-tail">— ${esc(t.slice(i + 3))}</span>`;
+  };
   return `
       <section class="record-sec">
         <h3>${esc(p.label)}</h3>
         <table class="record-table rows">
-          <tr>
-            <th>${esc(p.summary || '')}</th>
-            <td>
-              ${p.note ? `<div class="skill-level">${esc(p.note)}</div>` : ''}
-              <a class="play-link" href="${esc(p.url)}" target="_blank" rel="noopener">${TH('basic.play_link')}</a>
-            </td>
-          </tr>
+          ${rows
+            .map(
+              (h) =>
+                `<tr><th>${esc(h.name)}</th><td>${h.items.map((t) => `<div class="play-item">${line(t)}</div>`).join('')}${
+                  inRow && h.link ? linkHtml : ''
+                }</td></tr>`
+            )
+            .join('')}
+          ${url && !inRow ? `<tr><th>${esc(p.summary || '')}</th><td>${linkHtml}</td></tr>` : ''}
         </table>
       </section>`;
 }

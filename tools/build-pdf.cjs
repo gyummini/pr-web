@@ -150,16 +150,28 @@ function resumeHtml(r) {
     );
   }
 
+  // 사이트(basic.js)와 같은 규칙 — 강조할 게임 줄을 글로, minimap 링크는 link: true인 줄 안에(없으면 맨 아래 따로)
   const play = r.playRecord;
-  if (play && has(play.url)) {
-    out.push(
-      sec(
-        play.label,
-        `<table class="rows"><tr><th class="period">${esc(play.summary || '')}</th><td>
-          <div class="t"><a href="${esc(play.url)}">${esc(play.url.replace(/^https?:\/\//, '').split('?')[0])} ↗</a></div>
-          ${has(play.note) ? `<div class="d">${esc(play.note)}</div>` : ''}</td></tr></table>`
-      )
+  const playRows = ((play && play.highlights) || []).filter((h) => has(h.name) && (h.items || []).length);
+  if (play && (playRows.length || has(play.url))) {
+    const link = has(play.url)
+      ? `<div class="t"><a href="${esc(play.url)}">${esc(play.url.replace(/^https?:\/\//, '').split('?')[0])} ↗</a></div>
+          ${has(play.note) ? `<div class="d">${esc(play.note)}</div>` : ''}`
+      : '';
+    const inRow = link && playRows.some((h) => h.link);
+    // '게임 — 설명'은 '—' 앞에서만 줄을 바꾼다(설명 중간에서 끊기지 않게)
+    const line = (t) => {
+      const i = t.indexOf(' — ');
+      return i < 0 ? esc(t) : `${esc(t.slice(0, i))} <span class="nw">— ${esc(t.slice(i + 3))}</span>`;
+    };
+    const rows = playRows.map(
+      (h) =>
+        `<tr><th class="period">${esc(h.name)}</th><td>${h.items.map((t) => `<div class="t">${line(t)}</div>`).join('')}${
+          inRow && h.link ? link : ''
+        }</td></tr>`
     );
+    if (link && !inRow) rows.push(`<tr><th class="period">${esc(play.summary || '')}</th><td>${link}</td></tr>`);
+    out.push(sec(play.label, `<table class="rows">${rows.join('')}</table>`));
   }
 
   if ((r.experience || []).length) {
@@ -208,6 +220,7 @@ const CSS = `
   .skills th { width: 1%; white-space: nowrap; }  /* '데이터 테이블 작성 (Excel)'이 두 줄로 갈라지지 않게 */
   .t { color: #1c1b18; }
   .d { margin-top: 3pt; font-size: 9pt; color: #5d594f; }
+  .nw { white-space: nowrap; }
   ul { margin: 3pt 0 0; padding-left: 13pt; font-size: 9pt; color: #5d594f; }
   li { margin: 1.5pt 0; }
 
