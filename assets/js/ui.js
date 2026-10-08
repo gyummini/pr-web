@@ -1,4 +1,4 @@
-import { state, baseUnlocked, TOTAL_EVIDENCE } from './state.js';
+import { state, baseUnlocked, collectedCount, TOTAL_EVIDENCE } from './state.js';
 import { preloadNotebookFonts } from './preload.js';
 import { T, TH } from './text.js';
 
@@ -6,12 +6,12 @@ import { T, TH } from './text.js';
 // 5/7 도달 시점에 미리 백그라운드 요청해둔다.
 const NB_FONT_TRIGGER = TOTAL_EVIDENCE - 2;
 function maybePreloadNotebookFonts() {
-  if (state.collected.size >= NB_FONT_TRIGGER) preloadNotebookFonts();
+  if (collectedCount() >= NB_FONT_TRIGGER) preloadNotebookFonts();
 }
 
 // ---- 수집 카운트 뱃지 ----
 // pending: 상태에는 수집됐지만 아직 수집 애니메이션이 도착하지 않은 수.
-// 뱃지 표시값 = collected.size - pending → 애니메이션 도착 시점에 카운트가 올라가는 연출.
+// 뱃지 표시값 = 세는 증거 수(collectedCount — 추가 포트폴리오 E9 제외) - pending → 애니메이션 도착 시점에 카운트가 올라가는 연출.
 let pending = 0;
 
 function badgeEl() {
@@ -37,7 +37,7 @@ export function landOne() {
 function renderBadge(pulse) {
   const el = badgeEl();
   if (!el) return;
-  const shown = Math.max(0, state.collected.size - pending);
+  const shown = Math.max(0, collectedCount() - pending);
   el.textContent = `${shown}/${TOTAL_EVIDENCE}`;
   if (pulse) {
     el.classList.remove('pulse');

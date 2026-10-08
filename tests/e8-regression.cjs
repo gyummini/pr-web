@@ -183,7 +183,7 @@ const ch = (no) => `.lg-ch[data-chapter="${no}"]`;
     await shelf.goto(origin + '/evidence');
     await shelf.locator('.ev-grid').waitFor();
     // 아직 모으지 않은 카드는 블러 그대로 '요약 확인' — 누르면 수집하지 않고 요약 팝업이 뜬다(10/07 사용자 결정)
-    for (const id of ['E1', 'E2', 'E3', 'E4', 'E5', 'E6', 'E8']) assert.equal(await shelf.locator(`.ev-card[data-eid="${id}"] .ev-open`).innerText(), UI.evidence.open_summary, id);
+    for (const id of ['E1', 'E2', 'E3', 'E4', 'E5', 'E6', 'E8', 'E9']) assert.equal(await shelf.locator(`.ev-card[data-eid="${id}"] .ev-open`).innerText(), UI.evidence.open_summary, id);
     assert.equal(await shelf.locator('.play-chip').count(), 1, 'only E8 plays inside its page');
     const unlock = (action) => UI.popup.unlock.replace('{action}', action);
     const badge = () => shelf.locator('#badge').innerText();
@@ -208,7 +208,7 @@ const ch = (no) => `.lg-ch[data-chapter="${no}"]`;
       await shelf.locator('.modal-overlay').waitFor({ state: 'detached' });
     }
     assert.equal(await badge(), before, 'looking at a summary does not collect');
-    assert.equal(await shelf.locator('.ev-card.unknown').count(), 7);
+    assert.equal(await shelf.locator('.ev-card.unknown').count(), EVS.filter((e) => !e.hidden).length);
     // '남은 증거 찾기' — 첫 미수집 증거(E1)의 요약 팝업, 증거 상세 화면으로 넘어가지 않는다
     await shelf.locator('.hidden-find').click();
     await shelf.locator('.popup').waitFor();
@@ -232,6 +232,20 @@ const ch = (no) => `.lg-ch[data-chapter="${no}"]`;
     assert.deepEqual(await shelf.evaluate(() => window.__opened), [EVS.find((e) => e.id === 'E4').url]);
     assert.equal(await shelf.locator('.ev-card[data-eid="E4"] .ev-open').innerText(), UI.common.open_doc);
     assert.equal(await shelf.locator('.hidden-progress').innerText(), UI.evidence.hidden_progress.replace('{n}', '2').replace('{total}', '7'));
+    // E9(추가 포트폴리오, 10/08) — 자기소개서에 나오지 않는다: 진술로 가는 버튼이 없고, 머리글은 장 대신 꼬리표,
+    // 잠금해제하면 카드는 수집으로 뒤집히지만 수집 개수(배지 · 수첩 진행)에는 들지 않는다
+    const E9 = EVS.find((e) => e.id === 'E9');
+    const badgeBeforeE9 = await badge();
+    await shelf.locator('.ev-card[data-eid="E9"]').click();
+    assert.deepEqual(await shelf.locator('.popup-actions .btn').allInnerTexts(), [unlock(UI.common.open_doc)], 'E9 shelf popup has no statement link');
+    assert.equal(await shelf.locator('.popup .ev-kicker').innerText(), UI.brief.kicker.replace('{id}', 'E9').replace('{type}', E9.doc_type));
+    assert.equal(await shelf.locator('.popup .ev-memo .memo-spl').count(), 1, 'E9 memo draws its split block');
+    await shelf.getByRole('button', { name: unlock(UI.common.open_doc), exact: true }).click();
+    await shelf.locator('.ev-card.collected[data-eid="E9"]').waitFor();
+    assert.equal(await shelf.locator('.ev-card[data-eid="E9"] .ev-code').innerText(), 'E9', 'no chapter on the card code');
+    assert.equal(await badge(), badgeBeforeE9, 'E9 is not counted');
+    assert.equal(await shelf.locator('.hidden-progress').innerText(), UI.evidence.hidden_progress.replace('{n}', '2').replace('{total}', '7'));
+    if (E9.url) assert.equal((await shelf.evaluate(() => window.__opened)).at(-1), E9.url);
     await shelf.locator('.ev-card[data-eid="E2"]').click();
     await shelf.getByRole('button', { name: unlock(UI.common.to_interactive), exact: true }).click();
     await shelf.waitForURL('**/evidence/E2/interactive');
@@ -239,7 +253,8 @@ const ch = (no) => `.lg-ch[data-chapter="${no}"]`;
     await shelf.locator('.ev-card.collected[data-eid="E2"]').waitFor();
     assert.equal(await shelf.locator('.ev-card[data-eid="E2"] .ev-open').innerText(), UI.evidence.open_interactive);
     // '원본 ↗'은 수집하지 않은 카드에도 — 원본이 있는 증거 전부(E8은 페이지가 곧 원문이라 없다)(10/07 사용자 요청)
-    assert.equal(await shelf.locator('.ev-card.unknown .ev-direct').count(), await shelf.locator('.ev-card.unknown:not([data-eid="E8"])').count(), 'every uncollected card with an original has the shortcut');
+    const unknownIds = await shelf.locator('.ev-card.unknown').evaluateAll((els) => els.map((e) => e.dataset.eid));
+    assert.equal(await shelf.locator('.ev-card.unknown .ev-direct').count(), unknownIds.filter((id) => EVS.find((e) => e.id === id).url).length, 'every uncollected card with an original has the shortcut');
     assert.equal(await shelf.locator('.ev-card[data-eid="E8"] .ev-direct').count(), 0);
     assert.equal(await shelf.locator('.ev-card[data-eid="E8"] .play-chip').innerText(), UI.evidence.play);
     await shelf.locator('.ev-card[data-eid="E8"] .play-chip').click();

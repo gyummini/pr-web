@@ -76,9 +76,9 @@ function cardHtml(ev) {
   const thumb = ev.thumb
     ? `<img class="ev-thumb-img" src="${ev.thumb}" alt="" loading="lazy">`
     : '';
-  const code = got
-    ? T('evidence.code', { id: ev.id, chapters: (ev.chapters || []).map(fmtCase).join(', ') })
-    : T('evidence.code_unknown', { id: ev.id });
+  // 자기소개서에 나오지 않는 추가 포트폴리오(E9)는 장 이름 없이 번호만
+  const chs = (ev.chapters || []).map(fmtCase).join(', ');
+  const code = got ? (chs ? T('evidence.code', { id: ev.id, chapters: chs }) : ev.id) : T('evidence.code_unknown', { id: ev.id });
   return `
     <div class="ev-card ${got ? 'collected' : 'unknown'}" data-eid="${ev.id}" tabindex="0" role="button">
       <div class="ev-thumb">${thumb}<span class="ev-thumb-fallback" aria-hidden="true">${got ? '📄' : '❔'}</span></div>

@@ -1,5 +1,5 @@
 import { DB, getCard } from './data.js';
-import { state } from './state.js';
+import { state, counts } from './state.js';
 import { DialogueEngine } from './engine.js';
 import { standingSprite } from './sprites.js';
 import { addPending, landOne, flyFromRect, openDoc } from './ui.js';
@@ -31,10 +31,11 @@ export function openEvidencePopup(eid, opts = {}) {
   const wasNew = !shelf && !state.collected.has(eid);
   if (wasNew) {
     state.collected.add(eid);
-    addPending(1);
+    if (counts(eid)) addPending(1);
   }
-  // 닫을 때 배지로 날아갈지 — 진술에서 처음 연 증거, 또는 보관함에서 잠금해제한 증거
-  let fly = wasNew;
+  // 닫을 때 배지로 날아갈지 — 진술에서 처음 연 증거, 또는 보관함에서 잠금해제한 증거.
+  // 수집 개수에 들지 않는 추가 포트폴리오(E9)는 배지로 날지 않는다
+  let fly = wasNew && counts(eid);
 
   // 재클릭 시 sd_dialogue_revisit (null이면 sd_dialogue 재사용). 보관함에서 처음 보는 요약은 재방문이 아니다
   const useRevisit = !wasNew && !shelf && !!ev.sd_dialogue_revisit;
@@ -45,6 +46,10 @@ export function openEvidencePopup(eid, opts = {}) {
   // 닫으면 초점을 이 자리(누른 앵커)로 돌려준다 — 키보드로 읽던 곳에서 이어 가게
   const returnFocus = document.activeElement;
 
+  // 머리글: 처음 나오는 장. 자기소개서에 나오지 않는 추가 포트폴리오(E9)는 장 대신 기획 영역(인터랙티브 페이지 머리글과 같은 꼴)
+  const chs = (ev.chapters || []).map(fmtCase).join(', ');
+  const kicker = chs ? TH('popup.kicker', { id: ev.id, chapters: chs }) : TH('brief.kicker', { id: ev.id, type: ev.doc_type || '' });
+
   const root = document.getElementById('modal-root');
   const overlay = document.createElement('div');
   overlay.className = 'modal-overlay';
@@ -53,7 +58,7 @@ export function openEvidencePopup(eid, opts = {}) {
       <button type="button" class="popup-close" aria-label="${TH('popup.close')}">${CLOSE_ICON}</button>
       <div class="popup-sd"><div class="sd-engine"></div></div>
       <div class="popup-body">
-        <div class="ev-kicker">${TH('popup.kicker', { id: ev.id, chapters: (ev.chapters || []).map(fmtCase).join(', ') })}</div>
+        <div class="ev-kicker">${kicker}</div>
         <h3 class="ev-title" id="ev-pop-title"></h3>
         <p class="ev-sub"></p>
         <div class="ev-memo"></div>
@@ -149,14 +154,19 @@ export function openEvidencePopup(eid, opts = {}) {
       },
       unlock() {
         state.collected.add(ev.id);
-        addPending(1);
-        fly = true;
+        // 세지 않는 추가 포트폴리오(E9)는 배지로 날지 않고, 카드만 바로 수집 상태로 다시 그린다
+        const counted = counts(ev.id);
+        if (counted) {
+          addPending(1);
+          fly = true;
+        }
         if (hasBrief(ev)) {
           close(false);
           navigate(`/evidence/${ev.id}/interactive`);
         } else {
           close();
           openDoc(ev.url); // 누른 그 차례에 열어야 새 탭이 막히지 않는다
+          if (!counted) opts.onCollected?.();
         }
       },
     });
