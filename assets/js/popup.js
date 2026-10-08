@@ -172,22 +172,10 @@ export function openEvidencePopup(eid, opts = {}) {
     });
     return;
   }
-  const deeper = hasBrief(ev)
-    ? action(T(briefOpenKey(ev, 'popup')), wasNew ? 'ghost' : 'accent', () => {
-        close();
-        navigate(`/evidence/${ev.id}/interactive`);
-      })
-    : null;
-
-  if (wasNew) {
-    actions.appendChild(action(T('popup.collect'), 'accent', close)); // 닫히며 수집 애니메이션
-    if (deeper) actions.appendChild(deeper);
-  } else if (deeper) {
-    actions.appendChild(deeper);
-    actions.appendChild(action(T('popup.close'), 'ghost', close));
-  } else {
-    actions.appendChild(action(T('popup.close'), 'accent', close));
-  }
+  // 자기소개서를 읽는 중에는 인터랙티브 페이지로 빠지지 않는다(10/09 사용자 결정) — 문장 중간에 몇 분짜리 페이지로 나가면
+  // 돌아올 길이 없어 진술이 끊겼다. 진술 중의 근거는 이 요약 메모가 맡고, 인터랙티브 · 원본은 보관함(마지막 장의 '포트폴리오 확인하기')에서 연다.
+  // 그래서 여덟 증거 모두 단추는 하나 — 처음이면 '증거 수집', 다시 열면 '닫기'.
+  actions.appendChild(action(T(wasNew ? 'popup.collect' : 'popup.close'), 'accent', close)); // 수집은 닫히며 애니메이션
 }
 
 // 보관함에서 연 요약의 두 갈래(10/07 사용자 문구): '자기소개서에서 확인하기'(그 증거가 처음 나오는 장) ·

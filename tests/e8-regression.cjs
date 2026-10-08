@@ -262,11 +262,14 @@ const ch = (no) => `.lg-ch[data-chapter="${no}"]`;
     await shelf.waitForFunction(() => document.activeElement?.matches('.lg-cta a'));
     assert.equal(await shelf.locator('.lg-cta a').evaluate(a => a.classList.contains('cue') && a.getAttribute('href') === '/api/play'), true, 'lands on the play button, marked, not pressed');
     await shelf.goto(origin + '/case/02');
-    for (const [id, label] of [['E8', UI.evidence.open_retro], ['E5', UI.common.to_interactive]]) {
-      await shelf.locator(`.anchor[data-eid="${id}"]`).first().click();
-      assert.equal(await shelf.locator('.popup-actions .btn', { hasText: '→' }).innerText(), label, `${id} popup`);
-      await shelf.keyboard.press('Escape');
-      await shelf.locator('.modal-overlay').waitFor({ state: 'detached' });
+    // 자기소개서 팝업은 진술을 끊지 않는다(10/09 사용자 결정) — 인터랙티브 · 회고로 가는 단추 없이 '증거 수집'(다시 열면 '닫기') 하나
+    for (const id of ['E8', 'E5']) {
+      for (const want of [UI.popup.collect, UI.popup.close]) {
+        await shelf.locator(`.anchor[data-eid="${id}"]`).first().click();
+        assert.deepEqual(await shelf.locator('.popup-actions .btn').allInnerTexts(), [want], `${id} essay popup: one button only`);
+        await shelf.keyboard.press('Escape');
+        await shelf.locator('.modal-overlay').waitFor({ state: 'detached' });
+      }
     }
     // 수집한 카드에는 '원본 ↗'이 붙는다 — 긴 행동 문구에 밀려 카드 밖으로 잘리지 않는다(10/07 사용자 발견). 보관함은 탭으로 옮겨 수집 상태를 지킨다
     await shelf.locator('#tabs a[data-tab="evidence"]').click();
