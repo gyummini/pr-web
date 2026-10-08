@@ -1808,6 +1808,8 @@ body.plain-mode #view { min-height: 100vh; }
   --fx-state-ink: #2a1520; /* 분홍 노드 위 작은 글자 — 노드가 .85로 흐려도 4.5:1(10/06 실측 4.22 → #3b2130에서 한 단계 짙게, 5.1) */
   --fx-cond: #78dba4;   /* 초록 — 조건 */
   --fx-exc: #f7dd5c;    /* 노랑 — 예외 상황 */
+  /* '지금 단계' 강조 — 노드 · 상태 표 · 마스터 표 · 조립 결과 · 손패 · 덱 모두 같은 도장 빨강 고리(10/09 사용자: 얕아서 안 보였다) */
+  --fx-ring: 0 0 0 2px var(--fx-accent), 0 0 0 6px rgba(178, 58, 47, .14);
   background: var(--fx-bg);
   color: var(--fx-ink);
   min-height: 100vh;
@@ -1923,7 +1925,7 @@ body.plain-mode #view { min-height: 100vh; }
 }
 .fx-node.on {
   opacity: 1;
-  box-shadow: 0 0 0 4px rgba(178, 58, 47, .28), 0 6px 16px rgba(0,0,0,.14);
+  box-shadow: var(--fx-ring), 0 6px 16px rgba(0,0,0,.14);
   transform: translateY(-1px) scale(1.06);
 }
 .fx-node.on::after { display: none; }
@@ -1960,7 +1962,7 @@ body.plain-mode #view { min-height: 100vh; }
 }
 /* 표만 가로로 스크롤한다 — 헤더 바가 함께 밀리면 배경색이 빠져나가 흰 여백이 남는다 */
 .fx-tscroll { overflow-x: auto; }
-.fx-table.on { border-color: var(--fx-accent); box-shadow: 0 0 0 3px rgba(178,58,47,.1); }
+.fx-table.on { border-color: var(--fx-accent); box-shadow: var(--fx-ring); }
 .fx-table-h {
   font-size: .72rem; font-weight: 700; padding: 7px 11px;
   background: var(--fx-state); color: var(--fx-ink);
@@ -2259,12 +2261,8 @@ body.plain-mode #view { min-height: 100vh; }
 .fx-master-note { margin: 9px 0 0; font-size: .62rem; line-height: 1.5; color: var(--fx-mute); }
 .fx-master-table { opacity: .55; transition: opacity .3s ease, border-color .3s ease, box-shadow .3s ease; }
 .fx-master-table.past { opacity: .8; }
-/* 지금 읽는 표 — 페이지의 다른 '지금 단계'(상태 표 · 노드 · 조립 결과)와 같은 도장 빨강, 테두리는 바깥 고리로 두껍게(표 크기가 흔들리지 않게).
-   10/09 사용자: 하늘색 1px은 하늘색 머리 바와 섞여 잘 안 보였다 */
-.fx-master-table.on {
-  opacity: 1; border-color: var(--fx-accent);
-  box-shadow: 0 0 0 2px var(--fx-accent), 0 0 0 6px rgba(178, 58, 47, .14);
-}
+/* 지금 읽는 표 — 하늘색 1px은 하늘색 머리 바와 섞여 안 보였다(10/09). 바깥 고리라 표 크기는 그대로 */
+.fx-master-table.on { opacity: 1; border-color: var(--fx-accent); box-shadow: var(--fx-ring); }
 .fx-master-table .fx-table-h {
   display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap;
   background: var(--fx-data);
@@ -2282,10 +2280,10 @@ body.plain-mode #view { min-height: 100vh; }
   margin-top: 4px; padding: 9px 12px;
   border: 1px solid var(--fx-line); border-radius: 7px;
   background: var(--fx-panel);
-  opacity: .5; transition: opacity .35s ease, border-color .35s ease, background .35s ease;
+  opacity: .5; transition: opacity .35s ease, border-color .35s ease, background .35s ease, box-shadow .35s ease;
 }
 .fx-assembled-on .fx-assembled {
-  opacity: 1; border-color: var(--fx-accent); background: rgba(178, 58, 47, .05);
+  opacity: 1; border-color: var(--fx-accent); background: rgba(178, 58, 47, .05); box-shadow: var(--fx-ring);
 }
 /* 조립을 마친 뒤 — '지금 단계' 테두리는 넘기고 문장은 흐리지 않는다(10/06) */
 .fx-assembled-done .fx-assembled { opacity: 1; }
@@ -2319,14 +2317,14 @@ body.plain-mode #view { min-height: 100vh; }
 
 /* ---------- 손패·덱의 움직임 ---------- */
 /* 덱에서 막 올라온 카드 */
-.fx-card.fresh { border-color: var(--fx-accent); box-shadow: 0 0 0 3px rgba(178, 58, 47, .12); }
+.fx-card.fresh { border-color: var(--fx-accent); box-shadow: var(--fx-ring); }
 /* 방금 덱 최후미로 내려간 카드 */
 .fx-deck-item {
-  transition: border-color .3s ease, background .3s ease, color .3s ease;
+  transition: border-color .3s ease, background .3s ease, color .3s ease, box-shadow .3s ease;
 }
 .fx-deck-item.landed {
   border-style: solid; border-color: var(--fx-accent);
-  background: rgba(178, 58, 47, .07); color: var(--fx-ink);
+  background: rgba(178, 58, 47, .07); color: var(--fx-ink); box-shadow: var(--fx-ring);
 }
 /* 날아가는 복제본 — 원본은 이미 손패에서 빠졌다 */
 .fx-ghost { box-shadow: 0 10px 24px rgba(0, 0, 0, .22); }
