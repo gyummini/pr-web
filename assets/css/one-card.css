@@ -32,7 +32,7 @@
 /* 실 위의 이름표 — 채운 모양은 '누를 것'으로 읽히므로 흰 바탕에 테두리만 */
 .ocx-knot {
   position: absolute; z-index: 6; transform: translate(-50%, -50%);
-  padding: 3px 11px; border-radius: 999px; white-space: nowrap;
+  padding: 3px 11px; border-radius: var(--radius-pill); white-space: nowrap;
   background: var(--surface); border: 1.5px solid var(--oc-green); color: var(--oc-green);
   box-shadow: 0 0 0 3px var(--oc-lime);
   font-size: var(--text-sm); font-weight: 700; line-height: 1.35; pointer-events: none;
@@ -42,7 +42,7 @@
 .ocx-board { position: relative; padding-top: 46px; }
 .ocx-row { display: grid; grid-template-columns: repeat(4, var(--ocx-W)) minmax(0, 1fr); column-gap: var(--ocx-G); align-items: start; }
 .ocx-card { position: relative; margin: 0; min-width: 0; }
-.ocx-card img { display: block; width: 100%; aspect-ratio: 200 / 373; object-fit: cover; border-radius: 4px; border: 1px solid var(--ocx-edge); background: var(--oc-wash); }
+.ocx-card img { display: block; width: 100%; aspect-ratio: 200 / 373; object-fit: cover; border-radius: var(--radius-tag); border: 1px solid var(--ocx-edge); background: var(--oc-wash); }
 .ocx-card figcaption { margin-top: 8px; font-size: var(--text-sm); line-height: 1.3; color: var(--oc-mute); text-align: center; word-break: keep-all; }
 /* 관계에 든 카드 — 실이 핀으로 꽂히는 카드. 테두리만 실과 같은 초록 */
 .ocx-card.is-member img { outline: 2px solid var(--oc-green); outline-offset: 2px; }
@@ -50,22 +50,22 @@
 .ocx-card.is-swapped img { outline: 2px solid var(--oc-green); outline-offset: 1px; box-shadow: 0 0 0 6px var(--oc-lime); }
 .ocx-card.is-swapped figcaption { margin-top: 13px; }
 /* '한 장 차이'는 카드 아래 가장자리에 — 위쪽 가운데의 핀과 겹치지 않고, 아래로 내려가는 실의 출발점을 짚는다 */
-.oc-one { position: absolute; left: 50%; bottom: 30px; transform: translateX(-50%); white-space: nowrap; font-style: normal; font-size: var(--text-xs); font-weight: 700; color: var(--on-fill); background: var(--oc-green); border-radius: 3px; padding: 1px 6px; }
+.oc-one { position: absolute; left: 50%; bottom: 30px; transform: translateX(-50%); white-space: nowrap; font-style: normal; font-size: var(--text-xs); font-weight: 700; color: var(--on-fill); background: var(--oc-green); border-radius: var(--radius-tag); padding: 1px 6px; }
 
 /* 다섯째 자리 — 고정 카드 4장과 갈라 보이게 옅은 판 위에 둔다. 판의 안쪽 여백만큼 음수 여백을 줘 카드 줄은 그대로 맞춘다 */
 .ocx-five { display: flex; align-items: flex-start; gap: 22px; min-width: 0; }
 .ocx-tray {
   display: flex; align-items: flex-start; gap: 26px;
   margin: -12px 0 -12px -12px; padding: 12px 16px 14px 12px;
-  background: var(--oc-wash); border: 1px dashed var(--ocx-dash); border-radius: 8px;
+  background: var(--oc-wash); border: 1px dashed var(--ocx-dash); border-radius: var(--radius-card);
 }
 .ocx-tray > .ocx-card { flex: none; width: var(--ocx-W); }
 .ocx-bench-wrap { display: flex; flex-direction: column; gap: 6px; }
 .ocx-bench-label { margin: 0; min-height: 1.3em; font-size: var(--text-xs); line-height: 1.3; color: var(--oc-mute); }
 /* 후보 패 — 다섯째 카드 옆에 한 줄로 놓는다. 높낮이로 낸 부채꼴은 가운데 카드만 떠 보여 뺐다(10/07 사용자) */
-.ocx-bench { position: relative; display: flex; align-items: flex-start; gap: 12px; border-radius: 10px; }
-.ocx-pick { flex: none; width: var(--ocx-bench-W); padding: 0; border: 0; background: none; color: inherit; text-align: center; border-radius: 6px; }
-.ocx-pick img { display: block; width: 100%; aspect-ratio: 200 / 373; object-fit: cover; border-radius: 4px; border: 1px solid #c9d3c7; background: var(--surface); box-shadow: 0 3px 10px rgba(0, 0, 0, .08); transition: transform .18s, box-shadow .18s, border-color .18s; }
+.ocx-bench { position: relative; display: flex; align-items: flex-start; gap: 12px; border-radius: var(--radius-card); }
+.ocx-pick { flex: none; width: var(--ocx-bench-W); padding: 0; border: 0; background: none; color: inherit; text-align: center; border-radius: var(--radius-button); }
+.ocx-pick img { display: block; width: 100%; aspect-ratio: 200 / 373; object-fit: cover; border-radius: var(--radius-tag); border: 1px solid #c9d3c7; background: var(--surface); box-shadow: 0 3px 10px rgba(0, 0, 0, .08); transition: transform var(--motion-fast), box-shadow var(--motion-fast), border-color var(--motion-fast); }
 .ocx-pick span { display: block; margin-top: 6px; font-size: var(--text-xs); line-height: 1.3; color: var(--oc-ink); word-break: keep-all; text-wrap: balance; }
 .ocx-pick:hover img { transform: translateY(-4px); border-color: var(--oc-green); box-shadow: 0 8px 20px rgba(0, 0, 0, .12); }
 .ocx-pick:focus-visible { outline: 3px solid var(--oc-green); outline-offset: 3px; }
@@ -88,7 +88,7 @@
 .ocx[data-state="a"] .ocx-journey { grid-template-rows: 46px 0 minmax(62px, auto); }
 .ocx-journey > * { grid-column: var(--t); grid-row: var(--l); min-width: 0; }
 
-.ocx-stop strong { display: block; font-size: var(--text-sm); line-height: 1.3; color: var(--oc-mute); word-break: keep-all; transition: color .35s; } /* --oc-dim은 흰 레인용(종이 위 4.3:1) */
+.ocx-stop strong { display: block; font-size: var(--text-sm); line-height: 1.3; color: var(--oc-mute); word-break: keep-all; transition: color var(--motion-page); } /* --oc-dim은 흰 레인용(종이 위 4.3:1) */
 .ocx-stop small { display: block; font-size: var(--text-xs); line-height: 1.4; color: var(--oc-mute); }
 .ocx-stop.is-lit strong { color: var(--oc-ink); }
 
@@ -107,12 +107,12 @@
 .ocx[data-state="c"] .ocx-line.is-main { border-top-color: var(--oc-green); }
 .ocx[data-state="c"] .ocx-line.is-main.is-gap { border-top-style: solid; }
 /* 재생 헤드 — 진행 중에만. 끝나면 줄 전체가 초록이 된다 */
-.ocx-line.is-progress { justify-self: start; width: calc(var(--head) - 6px); border-top-color: var(--oc-green); z-index: 2; transition: width .35s ease; }
-.ocx-head { justify-self: start; align-self: start; width: 16px; height: 16px; margin: calc(var(--line-m) - 8px) 0 0 calc(var(--head) - 8px); border-radius: 50%; background: var(--oc-deep); border: 2px solid var(--surface); box-shadow: 0 0 0 4px var(--oc-lime); z-index: 4; transition: margin-left .35s ease; }
+.ocx-line.is-progress { justify-self: start; width: calc(var(--head) - 6px); border-top-color: var(--oc-green); z-index: 2; transition: width var(--motion-page) ease; }
+.ocx-head { justify-self: start; align-self: start; width: 16px; height: 16px; margin: calc(var(--line-m) - 8px) 0 0 calc(var(--head) - 8px); border-radius: var(--radius-circle); background: var(--oc-deep); border: 2px solid var(--surface); box-shadow: 0 0 0 4px var(--oc-lime); z-index: 4; transition: margin-left var(--motion-page) ease; }
 .ocx[data-state="c"] .ocx-head, .ocx[data-state="c"] .ocx-line.is-progress { display: none; }
 
 .ocx-cell { position: relative; min-height: 100%; }
-.ocx-dot { position: absolute; left: 0; width: 12px; height: 12px; border-radius: 50%; background: var(--oc-off); border: 2px solid var(--surface); z-index: 3; transition: background .35s, box-shadow .35s; }
+.ocx-dot { position: absolute; left: 0; width: 12px; height: 12px; border-radius: var(--radius-circle); background: var(--oc-off); border: 2px solid var(--surface); z-index: 3; transition: background var(--motion-page), box-shadow var(--motion-page); }
 .ocx-cell.is-main .ocx-dot { top: calc(var(--line-m) - 5px); }
 .ocx-cell.is-ghost .ocx-dot { top: calc(var(--line-g) - 4px); left: 2px; width: 8px; height: 8px; border-width: 1px; background: var(--ocx-ghost); }
 .ocx-cell.is-main.dot-lit .ocx-dot { background: var(--oc-green); box-shadow: 0 0 0 3px var(--oc-lime); }
@@ -120,46 +120,46 @@
 .ocx-faces { position: absolute; left: 26px; display: flex; gap: 4px; z-index: 3; }
 .ocx-cell.is-main .ocx-faces { top: calc(var(--line-m) - 21px); }
 .ocx-cell.is-ghost .ocx-faces { top: calc(var(--line-g) - 13px); left: 30px; }
-.ocx-faces img { display: block; object-fit: cover; border-radius: 3px; border: 1px solid var(--surface); box-shadow: 0 0 0 1px var(--ocx-edge); transition: opacity .35s; }
+.ocx-faces img { display: block; object-fit: cover; border-radius: var(--radius-tag); border: 1px solid var(--surface); box-shadow: 0 0 0 1px var(--ocx-edge); transition: opacity var(--motion-page); }
 .ocx-cell.is-main .ocx-faces img { width: 22px; height: 41px; opacity: .45; } /* 아직 아님(진행 전) — 의도된 흐림 */
 .ocx-cell.is-main.faces-lit .ocx-faces img { opacity: 1; }
 .ocx-cell.is-ghost .ocx-faces img { width: 14px; height: 26px; opacity: .55; } /* 지나간 편성 — 의도된 흐림 */
 
 /* 무대 — 빈 이벤트 시간. 진행 전에는 점선 칸, 끝나면 불이 켜진다 */
-.ocx-stage { margin: -10px 20px -12px 0; border: 1.5px dashed var(--ocx-dash); border-radius: 8px; background: rgba(255, 255, 255, .55); z-index: 0; transition: border-color .4s, background .4s, box-shadow .4s; }
+.ocx-stage { margin: -10px 20px -12px 0; border: 1.5px dashed var(--ocx-dash); border-radius: var(--radius-card); background: rgba(255, 255, 255, .55); z-index: 0; transition: border-color var(--motion-page), background var(--motion-page), box-shadow var(--motion-page); }
 .ocx-stage.is-lit { border: 1.5px solid var(--oc-green); background: var(--oc-wash); box-shadow: 0 0 0 4px rgba(213, 233, 168, .7); }
 .ocx-stage-name { z-index: 2; padding: 2px 0 0 calc(var(--ocx-drop) + 18px); font-size: var(--text-sm); font-weight: 700; line-height: 1.3; color: var(--oc-mute); }
 .ocx[data-state="c"] .ocx-stage-name { color: var(--oc-deep); }
 .ocx-stage-ghost { z-index: 2; padding-left: calc(var(--ocx-drop) + 18px); }
 /* 진행 전에는 투명할 뿐 아니라 읽히지도 않게(visibility) — 화면 낭독기가 답을 먼저 읽었다(10/06 점검) */
-.ocx-stage-ghost .ocx-empty { opacity: 0; visibility: hidden; transition: opacity .35s, visibility .35s; }
+.ocx-stage-ghost .ocx-empty { opacity: 0; visibility: hidden; transition: opacity var(--motion-page), visibility var(--motion-page); }
 .ocx-stage-ghost.is-lit .ocx-empty { opacity: 1; visibility: visible; }
-.ocx-empty { display: inline-block; margin-top: 3px; padding: 1px 10px; border: 1px dashed var(--ocx-dash); border-radius: 4px; background: var(--surface); font-size: var(--text-xs); line-height: 1.5; color: var(--oc-mute); }
+.ocx-empty { display: inline-block; margin-top: 3px; padding: 1px 10px; border: 1px dashed var(--ocx-dash); border-radius: var(--radius-tag); background: var(--surface); font-size: var(--text-xs); line-height: 1.5; color: var(--oc-mute); }
 .ocx-stage-main { position: relative; z-index: 2; padding: 0 38px 0 calc(var(--ocx-drop) + 18px); }
-.ocx-stage-pin { position: absolute; left: calc(var(--ocx-drop) - 7px); top: calc(var(--line-m) - 7px); width: 14px; height: 14px; border-radius: 50%; background: var(--surface); border: 2px solid var(--oc-green); z-index: 3; transition: background .35s, box-shadow .35s; }
+.ocx-stage-pin { position: absolute; left: calc(var(--ocx-drop) - 7px); top: calc(var(--line-m) - 7px); width: 14px; height: 14px; border-radius: var(--radius-circle); background: var(--surface); border: 2px solid var(--oc-green); z-index: 3; transition: background var(--motion-page), box-shadow var(--motion-page); }
 .ocx-stage-pin.is-lit { background: var(--oc-green); border-color: var(--surface); box-shadow: 0 0 0 3px var(--oc-lime); }
 .ocx-pay { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr) minmax(0, 1fr); gap: 8px; padding: 2px 0 6px; }
-.ocx-pay > * { margin: 0; min-height: 58px; opacity: 0; visibility: hidden; transform: translateY(6px); transition: opacity .4s, transform .4s, visibility .4s; }
+.ocx-pay > * { margin: 0; min-height: 58px; opacity: 0; visibility: hidden; transform: translateY(6px); transition: opacity var(--motion-page), transform var(--motion-page), visibility var(--motion-page); }
 .ocx-pay > .is-lit { opacity: 1; visibility: visible; transform: none; }
 /* 더해지는 것 세 가지 — 세트 이벤트(진한 초록) · 스킬 강화(연두) · 편성 효과(흰 바탕) */
-.oc-insert { padding: 8px 9px; border-radius: 4px; background: var(--oc-deep); color: #f1f7e9; }
+.oc-insert { padding: 8px 9px; border-radius: var(--radius-tag); background: var(--oc-deep); color: #f1f7e9; }
 .oc-insert small { display: block; font-size: var(--text-xs); color: var(--oc-lime); }
 .oc-insert strong { display: block; font-size: var(--text-ui); line-height: 1.35; word-break: keep-all; }
-.oc-reward { padding: 6px 9px; border-radius: 4px; background: var(--oc-lime); color: var(--oc-deep); font-size: var(--text-xs); line-height: 1.4; word-break: keep-all; }
+.oc-reward { padding: 6px 9px; border-radius: var(--radius-tag); background: var(--oc-lime); color: var(--oc-deep); font-size: var(--text-xs); line-height: 1.4; word-break: keep-all; }
 .oc-reward strong { display: block; font-size: var(--text-ui); }
 .oc-reward span { display: block; }
-.oc-pay-trait { padding: 6px 9px; border-radius: 4px; background: var(--surface); border: 1px solid #b7d38f; color: var(--oc-deep); font-size: var(--text-xs); line-height: 1.4; word-break: keep-all; }
+.oc-pay-trait { padding: 6px 9px; border-radius: var(--radius-tag); background: var(--surface); border: 1px solid #b7d38f; color: var(--oc-deep); font-size: var(--text-xs); line-height: 1.4; word-break: keep-all; }
 .oc-pay-trait small { display: block; font-size: var(--text-xs); color: var(--oc-green); }
 .oc-pay-trait strong { display: block; font-size: var(--text-md); }
 
 /* 끝나면 한 줄이 본 것을 말한다(E2처럼) — 비어 있는 동안에도 자리(알림 칸)는 두되 높이 · 여백은 없다 */
 .oc-caption { display: flex; align-items: flex-start; gap: 8px; margin: 26px 0 0; font-size: var(--text-ui); font-weight: 600; line-height: 1.5; color: var(--oc-deep); word-break: keep-all; }
 .oc-caption:empty { margin: 0; }
-.oc-caption:not(:empty)::before { content: ''; flex: none; width: 10px; height: 10px; margin-top: calc((1.5em - 10px) / 2); border-radius: 2px; background: var(--oc-green); box-shadow: 0 0 0 2px var(--oc-lime); }
+.oc-caption:not(:empty)::before { content: ''; flex: none; width: 10px; height: 10px; margin-top: calc((1.5em - 10px) / 2); border-radius: var(--radius-tag); background: var(--oc-green); box-shadow: 0 0 0 2px var(--oc-lime); }
 .oc-note { margin: 6px 0 0; font-size: var(--text-xs); color: var(--oc-mute); line-height: 1.6; max-width: 72ch; }
 
 /* 1181~1340px: 카드만 조금 줄인다(같은 격자) */
-@media (max-width: 1340px) {
+@media (max-width: 1180px) {
   .view-one-card { --ocx-W: 108px; --ocx-bench-W: 84px; }
   .ocx-five > .cue-note { white-space: normal; max-width: 10em; }
   .ocx-journey { --lab: 100px; --step: 100px; --s5: 112px; }
@@ -180,7 +180,7 @@
   .ocx-card figcaption { font-size: var(--text-xs); margin-top: 5px; }
   .ocx-card.is-swapped img { box-shadow: 0 0 0 4px var(--oc-lime); }
   .oc-one { bottom: 24px; padding: 1px 4px; }
-  .ocx-bench-wrap { grid-column: 3 / -1; grid-row: 2; align-items: flex-end; margin-top: 12px; padding: 8px 6px 6px; background: var(--oc-wash); border: 1px dashed var(--ocx-dash); border-radius: 8px; }
+  .ocx-bench-wrap { grid-column: 3 / -1; grid-row: 2; align-items: flex-end; margin-top: 12px; padding: 8px 6px 6px; background: var(--oc-wash); border: 1px dashed var(--ocx-dash); border-radius: var(--radius-card); }
   .ocx-bench-label:empty { display: none; }
   .ocx-bench { gap: 6px; }
   .ocx-pick span { margin-top: 4px; }
