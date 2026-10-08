@@ -109,8 +109,8 @@ function anchorContents(raw) {
   const text = bold ? bold[1] : raw;
   const tail = text.match(/^(.*?)(\S+)$/s);
   const content = tail
-    ? `${tail[1]}<span class="anchor-tail">${tail[2]}<span class="anchor-ic" aria-hidden="true">🔍</span></span>`
-    : `${text}<span class="anchor-ic" aria-hidden="true">🔍</span>`;
+    ? `${tail[1]}<span class="anchor-tail">${tail[2]}<span class="anchor-ic" aria-hidden="true"></span></span>`
+    : `${text}<span class="anchor-ic" aria-hidden="true"></span>`; // 돋보기는 CSS가 그린다(10/09 — 전에는 이모지 🔍)
   return bold ? `<strong>${content}</strong>` : content;
 }
 

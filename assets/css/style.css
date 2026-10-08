@@ -393,7 +393,15 @@ button { font-family: inherit; }
 .anchor:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .anchor:hover { background-color: var(--highlight); }
 .anchor-tail { white-space: nowrap; }
-.anchor-ic { font-size: .8em; margin-left: 3px; }
+/* 돋보기 — 이모지 🔍 대신 CSS로(10/09, DESIGN.md 8절). 운영체제마다 그림이 달랐다. 글자 크기를 따라 커진다 */
+.anchor-ic {
+  position: relative; display: inline-block; width: .62em; height: .62em; margin: 0 .44em 0 .26em; vertical-align: .06em;
+  border: .13em solid var(--accent); border-radius: var(--radius-circle); box-sizing: border-box;
+}
+.anchor-ic::after {
+  content: ''; position: absolute; right: -.31em; bottom: -.33em; width: .14em; height: .38em;
+  background: var(--accent); border-radius: .07em; transform: rotate(-45deg);
+}
 /* 보관함 요약 팝업의 '자기소개서에서 확인하기'로 내려앉은 문장(10/07) — 형광펜을 세 번 깜빡이고 칠한 채로 둔다. 누르면(수집) 지운다 */
 .anchor.found {
   background-color: var(--highlight); outline: 2px solid var(--accent); outline-offset: 2px;
@@ -489,13 +497,26 @@ button { font-family: inherit; }
 .ev-thumb {
   position: relative; aspect-ratio: 4 / 3; width: 100%;
   background: var(--paper-dark); border-bottom: 1px solid var(--line);
-  display: grid; place-items: center; font-size: 2rem; overflow: hidden;
+  display: grid; place-items: center; overflow: hidden;
 }
 .ev-thumb-img {
   position: absolute; inset: 0; width: 100%; height: 100%;
   object-fit: cover; object-position: top;
 }
-.ev-thumb-fallback { position: relative; opacity: .5; }
+/* 그림이 없을 때의 문서 모양(괘선 세 줄) — 이모지 📄 · ❔ 대신 CSS로(10/09). 모으지 않은 카드는 줄 대신 물음표 */
+.ev-thumb-fallback {
+  position: relative; width: 40px; height: 52px; opacity: .5;
+  border: 2px solid var(--muted); border-radius: var(--radius-tag);
+  background:
+    linear-gradient(var(--muted), var(--muted)) 50% 30% / 60% 2px no-repeat,
+    linear-gradient(var(--muted), var(--muted)) 50% 50% / 60% 2px no-repeat,
+    linear-gradient(var(--muted), var(--muted)) 50% 70% / 38% 2px no-repeat;
+}
+.ev-card.unknown .ev-thumb-fallback {
+  display: grid; place-items: center; background: none;
+  font-size: var(--text-xl); font-weight: 800; color: var(--muted);
+}
+.ev-card.unknown .ev-thumb-fallback::before { content: '?'; }
 /* 썸네일 이미지가 있으면 폴백 아이콘을 숨긴다 (로드 실패 시 img가 제거되며 다시 나타남) */
 .ev-thumb:has(.ev-thumb-img) .ev-thumb-fallback { display: none; }
 
@@ -519,7 +540,15 @@ button { font-family: inherit; }
   border-style: dashed; color: var(--ink-soft);
 }
 .att-chip.card:hover { border-style: solid; border-color: var(--accent); color: var(--accent); }
-/* 직접 플레이 칩(E8 — 10/07): 첨부 칩과 같은 모양, 앞에 클립 대신 재생 모양(CSS 삼각형) */
+/* 첨부 칩 앞의 작은 문서 표시 — 이모지 📎 대신 CSS로(10/09). 직접 플레이 칩은 아래의 재생 삼각형 */
+.att-chip:not(.play-chip)::before {
+  content: ''; display: inline-block; width: 8px; height: 10px; margin-right: 6px; vertical-align: -1px;
+  border: 1.5px solid currentColor; border-radius: 1px;
+  background:
+    linear-gradient(currentColor, currentColor) 50% 25% / 4px 1px no-repeat,
+    linear-gradient(currentColor, currentColor) 50% 75% / 4px 1px no-repeat;
+}
+/* 직접 플레이 칩(E8 — 10/07): 첨부 칩과 같은 모양, 앞에 문서 표시 대신 재생 모양(CSS 삼각형) */
 .att-chip.card.play-chip::before { content: ""; display: inline-block; margin-right: 6px; border-left: 7px solid currentColor; border-top: 4.5px solid transparent; border-bottom: 4.5px solid transparent; vertical-align: -1px; }
 
 .ev-foot {
@@ -556,7 +585,15 @@ button { font-family: inherit; }
 }
 .hidden-slot.locked h3 { margin: 0 0 4px; color: var(--on-fill); }
 .hidden-cond { margin: 0; font-size: var(--text-md); }
-.hidden-icon { font-size: 2rem; }
+/* 자물쇠 — 잠김 · 열림(고리가 들린다). 이모지 🔒 · 🗝️ 대신 CSS로(10/09) */
+.hidden-icon { position: relative; flex: none; width: 36px; height: 42px; color: #d9b85e; }
+.hidden-icon::before {
+  content: ''; position: absolute; left: 8px; top: 2px; width: 20px; height: 20px; box-sizing: border-box;
+  border: 3.5px solid currentColor; border-bottom: 0; border-radius: 10px 10px 0 0;
+}
+.hidden-icon::after { content: ''; position: absolute; left: 2px; bottom: 0; width: 32px; height: 24px; border-radius: var(--radius-tag); background: currentColor; }
+.hidden-slot.unlocked .hidden-icon { color: #ffd766; }
+.hidden-slot.unlocked .hidden-icon::before { transform: translate(8px, -7px); }
 .hidden-info { flex: 1; }
 .hidden-kicker {
   display: block; margin-bottom: 4px; color: #d9b85e;
@@ -873,10 +910,18 @@ button { font-family: inherit; }
   position: fixed; width: 46px; height: 46px;
   margin: 0; transform: translate(-50%, -50%);
   background: var(--paper); border: 1px solid var(--accent); border-radius: var(--radius-card);
-  display: grid; place-items: center; font-size: 1.3rem;
+  display: grid; place-items: center;
   box-shadow: 0 4px 14px rgba(0,0,0,.25);
   transition: transform .68s cubic-bezier(.45, -0.15, .25, 1), opacity .68s ease;
   opacity: 1;
+}
+/* 날아가는 카드 속 문서 모양 — 이모지 📄 대신 CSS로(10/09) */
+.fly-ghost::before {
+  content: ''; width: 18px; height: 23px; box-sizing: border-box;
+  border: 1.5px solid var(--accent); border-radius: 2px;
+  background:
+    linear-gradient(var(--accent), var(--accent)) 50% 35% / 10px 1.5px no-repeat,
+    linear-gradient(var(--accent), var(--accent)) 50% 62% / 10px 1.5px no-repeat;
 }
 #toast-root {
   position: fixed; right: 18px; bottom: 18px; z-index: 400;
@@ -894,7 +939,23 @@ button { font-family: inherit; }
 .toast.out { animation: toast-out var(--motion-page) ease forwards; }
 @keyframes toast-in { from { transform: translateX(120%); opacity: 0; } to { transform: none; opacity: 1; } }
 @keyframes toast-out { to { transform: translateX(120%); opacity: 0; } }
-.toast-icon { font-size: 1.5rem; }
+/* 알림 아이콘 — 도장 레드 원 안의 흰 표시. 이모지 🏆 · 🔗 · 🔓 대신 CSS로(10/09).
+   체크는 Pretendard에 없는 글자(✓)라 선으로 그리고, ↗는 글꼴 글자 그대로 */
+.toast-icon {
+  position: relative; flex: none; width: 30px; height: 30px; border-radius: var(--radius-circle);
+  background: var(--accent); color: var(--on-fill);
+  display: grid; place-items: center; font-size: var(--text-base); font-weight: 800; line-height: 1;
+}
+.toast-icon[data-kind="done"]::before {
+  content: ''; width: 7px; height: 13px; margin-top: -3px; box-sizing: border-box;
+  border: solid currentColor; border-width: 0 2.5px 2.5px 0; transform: rotate(45deg);
+}
+.toast-icon[data-kind="link"]::before { content: '↗'; }
+.toast-icon[data-kind="open"]::before {
+  content: ''; position: absolute; left: 10px; top: 5px; width: 10px; height: 10px; box-sizing: border-box;
+  border: 2px solid currentColor; border-bottom: 0; border-radius: 5px 5px 0 0; transform: translate(4px, -2px);
+}
+.toast-icon[data-kind="open"]::after { content: ''; position: absolute; left: 8px; top: 14px; width: 14px; height: 10px; border-radius: 2px; background: currentColor; }
 .toast-title { font-weight: 800; font-size: var(--text-ui); }
 .toast-sub { font-size: var(--text-sm); color: #b7b3a8; }
 .toast-persistent { position: relative; pointer-events: auto; padding-right: 38px; }
@@ -2087,7 +2148,11 @@ body.plain-mode #view { min-height: 100vh; }
   border: 1px dashed var(--fx-line); border-radius: var(--radius-button); padding: 7px 12px;
   background: var(--fx-panel);
 }
-.brief-notice::before { content: '🖥 ' / ''; } /* 아이콘은 낭독하지 않는다(대체 글 비움, 10/06) */
+/* 화면 모양 — 이모지 🖥 대신 CSS로(10/09). 내용이 없는 그림이라 낭독되지 않는다 */
+.brief-notice::before {
+  content: ''; display: inline-block; width: 13px; height: 10px; margin-right: 7px; vertical-align: -1px;
+  border: 1.5px solid currentColor; border-bottom-width: 3px; border-radius: 2px;
+}
 
 /* ---------- 요약 페이지 공통 — 지금 누를 것 ----------
    "어떤 버튼을 눌러야 하는지 바로 안 보인다"(10/03 피드백). 페이지마다 누를 것의 모양이 달라서

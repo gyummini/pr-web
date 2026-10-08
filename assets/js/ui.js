@@ -59,8 +59,7 @@ export function flyFromRect(rect, onLand) {
   }
   const t = target.getBoundingClientRect();
   const g = document.createElement('div');
-  g.className = 'fly-ghost';
-  g.textContent = '📄';
+  g.className = 'fly-ghost'; // 문서 모양은 CSS가 그린다(10/09 — 전에는 이모지 📄)
   const sx = rect.left + rect.width / 2;
   const sy = rect.top + rect.height / 2;
   g.style.left = `${sx}px`;
@@ -85,14 +84,16 @@ export function flyFromRect(rect, onLand) {
 }
 
 // ---- 도전과제 스타일 토스트: 화면 구석, 자동 소멸, 클릭 요구 없음 ----
-export function toast(title, sub = '', icon = '🏆') {
+// kind: 'done'(완벽 수집 — 체크) · 'link'(링크 준비 중 — ↗). 표시는 CSS가 그린다(10/09 — 전에는 이모지 🏆 🔗)
+export function toast(title, sub = '', kind = 'done') {
   const root = document.getElementById('toast-root');
   if (!root) return;
   const el = document.createElement('div');
   el.className = 'toast';
   const ic = document.createElement('span');
   ic.className = 'toast-icon';
-  ic.textContent = icon;
+  ic.dataset.kind = kind;
+  ic.setAttribute('aria-hidden', 'true');
   const body = document.createElement('div');
   body.className = 'toast-body';
   const t = document.createElement('div');
@@ -138,7 +139,7 @@ function maybeShowHiddenUnlockToast() {
   el.className = 'toast toast-persistent hidden-unlock-toast';
   el.setAttribute('role', 'status');
   el.innerHTML = `
-    <span class="toast-icon" aria-hidden="true">🔓</span>
+    <span class="toast-icon" data-kind="open" aria-hidden="true"></span>
     <div class="toast-body">
       <div class="toast-title">${TH('toast.unlock_title')}</div>
       <a class="toast-action" href="${dest()}"></a>
@@ -160,7 +161,7 @@ function maybeShowHiddenUnlockToast() {
 // ---- 외부 문서 열기: 전부 새 탭. PLACEHOLDER는 안내만 ----
 export function openDoc(url) {
   if (!url || String(url).startsWith('PLACEHOLDER')) {
-    toast(T('toast.link_pending'), T('toast.link_pending_sub'), '🔗');
+    toast(T('toast.link_pending'), T('toast.link_pending_sub'), 'link');
     return;
   }
   window.open(url, '_blank', 'noopener');

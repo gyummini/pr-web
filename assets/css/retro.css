@@ -10,7 +10,7 @@
   --rt-ink2: #52514e;
   --rt-muted: #76756f;   /* 10/05 대비 정리: #8a8882(3.5:1) → 4.5:1 */
   --rt-line: #e1e0d9;
-  --rt-red: #c8372d;
+  --rt-red: var(--accent); /* 10/09 — 도장 레드와 거의 같은 다른 값(#c8372d)이었다. '지금 누를 것은 언제나 도장 레드'를 E8에서도 */
   --rt-pink: #fbf1ef;
   --rt-box: #f5f4ef;
   --rt-paper: #fffdf8;

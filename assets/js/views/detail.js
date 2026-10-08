@@ -58,7 +58,7 @@ export function renderDetail(view, eid) {
     const a = document.createElement('button');
     a.type = 'button';
     a.className = 'att-chip';
-    a.textContent = `📎 ${att.label}`;
+    a.textContent = att.label; // 앞의 문서 표시는 CSS(10/09 — 전에는 📎)
     a.addEventListener('click', () => openDoc(att.url));
     attWrap.appendChild(a);
   });

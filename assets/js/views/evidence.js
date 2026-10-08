@@ -81,7 +81,7 @@ function cardHtml(ev) {
   const code = got ? (chs ? T('evidence.code', { id: ev.id, chapters: chs }) : ev.id) : T('evidence.code_unknown', { id: ev.id });
   return `
     <div class="ev-card ${got ? 'collected' : 'unknown'}" data-eid="${ev.id}" tabindex="0" role="button">
-      <div class="ev-thumb">${thumb}<span class="ev-thumb-fallback" aria-hidden="true">${got ? '📄' : '❔'}</span></div>
+      <div class="ev-thumb">${thumb}<span class="ev-thumb-fallback" aria-hidden="true"></span></div>
       <div class="ev-info">
         <span class="ev-type"></span>
         <h3 class="ev-title"></h3>
@@ -165,7 +165,7 @@ function wireCard(el, view) {
       chip.remove();
       return;
     }
-    chip.textContent = `📎 ${att.label}`;
+    chip.textContent = att.label; // 앞의 문서 표시는 CSS(10/09 — 전에는 📎)
     chip.addEventListener('click', (e) => {
       e.stopPropagation();
       openDoc(att.url);
@@ -228,7 +228,7 @@ function renderHiddenSlot(wrap, view, hidden) {
   if (!unlocked) {
     wrap.innerHTML = `
       <div class="hidden-slot locked">
-        <div class="hidden-icon" aria-hidden="true">🔒</div>
+        <div class="hidden-icon" aria-hidden="true"></div>
         <div class="hidden-info">
           <span class="hidden-kicker">${TH('evidence.hidden_kicker')}</span>
           <h3 class="hidden-title"></h3>
@@ -256,7 +256,7 @@ function renderHiddenSlot(wrap, view, hidden) {
   if (flash) state.hiddenFlashShown = true;
   wrap.innerHTML = `
     <div class="hidden-slot unlocked ${flash ? 'flash' : ''}" tabindex="0" role="button">
-      <div class="hidden-icon">🗝️</div>
+      <div class="hidden-icon" aria-hidden="true"></div>
       <div class="hidden-info">
         <span class="hidden-kicker">${TH('evidence.hidden_done_kicker', { total })}</span>
         <h3 class="hidden-title"></h3>
