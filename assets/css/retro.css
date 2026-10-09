@@ -10,7 +10,7 @@
   --rt-ink2: #52514e;
   --rt-muted: #76756f;   /* 10/05 대비 정리: #8a8882(3.5:1) → 4.5:1 */
   --rt-line: #e1e0d9;
-  --rt-red: #c8372d;
+  --rt-red: var(--accent); /* 10/09 — 도장 레드와 거의 같은 다른 값(#c8372d)이었다. '지금 누를 것은 언제나 도장 레드'를 E8에서도 */
   --rt-pink: #fbf1ef;
   --rt-box: #f5f4ef;
   --rt-paper: #fffdf8;
@@ -33,15 +33,15 @@
 }
 :where(.lg) p { margin: 0; }
 .view-retro .brief-prompt:empty, .view-retro .brief-head-doc:empty { display: none; }
-.lg :focus-visible { outline: 2px solid var(--rt-ink); outline-offset: 3px; border-radius: 3px; }
+.lg :focus-visible { outline: 2px solid var(--rt-ink); outline-offset: 3px; border-radius: var(--radius-tag); }
 :where(.lg) button { font: inherit; color: inherit; }
 
 /* ---------- 머리말: 작은 표지는 여백 칸, 제목은 글 칸 ---------- */
 .view-retro .brief-head .ev-kicker { color: var(--rt-red); }
 .view-retro .brief-head .ev-sub { color: var(--rt-ink2); }
 .view-retro .brief-lead { display: block; max-width: none; margin: 18px 0 0; }
-.view-retro .brief-lead-title { margin: 0; font-size: 1.8rem; line-height: 1.28; letter-spacing: -.025em; text-wrap: balance; }
-.view-retro .brief-lead-line { max-width: none; margin: 9px 0 0; font-size: 1rem; line-height: 1.65; color: var(--rt-ink2); }
+.view-retro .brief-lead-title { margin: 0; font-size: var(--text-3xl); line-height: 1.28; letter-spacing: -.025em; text-wrap: balance; }
+.view-retro .brief-lead-line { max-width: none; margin: 9px 0 0; font-size: var(--text-base); line-height: 1.65; color: var(--rt-ink2); }
 
 .lg-no { font-weight: 800; color: var(--rt-red); font-variant-numeric: tabular-nums; }
 .lg-word { color: var(--rt-ink2); }
@@ -65,10 +65,10 @@
   min-height: 64px; padding: 6px 2px; text-align: left; background: none; border: 0; cursor: pointer;
 }
 .lg-map-side.is-left .lg-node { text-align: right; }
-.lg-node-head { display: block; font-size: 1rem; line-height: 1.35; }
+.lg-node-head { display: block; font-size: var(--text-base); line-height: 1.35; }
 .lg-node .lg-no { margin-right: 6px; }
 .lg-node .lg-word { font-weight: 700; color: var(--rt-ink); }
-.lg-node-title { display: block; margin-top: 1px; font-size: .86rem; line-height: 1.45; color: var(--rt-ink2); }
+.lg-node-title { display: block; margin-top: 1px; font-size: var(--text-md); line-height: 1.45; color: var(--rt-ink2); }
 .lg-node:hover .lg-word { color: var(--rt-red); }
 .lg-node:hover .lg-node-title { text-decoration: underline; text-decoration-color: var(--rt-muted); text-underline-offset: 3px; }
 /* 장마다 세로줄로 뻗는 가지 */
@@ -86,12 +86,12 @@
 /* 팩 — 그림 · 자르기 값은 retro.js가 데이터(cover.pack)에서 넣는다 */
 .lg-map-pack {
   grid-row: 1; grid-column: 3; align-self: center; display: block; width: 100%; aspect-ratio: 200 / 378;
-  border-radius: 5px; background-repeat: no-repeat;
+  border-radius: var(--radius-button); background-repeat: no-repeat;
   filter: drop-shadow(0 8px 14px color-mix(in srgb, var(--rt-ink) 28%, transparent));
 }
 .lg-map-core {
   grid-row: 2; grid-column: 2 / 5; justify-self: center; max-width: 212px; margin: 14px 0 0;
-  font-size: .95rem; font-weight: 800; line-height: 1.35; text-align: center; text-wrap: balance;
+  font-size: var(--text-ui); font-weight: 800; line-height: 1.35; text-align: center; text-wrap: balance;
 }
 .lg-map-core::before { content: ''; display: block; width: 26px; height: 2px; margin: 0 auto 8px; background: var(--rt-red); }
 /* 좁은 칸: 팩 → 기준 → 줄기가 두 갈래로 갈라져 장 네 개씩을 매단다(┌─┴─┐). 줄기 끝 화살촉은 위(기준 쪽)를 가리킨다 */
@@ -107,9 +107,9 @@
   .lg-map-side { grid-row: 3; grid-auto-rows: auto; align-self: start; }
   .lg-map-side::before { content: ''; display: block; height: 10px; border-top: 1.5px solid var(--rt-red); }
   .lg-map-side.is-left { grid-column: 1; padding-right: 10px; }
-  .lg-map-side.is-left::before { margin: 0 -10px 0 calc(50% + 5px); border-left: 1.5px solid var(--rt-red); border-top-left-radius: 4px; }
+  .lg-map-side.is-left::before { margin: 0 -10px 0 calc(50% + 5px); border-left: 1.5px solid var(--rt-red); border-top-left-radius: var(--radius-tag); }
   .lg-map-side.is-right { grid-column: 2; padding-left: 10px; }
-  .lg-map-side.is-right::before { margin: 0 calc(50% + 5px) 0 -10px; border-right: 1.5px solid var(--rt-red); border-top-right-radius: 4px; }
+  .lg-map-side.is-right::before { margin: 0 calc(50% + 5px) 0 -10px; border-right: 1.5px solid var(--rt-red); border-top-right-radius: var(--radius-tag); }
   .lg-map-side.is-left .lg-node { text-align: left; }
   .lg-node { min-height: 0; padding: 8px 0; }
   .lg-node::after { display: none; }
@@ -118,26 +118,26 @@
 .lg-glance, .lg-facts { margin: 30px 0 0 calc(var(--lg-m) + var(--lg-g)); }
 /* 숫자 · 기간과 도구 — 10/07부터 첫 화면 아래(장부 · 한눈에 보기 다음). 오른쪽 패널에는 그림과 직접 플레이만 */
 .lg-facts .lg-stats { margin-top: 0; }
-.rt-glance { padding: 18px 22px 14px; background: var(--rt-box); border-radius: 8px; }
-.rt-glance-title { margin: 0 0 8px; font-size: 1rem; }
+.rt-glance { padding: 18px 22px 14px; background: var(--rt-box); border-radius: var(--radius-card); }
+.rt-glance-title { margin: 0 0 8px; font-size: var(--text-base); }
 .rt-list { margin: 4px 0 0; padding-left: 20px; line-height: 1.8; }
 .rt-list li::marker { color: var(--rt-red); }
 
 /* ---------- 표지 패널: 타이틀 화면 · 숫자 · 기간과 도구 · 직접 플레이 ---------- */
-.lg-panel { background: var(--rt-box); border-radius: 8px; padding: 18px 20px; }
+.lg-panel { background: var(--rt-box); border-radius: var(--radius-card); padding: 18px 20px; }
 .lg-cover-fig { margin: 0; }
-.lg-cover-fig img { display: block; width: 100%; height: auto; border-radius: 4px; }
-.lg-cap { margin-top: 8px; font-size: .82rem; line-height: 1.55; color: var(--rt-ink2); }
+.lg-cover-fig img { display: block; width: 100%; height: auto; border-radius: var(--radius-tag); }
+.lg-cap { margin-top: 8px; font-size: var(--text-sm); line-height: 1.55; color: var(--rt-ink2); }
 .lg-stats { display: grid; grid-template-columns: repeat(3, 1fr); margin-top: 16px; border-top: 1px solid var(--rt-line); }
 .lg-stat { padding: 9px 10px 10px 0; border-bottom: 1px solid var(--rt-line); }
-.lg-stat strong { display: block; font-size: 1.22rem; line-height: 1.3; letter-spacing: -.01em; font-variant-numeric: tabular-nums; }
-.lg-stat span { font-size: .8rem; color: var(--rt-ink2); }
-.lg-meta { display: grid; grid-template-columns: max-content 1fr; gap: 3px 14px; margin: 14px 0 0; font-size: .86rem; line-height: 1.55; }
+.lg-stat strong { display: block; font-size: var(--text-xl); line-height: 1.3; letter-spacing: -.01em; font-variant-numeric: tabular-nums; }
+.lg-stat span { font-size: var(--text-sm); color: var(--rt-ink2); }
+.lg-meta { display: grid; grid-template-columns: max-content 1fr; gap: 3px 14px; margin: 14px 0 0; font-size: var(--text-md); line-height: 1.55; }
 .lg-meta dt { font-weight: 700; color: var(--rt-ink2); }
 .lg-meta dd { margin: 0; }
 .lg-cta { display: flex; align-items: center; gap: 14px; margin-top: 16px; }
-.lg-cta .btn { flex: none; padding: 12px 22px; font-size: 1rem; font-weight: 700; }
-.lg-cta-note { font-size: .8rem; line-height: 1.5; color: var(--rt-ink2); }
+.lg-cta .btn { flex: none; padding: 12px 22px; font-size: var(--text-base); font-weight: 700; }
+.lg-cta-note { font-size: var(--text-sm); line-height: 1.5; color: var(--rt-ink2); }
 .lg .btn.accent { background: var(--rt-red); border-color: var(--rt-red); color: var(--on-fill); text-decoration: none; }
 .lg .btn.accent:hover { filter: brightness(1.06); }
 
@@ -145,26 +145,26 @@
 .lg-chapters { margin-top: 44px; }
 .lg-ch { scroll-margin-top: calc(var(--header-h) + 8px); }
 .lg-ch-head { padding-top: 28px; border-top: 1px solid var(--rt-line); }
-.lg-ch-label { display: flex; gap: 8px; align-items: baseline; font-size: .9rem; }
-.lg-ch-title { margin: 3px 0 16px; font-size: 1.6rem; line-height: 1.35; letter-spacing: -.02em; text-wrap: balance; }
+.lg-ch-label { display: flex; gap: 8px; align-items: baseline; font-size: var(--text-ui); }
+.lg-ch-title { margin: 3px 0 16px; font-size: var(--text-2xl); line-height: 1.35; letter-spacing: -.02em; text-wrap: balance; }
 .lg-ch-title:focus { outline: none; }
-.lg-decision { position: relative; font-size: 1.1rem; font-weight: 700; line-height: 1.72; }
-.lg-mine { margin-top: 14px; padding: 11px 16px 12px; background: var(--rt-pink); border-radius: 6px; }
-.lg-mine strong { display: block; margin-bottom: 2px; font-size: .8rem; }
-.lg-mine p { font-size: 1rem; line-height: 1.7; }
+.lg-decision { position: relative; font-size: var(--text-lg); font-weight: 700; line-height: 1.72; }
+.lg-mine { margin-top: 14px; padding: 11px 16px 12px; background: var(--rt-pink); border-radius: var(--radius-button); }
+.lg-mine strong { display: block; margin-bottom: 2px; font-size: var(--text-sm); }
+.lg-mine p { font-size: var(--text-base); line-height: 1.7; }
 .lg-ch-body { margin-top: 20px; padding-bottom: 44px; color: var(--rt-ink2); }
-.lg-p { margin: 0 0 12px; font-size: .98rem; line-height: 1.82; }
-.lg-h { margin: 22px 0 8px; font-size: 1.02rem; color: var(--rt-ink); }
-.lg-list { margin: 4px 0 14px; padding-left: 20px; line-height: 1.8; font-size: .96rem; }
+.lg-p { margin: 0 0 12px; font-size: var(--text-base); line-height: 1.82; }
+.lg-h { margin: 22px 0 8px; font-size: var(--text-base); color: var(--rt-ink); }
+.lg-list { margin: 4px 0 14px; padding-left: 20px; line-height: 1.8; font-size: var(--text-base); }
 .lg-list li::marker { color: var(--rt-muted); }
 
 .rt-table-wrap { overflow-x: auto; margin: 12px 0 18px; }
-.rt-table { width: 100%; border-collapse: collapse; font-size: .86rem; line-height: 1.6; }
+.rt-table { width: 100%; border-collapse: collapse; font-size: var(--text-md); line-height: 1.6; }
 .rt-table caption { text-align: left; font-weight: 700; margin-bottom: 6px; }
 .rt-table th { text-align: left; padding: 8px 10px; background: var(--rt-box); border-block: 1px solid var(--rt-line); white-space: nowrap; color: var(--rt-ink); }
 .rt-table td { padding: 8px 10px; border-bottom: 1px solid var(--rt-line); color: var(--rt-ink2); vertical-align: top; }
 .rt-table td:first-child { color: var(--rt-ink); font-weight: 600; white-space: nowrap; }
-.rt-sources { margin: 6px 0 16px; font-size: .8rem; color: var(--rt-ink2); }
+.rt-sources { margin: 6px 0 16px; font-size: var(--text-sm); color: var(--rt-ink2); }
 .rt-sources-head { font-weight: 700; }
 .rt-sources ol { margin: 4px 0 0; padding-left: 18px; }
 .rt-sources a { color: var(--rt-ink2); }
@@ -172,9 +172,9 @@
 /* 장 안의 증거가 여럿이면 패널 머리의 작은 그림으로 고른다(결과 그림이 표지가 된다) */
 .lg-tabs { display: flex; flex-wrap: wrap; gap: 10px; margin: 0 0 14px; }
 .lg-tab { display: grid; justify-items: center; gap: 3px; padding: 0; background: none; border: 0; cursor: pointer; }
-.lg-tab-thumb { display: block; width: 64px; height: 40px; overflow: hidden; border: 1px solid var(--rt-line); border-radius: 3px; background: var(--surface); }
+.lg-tab-thumb { display: block; width: 64px; height: 40px; overflow: hidden; border: 1px solid var(--rt-line); border-radius: var(--radius-tag); background: var(--surface); }
 .lg-tab-thumb img { display: block; width: 100%; height: 100%; object-fit: cover; }
-.lg-tab-no { font-size: .75rem; color: var(--rt-ink2); font-variant-numeric: tabular-nums; }
+.lg-tab-no { font-size: var(--text-xs); color: var(--rt-ink2); font-variant-numeric: tabular-nums; }
 .lg-tab:hover .lg-tab-thumb { border-color: var(--rt-ink2); }
 .lg-tab.on .lg-tab-thumb { border: 2px solid var(--rt-ink); }
 .lg-tab.on .lg-tab-no { color: var(--rt-ink); font-weight: 700; }
@@ -183,35 +183,35 @@
 /* 참고 | 결과: 두 칸은 같은 크기(칸 비율은 retro.js가 두 그림에서 정한다) */
 .lg-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; align-items: start; }
 .lg-side { margin: 0; min-width: 0; }
-.lg-pocket { position: relative; aspect-ratio: var(--pocket); overflow: hidden; background: var(--surface); border: 1px solid var(--rt-line); border-radius: 4px; }
+.lg-pocket { position: relative; aspect-ratio: var(--pocket); overflow: hidden; background: var(--surface); border: 1px solid var(--rt-line); border-radius: var(--radius-tag); }
 .lg-side.result .lg-pocket { border-color: var(--rt-ink2); }
 .lg-pocket > img, .lg-pocket > video { position: absolute; inset: 0; display: block; width: 100%; height: 100%; object-fit: contain; }
 .lg-pocket.fill > img, .lg-pocket.fill > video { object-fit: cover; }
-.lg-side figcaption { margin-top: 8px; font-size: .82rem; line-height: 1.5; color: var(--rt-ink2); }
+.lg-side figcaption { margin-top: 8px; font-size: var(--text-sm); line-height: 1.5; color: var(--rt-ink2); }
 .lg-side.result figcaption { color: var(--rt-ink); }
 .lg-tag { margin-right: 6px; font-weight: 700; color: var(--rt-ink2); }
 .lg-side.result .lg-tag { color: var(--rt-red); }
 
 /* 점수 막대처럼 아주 납작한 결과는 위에 전체 폭으로, 참고는 아래 작게 */
-.lg-stack .lg-frame-bar { overflow: hidden; background: var(--surface); border: 1px solid var(--rt-ink2); border-radius: 4px; }
+.lg-stack .lg-frame-bar { overflow: hidden; background: var(--surface); border: 1px solid var(--rt-ink2); border-radius: var(--radius-tag); }
 .lg-stack .lg-frame-bar img { display: block; width: 100%; height: auto; }
 .lg-stack .lg-side.ref { width: 46%; }
 .lg-stack .lg-side.result { margin-top: 14px; }
-.lg-stack .lg-side.ref img { display: block; width: 100%; height: auto; border: 1px solid var(--rt-line); border-radius: 4px; }
+.lg-stack .lg-side.ref img { display: block; width: 100%; height: auto; border: 1px solid var(--rt-line); border-radius: var(--radius-tag); }
 
 /* 그림 한 장 */
 .lg-single { margin: 0; }
-.lg-frame { position: relative; display: grid; place-items: center; overflow: hidden; background: var(--surface); border: 1px solid var(--rt-line); border-radius: 4px; }
+.lg-frame { position: relative; display: grid; place-items: center; overflow: hidden; background: var(--surface); border: 1px solid var(--rt-line); border-radius: var(--radius-tag); }
 .lg-frame > img { display: block; max-width: 100%; max-height: 430px; width: auto; height: auto; }
 .lg-frame.lg-pocket { display: block; }
-.lg-single figcaption { margin-top: 8px; font-size: .84rem; line-height: 1.55; color: var(--rt-ink); }
+.lg-single figcaption { margin-top: 8px; font-size: var(--text-md); line-height: 1.55; color: var(--rt-ink); }
 
 /* 움짤 → 소리 없는 짧은 반복 영상. 멈춤 단추가 늘 보이고, 움직임 줄이기면 첫 장면에서 멈춘 채 '재생'만 보인다 */
 .lg-vctl {
   position: absolute; left: 8px; bottom: 8px; z-index: 1;
   display: inline-flex; align-items: center; gap: 7px; height: 30px; padding: 0 12px 0 10px;
-  font-size: .75rem; font-weight: 700; line-height: 1; color: var(--on-fill);
-  background: color-mix(in srgb, var(--rt-ink) 82%, transparent); border: 0; border-radius: 999px; cursor: pointer;
+  font-size: var(--text-xs); font-weight: 700; line-height: 1; color: var(--on-fill);
+  background: color-mix(in srgb, var(--rt-ink) 82%, transparent); border: 0; border-radius: var(--radius-pill); cursor: pointer;
 }
 .lg .lg-vctl:focus-visible { outline: 2px solid var(--rt-red); outline-offset: 2px; }
 .lg-vico { display: inline-block; flex: none; }
@@ -221,15 +221,15 @@
 
 /* AI가 한 일 — 패널 바닥의 한 줄 각주. 지원자의 결정 · 결과보다 늘 작고 조용하다 */
 .lg-ai { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 12px; align-items: baseline; margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--rt-line); }
-.lg-ai strong { font-size: .78rem; color: var(--rt-ink2); white-space: nowrap; }
-.lg-ai p { font-size: .84rem; line-height: 1.6; color: var(--rt-ink2); }
+.lg-ai strong { font-size: var(--text-sm); color: var(--rt-ink2); white-space: nowrap; }
+.lg-ai p { font-size: var(--text-md); line-height: 1.6; color: var(--rt-ink2); }
 
 /* ---------- 옆 목차: 장부 여백(넓은 화면만). 지금 장은 굵게 · 번호 빨강 — 세로줄로 잇는 선은 10/07 사용자 의견으로 뺐고, 글자를 키웠다 ---------- */
 .lg-rail { display: none; }
 .lg-rail ol { list-style: none; margin: 0; padding: 0; }
 .lg-rail-item {
   position: relative; display: block; width: 100%; padding: 5px 0;
-  font-size: .9rem; line-height: 1.4; text-align: right; color: var(--rt-ink2);
+  font-size: var(--text-ui); line-height: 1.4; text-align: right; color: var(--rt-ink2);
   background: none; border: 0; cursor: pointer; white-space: nowrap; /* 96px 칸에서 '저작권과 출처'가 두 줄로 갈라지지 않게 — 장 칸에 따로 여백이 있다 */
 }
 .lg-rail-item:hover { color: var(--rt-ink); }
@@ -242,27 +242,27 @@
 /* ---------- 끝: 저작권과 출처, 직접 플레이 버튼으로 장부를 닫는다 ---------- */
 .lg-close { scroll-margin-top: calc(var(--header-h) + 8px); }
 .lg-close::before { content: ''; display: block; height: 0; border-top: 4px double var(--rt-ink2); margin: 0 0 30px; }
-.lg-end-play { position: relative; padding: 15px 30px; font-size: 1.08rem; font-weight: 700; }
-.lg-end-note { margin-top: 12px; font-size: .86rem; line-height: 1.55; color: var(--rt-ink2); }
-.lg-notice strong { display: block; margin-bottom: 4px; font-size: .9rem; }
-.lg-notice p { font-size: .84rem; line-height: 1.7; color: var(--rt-ink2); }
-.lg-credits { margin-top: 16px; background: var(--rt-box); border-radius: 8px; scroll-margin-top: calc(var(--header-h) + 8px); }
+.lg-end-play { position: relative; padding: 15px 30px; font-size: var(--text-lg); font-weight: 700; }
+.lg-end-note { margin-top: 12px; font-size: var(--text-md); line-height: 1.55; color: var(--rt-ink2); }
+.lg-notice strong { display: block; margin-bottom: 4px; font-size: var(--text-ui); }
+.lg-notice p { font-size: var(--text-md); line-height: 1.7; color: var(--rt-ink2); }
+.lg-credits { margin-top: 16px; background: var(--rt-box); border-radius: var(--radius-card); scroll-margin-top: calc(var(--header-h) + 8px); }
 .lg-credits > summary {
   display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 3px 14px; align-items: baseline;
-  padding: 13px 18px 14px; list-style: none; cursor: pointer; border-radius: 8px;
+  padding: 13px 18px 14px; list-style: none; cursor: pointer; border-radius: var(--radius-card);
 }
 .lg-credits > summary::-webkit-details-marker { display: none; }
-.lg-credits-title { font-size: .95rem; font-weight: 700; }
-.lg-credits-more, .lg-credits-less { display: inline-flex; align-items: center; gap: 7px; font-size: .8rem; font-weight: 700; color: var(--rt-ink); }
+.lg-credits-title { font-size: var(--text-ui); font-weight: 700; }
+.lg-credits-more, .lg-credits-less { display: inline-flex; align-items: center; gap: 7px; font-size: var(--text-sm); font-weight: 700; color: var(--rt-ink); }
 .lg-credits-more::after, .lg-credits-less::after { content: ''; width: 6px; height: 6px; border-right: 1.5px solid currentColor; border-bottom: 1.5px solid currentColor; }
 .lg-credits-more::after { margin-top: -3px; transform: rotate(45deg); }
 .lg-credits-less::after { margin-top: 3px; transform: rotate(-135deg); }
 .lg-credits-less, .lg-credits[open] .lg-credits-more { display: none; }
 .lg-credits[open] .lg-credits-less { display: inline-flex; }
 .lg-credits > summary:hover .lg-credits-more, .lg-credits > summary:hover .lg-credits-less { text-decoration: underline; text-underline-offset: 3px; }
-.lg-credits-sum { grid-column: 1 / -1; font-size: .8rem; line-height: 1.55; color: var(--rt-ink2); }
-.lg-credits-body { padding: 0 18px 16px; font-size: .84rem; line-height: 1.7; color: var(--rt-ink2); }
-.lg-credits-body h4 { margin: 10px 0 2px; font-size: .86rem; color: var(--rt-ink); }
+.lg-credits-sum { grid-column: 1 / -1; font-size: var(--text-sm); line-height: 1.55; color: var(--rt-ink2); }
+.lg-credits-body { padding: 0 18px 16px; font-size: var(--text-md); line-height: 1.7; color: var(--rt-ink2); }
+.lg-credits-body h4 { margin: 10px 0 2px; font-size: var(--text-md); color: var(--rt-ink); }
 .view-retro .brief-foot { margin-top: 36px; }
 
 /* ---------- 넓은 화면(1181px~): 머리말 · 장부 | 표지 패널, 장마다 글 | 증거 패널 ---------- */
@@ -310,8 +310,8 @@
 /* ---------- 좁은 화면(~1180px): 한 단. 세로줄은 장부와 장의 왼쪽 테두리가 된다 ---------- */
 @media (max-width: 1180px) {
   .view-retro .brief { padding: 18px 16px 56px; }
-  .view-retro .brief-lead-title { font-size: 1.42rem; line-height: 1.32; }
-  .view-retro .brief-lead-line { font-size: .96rem; }
+  .view-retro .brief-lead-title { font-size: var(--text-xl); line-height: 1.32; }
+  .view-retro .brief-lead-line { font-size: var(--text-base); }
   .lg-glance, .lg-facts { margin: 26px 0 0; }
   .lg-cover-side { margin-top: 26px; }
   .lg-cta { flex-direction: column; align-items: stretch; }
@@ -328,7 +328,7 @@
   .lg-close-side { margin-top: 24px; }
   .lg-end-play { display: flex; width: 100%; justify-content: center; text-align: center; }
 }
-@media (max-width: 480px) {
+@media (max-width: 600px) {
   .lg-stats { grid-template-columns: repeat(2, 1fr); }
   .lg-ai { grid-template-columns: 1fr; gap: 2px; }
   .lg-meta { grid-template-columns: 1fr; gap: 0; }
