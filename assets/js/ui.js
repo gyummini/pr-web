@@ -120,7 +120,7 @@ export function dismissUnlockToast() {
   document.querySelectorAll('.hidden-unlock-toast').forEach((n) => n.remove());
 }
 
-// 기본 증거(E1~E6, E8, E9)를 모두 모은 순간 표시하는 고정 알림. 직접 닫거나 엔딩·수첩으로 들어가기 전까지 유지한다.
+// 기본 증거(BASE_EVIDENCE_IDS)를 모두 모은 순간 표시하는 고정 알림. 직접 닫거나 엔딩·수첩으로 들어가기 전까지 유지한다.
 function maybeShowHiddenUnlockToast() {
   if (pending > 0 || !baseUnlocked() || state.hiddenUnlockToastShown) return;
   const root = document.getElementById('toast-root');
