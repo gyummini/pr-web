@@ -339,12 +339,14 @@ motion:   # --motion-*(style.css :root)
 - **화면 글자는 코드에 쓰지 않는다.** 데이터 파일에서 읽고, 최종 문구는 GPT가 쓴다(`Text/strings.csv`, 전역 문구 규칙).
 - 새 그림 · 영상 · 폰트 추가는 기본적으로 피한다(CSS로 되는지 먼저 본다). 넣을 때는 크기를 줄이고 보일 때만 불러온다.
 - **이모지를 쓰지 않는다**(10/09 사용자 결정 — E3는 10/04에 먼저 걷어 냈다). 운영체제마다 그림이 달라 종이 · 도장 세계를 깬다.
-  대신 글꼴에 있는 기호 글자(→ ↗ ⬇ ← ★ · …)나 CSS 도형으로 그린다. 지금 있는 것:
+  대신 글꼴에 있는 기호 글자(→ ↗ ↓ ← ★ · …)나 CSS 도형으로 그린다. 지금 있는 것:
   진술 문장 끝 돋보기(`.anchor-ic`) · 카드 썸네일이 없을 때의 문서 모양 · 물음표(`.ev-thumb-fallback`) · 첨부 칩 앞 문서 표시(`.att-chip::before`) ·
   보관함 히든 칸의 자물쇠(잠김/열림 — `.hidden-icon`) · 날아가는 카드 속 문서(`.fly-ghost::before`) · 알림 아이콘(붉은 원 안의 체크 · ↗ · 열린 자물쇠, `.toast-icon[data-kind]`) ·
   PC 안내의 화면 모양(`.brief-notice::before`) · 탭 아이콘(SVG 돋보기, `index.html`).
-  - **✓ · ✕ · ↻는 Pretendard에 없다** — 쓰면 운영체제 글꼴로 떨어져 모양이 달라진다. 체크는 선으로 그렸다. 있는 글자인지는
-    `assets/fonts/pretendard/pretendardvariable-dynamic-subset.css`의 `unicode-range`로 확인한다.
+  - **✓ · ✕ · ↻ · ⬇는 Pretendard에 없다** — 쓰면 운영체제 글꼴로 떨어져 모양이 달라진다. 체크는 선으로 그렸다. 있는 글자인지는
+    `assets/fonts/pretendard/pretendardvariable-dynamic-subset.css`의 `unicode-range`로 확인한다. 내려받기 표시는 ↓(있음)를 쓴다.
+  - 아직 남은 것(10/10 점검): 다운로드 단추 문구 두 개 끝의 ⬇(`ui.basic.resume_pdf` · `ui.common.full_pdf`) — 확정 문구라 문구 목록에 DRAFT로 올렸다.
+    E1 데이터의 'Same pattern ✓' 도장과 완료 표시 `done_mark`('✓ ') — 한글이 없어 문구 목록 밖이다. 선으로 그릴지 결정 대기.
   - 아이콘 그림 속 모서리(1 · 2px, 자물쇠 고리 등)는 모서리 단계 밖이다 — 그림이다.
   - 예외: 연결이 끊긴 `/making`(`making.js` · `figures.js`)에는 이모지가 남아 있다 — 그 화면을 지울지 정할 때 같이 정리한다.
 
