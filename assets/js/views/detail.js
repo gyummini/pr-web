@@ -1,7 +1,7 @@
 import { getCard } from '../data.js';
 import { state } from '../state.js';
 import { openDoc } from '../ui.js';
-import { fmtCase } from '../collect.js';
+import { fmtCase, casePath } from '../collect.js';
 import { navigate } from '../router.js';
 import { hasBrief, briefOpenKey } from './brief.js';
 import { evidenceHeader } from '../motion/evidence-header.js';
@@ -33,7 +33,7 @@ export function renderDetail(view, eid) {
       <div class="detail-actions">
         ${
           firstChapter
-            ? `<a class="btn accent" href="/case/${firstChapter.slice(4)}">${TH('detail.to_statement', { case: fmtCase(firstChapter) })}</a>`
+            ? `<a class="btn accent" href="${casePath(firstChapter)}">${TH('detail.to_statement', { case: fmtCase(firstChapter) })}</a>`
             : ''
         }
         ${

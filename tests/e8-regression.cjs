@@ -183,12 +183,12 @@ const ch = (no) => `.lg-ch[data-chapter="${no}"]`;
     await shelf.goto(origin + '/evidence');
     await shelf.locator('.ev-grid').waitFor();
     // 아직 모으지 않은 카드는 블러 그대로 '요약 확인' — 누르면 수집하지 않고 요약 팝업이 뜬다(10/07 사용자 결정)
-    for (const id of ['E1', 'E2', 'E3', 'E4', 'E5', 'E6', 'E8', 'E9']) assert.equal(await shelf.locator(`.ev-card[data-eid="${id}"] .ev-open`).innerText(), UI.evidence.open_summary, id);
+    for (const id of ['E1', 'E2', 'E3', 'E5', 'E6', 'E8', 'E9']) assert.equal(await shelf.locator(`.ev-card[data-eid="${id}"] .ev-open`).innerText(), UI.evidence.open_summary, id);
     assert.equal(await shelf.locator('.play-chip').count(), 1, 'only E8 plays inside its page');
     const unlock = (action) => UI.popup.unlock.replace('{action}', action);
     const badge = () => shelf.locator('#badge').innerText();
     const before = await badge();
-    for (const [id, action] of [['E5', UI.common.to_interactive], ['E8', UI.evidence.open_retro], ['E4', UI.common.open_doc]]) {
+    for (const [id, action] of [['E5', UI.common.to_interactive], ['E8', UI.evidence.open_retro], ['E6', UI.common.open_doc]]) {
       await shelf.locator(`.ev-card[data-eid="${id}"]`).click();
       assert.deepEqual(await shelf.locator('.popup-actions .btn').allInnerTexts(), [UI.popup.to_statement, unlock(action)], `${id} shelf popup buttons`);
       assert.equal(await shelf.locator('.popup .ev-memo .memo').count(), 1, `${id} shows the summary memo`);
@@ -224,28 +224,55 @@ const ch = (no) => `.lg-ch[data-chapter="${no}"]`;
     // 장을 떠나면 그 장의 증거는 자동 수집된다(원래 규칙) — 보관함으로 돌아오면 E1이 수집돼 있다
     await shelf.locator('#tabs a[data-tab="evidence"]').click();
     await shelf.locator('.ev-card.collected[data-eid="E1"]').waitFor();
-    // 잠금해제하고 ○○ — 수집하고 바로 연다: 원본 문서(E4)는 새 탭 + 카드가 수집으로 뒤집힌다, 인터랙티브(E2)는 그 페이지로
+    // 잠금해제하고 ○○ — 수집하고 바로 연다: 원본 문서(E6 — 10/10 E4를 뺀 뒤 같은 종류)는 새 탭 + 카드가 수집으로 뒤집힌다, 인터랙티브(E2)는 그 페이지로
     await shelf.evaluate(() => { window.__opened = []; window.open = (u) => { window.__opened.push(u); return null; }; });
-    await shelf.locator('.ev-card[data-eid="E4"]').click();
+    await shelf.locator('.ev-card[data-eid="E6"]').click();
     await shelf.getByRole('button', { name: unlock(UI.common.open_doc), exact: true }).click();
-    await shelf.locator('.ev-card.collected[data-eid="E4"]').waitFor();
-    assert.deepEqual(await shelf.evaluate(() => window.__opened), [EVS.find((e) => e.id === 'E4').url]);
-    assert.equal(await shelf.locator('.ev-card[data-eid="E4"] .ev-open').innerText(), UI.common.open_doc);
+    await shelf.locator('.ev-card.collected[data-eid="E6"]').waitFor();
+    assert.deepEqual(await shelf.evaluate(() => window.__opened), [EVS.find((e) => e.id === 'E6').url]);
+    assert.equal(await shelf.locator('.ev-card[data-eid="E6"] .ev-open').innerText(), UI.common.open_doc);
     assert.equal(await shelf.locator('.hidden-progress').innerText(), UI.evidence.hidden_progress.replace('{n}', '2').replace('{total}', '7'));
-    // E9(추가 포트폴리오, 10/08) — 자기소개서에 나오지 않는다: 진술로 가는 버튼이 없고, 머리글은 장 대신 꼬리표,
-    // 잠금해제하면 카드는 수집으로 뒤집히지만 수집 개수(배지 · 수첩 진행)에는 들지 않는다
+    // E9(추가 포트폴리오, 10/08) — 10/09부터 에필로그 끝 '참고' 줄에 나오고 센다(사용자 결정): 보관함 요약에서 그 줄로 갈 수 있고 머리글은 EPILOGUE,
+    // 잠금해제하면 배지로 날아 수집 개수(배지 · 수첩 진행)에 든다
+    const bump = (b) => b.replace(/^\d+/, (n) => String(Number(n) + 1));
     const E9 = EVS.find((e) => e.id === 'E9');
+    const epilogueKicker = UI.popup.kicker.replace('{id}', 'E9').replace('{chapters}', UI.common.epilogue_label);
     const badgeBeforeE9 = await badge();
     await shelf.locator('.ev-card[data-eid="E9"]').click();
-    assert.deepEqual(await shelf.locator('.popup-actions .btn').allInnerTexts(), [unlock(UI.common.open_doc)], 'E9 shelf popup has no statement link');
-    assert.equal(await shelf.locator('.popup .ev-kicker').innerText(), UI.brief.kicker.replace('{id}', 'E9').replace('{type}', E9.doc_type));
+    assert.deepEqual(await shelf.locator('.popup-actions .btn').allInnerTexts(), [UI.popup.to_statement, unlock(UI.common.open_doc)], 'E9 shelf popup buttons');
+    assert.equal(await shelf.locator('.popup .ev-kicker').innerText(), epilogueKicker);
     assert.equal(await shelf.locator('.popup .ev-memo .memo-spl').count(), 1, 'E9 memo draws its split block');
     await shelf.getByRole('button', { name: unlock(UI.common.open_doc), exact: true }).click();
     await shelf.locator('.ev-card.collected[data-eid="E9"]').waitFor();
-    assert.equal(await shelf.locator('.ev-card[data-eid="E9"] .ev-code').innerText(), 'E9', 'no chapter on the card code');
-    assert.equal(await badge(), badgeBeforeE9, 'E9 is not counted');
-    assert.equal(await shelf.locator('.hidden-progress').innerText(), UI.evidence.hidden_progress.replace('{n}', '2').replace('{total}', '7'));
+    assert.equal(await shelf.locator('.ev-card[data-eid="E9"] .ev-code').innerText(), UI.evidence.code.replace('{id}', 'E9').replace('{chapters}', UI.common.epilogue_label), 'card code names the epilogue');
+    await shelf.waitForFunction((want) => document.querySelector('#badge').innerText === want, bump(badgeBeforeE9));
+    assert.equal(await shelf.locator('.hidden-progress').innerText(), UI.evidence.hidden_progress.replace('{n}', '3').replace('{total}', '7'));
     if (E9.url) assert.equal((await shelf.evaluate(() => window.__opened)).at(-1), E9.url);
+    // 에필로그의 E9 참고 줄 — 눌러도, 누르지 않고 장을 떠나 자동으로 모여도 배지가 하나 오르고 에필로그 완료 알림이 뜬다
+    for (const press of [true, false]) {
+      const ep = await browser.newPage({ viewport: { width: 1440, height: 900 } });
+      await ep.route('**/_vercel/**', r => r.abort());
+      await ep.route('**/api/**', r => r.abort());
+      ep.on('pageerror', e => errors.push(e.message));
+      await ep.goto(origin + '/case/epilogue');
+      const ref = ep.locator('.essay-ref .anchor[data-eid="E9"]');
+      assert.ok((await ref.innerText()).startsWith(E9.title), 'the epilogue reference names the document'); // 끝에 돋보기 표시가 붙는다
+      const epBadge = await ep.locator('#badge').innerText();
+      if (press) {
+        await ref.click();
+        assert.equal(await ep.locator('.popup .ev-kicker').innerText(), epilogueKicker);
+        assert.deepEqual(await ep.locator('.popup-actions .btn').allInnerTexts(), [UI.popup.collect], 'E9 essay popup: one button only');
+        await ep.keyboard.press('Escape');
+        await ep.locator('.modal-overlay').waitFor({ state: 'detached' });
+      }
+      await ep.locator('#tabs a[data-tab="evidence"]').click();
+      await ep.locator('.ev-card.collected[data-eid="E9"]').waitFor();
+      await ep.waitForFunction((want) => document.querySelector('#badge').innerText === want, bump(epBadge));
+      const done = ep.locator('#toast-root .toast').filter({ hasText: UI.toast.chapter_complete.replace('{case}', UI.common.epilogue_label) });
+      await done.first().waitFor();
+      assert.equal(await done.count(), 1, `epilogue chapter-complete toast once (${press ? 'pressed' : 'left the chapter'})`);
+      await ep.close();
+    }
     await shelf.locator('.ev-card[data-eid="E2"]').click();
     await shelf.getByRole('button', { name: unlock(UI.common.to_interactive), exact: true }).click();
     await shelf.waitForURL('**/evidence/E2/interactive');

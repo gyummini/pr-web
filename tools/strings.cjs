@@ -311,6 +311,21 @@ function check() {
     if (typeof get(ui, m[1]) !== 'string') fail(`tools/build-pdf.cjs: 콘텐츠_화면문구.json에 없는 키 — ${m[1]}`);
   }
 
+  // 6) 증거 개수를 말하는 문구는 실제 기본 증거 수(state.js BASE_EVIDENCE_IDS)와 같아야 한다 —
+  //    포트폴리오가 늘거나 줄면 숫자만 맞춘다(10/10 사용자 지시 — 엔딩 대사 '일곱 개의 증거'가 E9를 세면서 틀어졌던 일)
+  const stateJs = fs.readFileSync(path.join(L.ROOT, 'assets', 'js', 'state.js'), 'utf8');
+  const baseCount = ((stateJs.match(/BASE_EVIDENCE_IDS\s*=\s*\[([^\]]*)\]/) || [])[1] || '').match(/'E\d+'/g)?.length || 0;
+  const NATIVE = { 한: 1, 두: 2, 세: 3, 네: 4, 다섯: 5, 여섯: 6, 일곱: 7, 여덟: 8, 아홉: 9, 열한: 11, 열두: 12, 열: 10 };
+  const countSaid = /(열한|열두|열|한|두|세|네|다섯|여섯|일곱|여덟|아홉|\d+)\s*(?:개|장)의?\s*증거|증거\s*(\d+)\s*(?:개|장)/g;
+  if (!baseCount) fail('assets/js/state.js: BASE_EVIDENCE_IDS를 읽지 못했다(증거 개수 문구 검사)');
+  else for (const s of all) {
+    for (const m of s.text.matchAll(countSaid)) {
+      const word = m[1] || m[2];
+      const n = /^\d+$/.test(word) ? Number(word) : NATIVE[word];
+      if (n !== baseCount) fail(`${s.key}: 증거 개수가 ${n}로 적혀 있는데 기본 증거는 ${baseCount}개다 — "${m[0]}" (포트폴리오 수가 바뀌면 숫자만 맞춘다)`);
+    }
+  }
+
   const draftCount = ledger.filter((r) => r.status === 'DRAFT').length;
   if (problems.length) {
     console.error(problems.map((p) => `✖ ${p}`).join('\n'));

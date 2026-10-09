@@ -3,7 +3,7 @@ import { preloadNotebookFonts } from './preload.js';
 import { T, TH } from './text.js';
 
 // 수첩(E7)에 곧 도달할 신호. 폰트는 용량이 커서 진입 시점에 받으면 글씨가 늦게 바뀌므로,
-// 5/7 도달 시점에 미리 백그라운드 요청해둔다.
+// 기본 증거를 거의 다 모은 시점(세는 증거 전체 − 2)에 미리 백그라운드 요청해둔다.
 const NB_FONT_TRIGGER = TOTAL_EVIDENCE - 2;
 function maybePreloadNotebookFonts() {
   if (collectedCount() >= NB_FONT_TRIGGER) preloadNotebookFonts();
@@ -11,7 +11,7 @@ function maybePreloadNotebookFonts() {
 
 // ---- 수집 카운트 뱃지 ----
 // pending: 상태에는 수집됐지만 아직 수집 애니메이션이 도착하지 않은 수.
-// 뱃지 표시값 = 세는 증거 수(collectedCount — 추가 포트폴리오 E9 제외) - pending → 애니메이션 도착 시점에 카운트가 올라가는 연출.
+// 뱃지 표시값 = 세는 증거 수(collectedCount) - pending → 애니메이션 도착 시점에 카운트가 올라가는 연출.
 let pending = 0;
 
 function badgeEl() {
@@ -121,7 +121,7 @@ export function dismissUnlockToast() {
   document.querySelectorAll('.hidden-unlock-toast').forEach((n) => n.remove());
 }
 
-// 기본 증거(E1~E6, E8)를 모두 모은 순간 표시하는 고정 알림. 직접 닫거나 엔딩·수첩으로 들어가기 전까지 유지한다.
+// 기본 증거(BASE_EVIDENCE_IDS)를 모두 모은 순간 표시하는 고정 알림. 직접 닫거나 엔딩·수첩으로 들어가기 전까지 유지한다.
 function maybeShowHiddenUnlockToast() {
   if (pending > 0 || !baseUnlocked() || state.hiddenUnlockToastShown) return;
   const root = document.getElementById('toast-root');

@@ -1,10 +1,11 @@
-import { state } from './state.js';
+import { state, counts } from './state.js';
 import { DB } from './data.js';
 import { addPending, landOne, flyFromRect, toast } from './ui.js';
 import { T } from './text.js';
 
+// 장 이름(CASE 02 · EPILOGUE) — 에필로그에도 증거가 생겼다(E9 참고 줄, 10/09)
 export function fmtCase(chId) {
-  return T('common.case_label', { n: chId.slice(4) });
+  return chId === 'EPILOGUE' ? T('common.epilogue_label') : T('common.case_label', { n: chId.slice(4) });
 }
 
 // 장 id → 세부 사항 주소 (CASE02 → /case/02, EPILOGUE → /case/epilogue)
@@ -16,10 +17,11 @@ export function chapterEvidence(chId) {
   return DB.cards.filter((c) => !c.hidden && (c.chapters || []).includes(chId));
 }
 
-// 한 챕터의 증거를 모두 수집하면 도전과제 스타일 토스트 (열람한 챕터만, 1회)
+// 한 챕터의 증거를 모두 수집하면 도전과제 스타일 토스트 (열람한 챕터만, 1회).
+// 수집 개수에 들지 않는 증거(counts가 거짓 — 지금은 없음)만 있는 장은 알리지 않는다
 export function checkChapterToasts() {
   for (const ch of DB.chapters) {
-    const evs = chapterEvidence(ch.id);
+    const evs = chapterEvidence(ch.id).filter((e) => counts(e.id));
     if (!evs.length) continue;
     if (!state.viewedChapters.has(ch.id)) continue;
     if (state.toastedChapters.has(ch.id)) continue;
@@ -32,8 +34,11 @@ export function checkChapterToasts() {
 
 // 챕터 이탈 시 미클릭 증거 자동 일괄 수집
 // 최종 증거가 등장하는 CASE04만 제외 — 증거 페이지 진입 시 수집한다.
+// 세지 않는 증거는 조용히 잠금해제만 한다 — 배지로 날지 않는다(진술 팝업 · 보관함과 같은 규칙)
 export function autoCollectChapter(chId, originRects = null) {
-  const rest = chapterEvidence(chId).filter((e) => !state.collected.has(e.id));
+  const left = chapterEvidence(chId).filter((e) => !state.collected.has(e.id));
+  left.filter((e) => !counts(e.id)).forEach((e) => state.collected.add(e.id));
+  const rest = left.filter((e) => counts(e.id));
   if (!rest.length) return 0;
   rest.forEach((e, i) => {
     state.collected.add(e.id);
