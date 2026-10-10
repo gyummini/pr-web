@@ -514,6 +514,21 @@ html.night .scene { background-image: url('../img/bg_office_night.jpg'); }
 .anchor:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
 .anchor:hover { background-color: var(--highlight); }
 .anchor-tail { white-space: nowrap; }
+/* 증거 문장 옆 포스트잇(10/11 사용자 요청 — 03b 시안): 종이 왼쪽 가장자리 뒤에 붙인 빨간 포스트잇이 문장 첫 줄 높이에서 삐져나온다.
+   모은 문장이면 흰 체크가 찍힌다(내려앉을 때 .got과 함께). 문장의 일부라 눌러도 문장을 누른 것과 같다. 그림이라 화면 낭독기에는 읽히지 않는다.
+   자리는 종이(.paper, 위치 기준) 왼쪽 밖 — 세로 자리는 따로 재지 않고 문장 첫 줄의 원래 자리(top: auto)를 쓴다 */
+.essay-body .anchor::before {
+  content: ''; position: absolute; left: -17px; width: 16px; height: 18px; margin-top: .3em;
+  background: var(--accent) center / 11px 11px no-repeat; border-radius: 3px 0 0 3px;
+  box-shadow: inset -3px 0 3px -2px rgba(0, 0, 0, .28), var(--shadow-card); /* 오른쪽 끝의 그늘 — 종이 밑으로 들어간다 */
+}
+.essay-body .anchor.got::before {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M2.2 6.4l2.4 2.4 5.2-5.6' fill='none' stroke='%23fff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+}
+/* 한 단 배치(≤820px)는 종이 옆 여백이 12px뿐이라 포스트잇을 작게 */
+@media (max-width: 820px) {
+  .essay-body .anchor::before { left: -11px; width: 10px; height: 16px; background-size: 8px 8px; }
+}
 /* 돋보기 스티커 — 빨간 원 위에 흰 돋보기(10/10 나2 · 전에는 빨간 선 돋보기, 그 전에는 이모지 🔍). 글자 크기를 따라 커진다 */
 .anchor-ic {
   position: relative; display: inline-block; width: 1.08em; height: 1.08em; margin: 0 .34em 0 .3em; vertical-align: -.17em;
@@ -1452,8 +1467,9 @@ body.plain-mode #view { min-height: 100vh; }
 }
 
 /* 종이 넘김(10/11 가) — 새 쪽은 처음부터 불투명하게 아래에 깔려 있고, 넘어가는 쪽만 묶음 쪽을 축으로 젖혀진다
-   (전에는 새 쪽이 30% 투명에서 시작하고 나가는 쪽도 투명해져 두 쪽 글이 함께 비쳤다). 쪽은 화면 안쪽으로 젖혀져 사라지고,
-   뒤로 넘기면 앞 쪽이 거꾸로 돌아와 덮는다. 펼침에서는 앞 절반에 한 쪽이 접히고 뒤 절반에 반대편 쪽이 펼쳐진다 */
+   (전에는 새 쪽이 30% 투명에서 시작하고 나가는 쪽도 투명해져 두 쪽 글이 함께 비쳤다). 넘어가는 쪽은 묶음을 축으로 독자 쪽으로 들려 넘어가고,
+   뒤로 넘기면 앞 쪽이 독자 쪽에서 돌아와 덮는다. 펼침에서는 앞 절반에 한 쪽이 들려 접히고 뒤 절반에 반대편 쪽이 들린 채로 내려앉는다.
+   10/11 사용자 지적: 전에는 회전 부호가 반대라 쪽이 화면 안쪽(책 뒤)으로 젖혀져, 펼침에서 넘어오는 쪽이 책 뒤에서 나오는 것처럼 보였다 */
 .nb-page.nb-fold, .nb-page.nb-unfold { z-index: 3; will-change: transform; }
 .nb-page.nb-fold { animation: var(--nb-turn-fold); }
 .nb-page.nb-unfold { animation: var(--nb-turn-unfold); }
@@ -1461,10 +1477,10 @@ body.plain-mode #view { min-height: 100vh; }
 .nb-unfold > .nb-paper::after { animation: var(--nb-turn-shade-out); }
 @keyframes nbFold {
   from { transform: none; }
-  to   { transform: rotateY(calc(var(--nb-dir) * 90deg)); }
+  to   { transform: rotateY(calc(var(--nb-dir) * -90deg)); }
 }
 @keyframes nbUnfold {
-  from { transform: rotateY(calc(var(--nb-dir) * 90deg)); }
+  from { transform: rotateY(calc(var(--nb-dir) * -90deg)); }
   to   { transform: none; }
 }
 @keyframes nbShadeIn { from { opacity: 0; } to { opacity: 1; } }

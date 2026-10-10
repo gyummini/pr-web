@@ -350,6 +350,30 @@ const ch = (no) => `.lg-ch[data-chapter="${no}"]`;
     await shelf.locator('.idx-mark.on[data-eid="E8"]').first().waitFor(); // E8은 두 장(CASE 02 · 04)의 목차에 있다
     const mark = await shelf.locator('.idx-mark.on[data-eid="E8"]').first().evaluate((el) => ({ radius: getComputedStyle(el).borderTopLeftRadius, color: getComputedStyle(el).color, text: el.textContent }));
     assert.deepEqual(mark, { radius: '50%', color: 'rgb(178, 58, 47)', text: 'E8' }, 'a collected index mark is a round seal with its number');
+    // 목차 칸은 읽은 장의 것만 채운다 — E8은 CASE 04에도 나오지만 CASE 04를 열기 전에는 그 장의 칸이 비어 있다(10/11 사용자 지적)
+    assert.equal(await shelf.locator('.idx-marks[data-ch="CASE04"] .idx-mark[data-eid="E8"]').evaluate((m) => m.classList.contains('on')), false,
+      '[new] an unread chapter keeps its index marks empty');
+    // 증거 문장 옆 포스트잇(10/11 사용자 요청) — 종이 왼쪽 가장자리 밖, 문장 첫 줄 높이의 빨간 포스트잇. 모은 문장에는 흰 체크.
+    // 종이와 문장 사이에 위치 기준이 되는 상자가 없어야 포스트잇이 글 칸 안으로 들어오지 않는다
+    for (const width of [1440, 390]) {
+      await shelf.setViewportSize({ width, height: 900 });
+      const flags = await shelf.evaluate(() => ['E8', 'E2'].map((id) => {
+        const a = document.querySelector(`.essay-body .anchor[data-eid="${id}"]`);
+        a.scrollIntoView({ block: 'center' });
+        const paper = a.closest('.paper');
+        let staticPath = true;
+        for (let n = a.parentElement; n !== paper; n = n.parentElement) if (getComputedStyle(n).position !== 'static') staticPath = false;
+        const p = paper.getBoundingClientRect(), line = a.getClientRects()[0];
+        const hit = document.elementFromPoint(p.left - 5, line.top + line.height / 2); // 가상 요소는 그 주인 요소로 잡힌다
+        const cs = getComputedStyle(a, '::before');
+        return { id, staticPath, onFlag: !!hit && a.contains(hit), color: cs.backgroundColor, check: cs.backgroundImage.startsWith('url(') };
+      }));
+      assert.deepEqual(flags, [
+        { id: 'E8', staticPath: true, onFlag: true, color: 'rgb(178, 58, 47)', check: true },
+        { id: 'E2', staticPath: true, onFlag: true, color: 'rgb(178, 58, 47)', check: false },
+      ], `[new] a red flag peeks out left of the paper beside each evidence sentence, checked once collected (${width}px)`);
+    }
+    await shelf.setViewportSize({ width: 1440, height: 900 });
     // 수집한 카드에는 '원본 ↗'이 붙는다 — 긴 행동 문구에 밀려 카드 밖으로 잘리지 않는다(10/07 사용자 발견). 보관함은 탭으로 옮겨 수집 상태를 지킨다
     await shelf.locator('#tabs a[data-tab="evidence"]').click();
     await shelf.locator('.ev-card.collected[data-eid="E5"] .ev-direct').waitFor();
@@ -370,6 +394,9 @@ const ch = (no) => `.lg-ch[data-chapter="${no}"]`;
       await shelf.locator('.detail').waitFor();
       assert.equal(await shelf.locator(`.detail-actions a[href="/evidence/${id}/interactive"]`).innerText(), label, `${id} detail opens its page`);
     }
+    // CASE 04를 열면 이미 모은 E8의 칸이 그 장에서도 채워진다
+    await shelf.evaluate(async () => { const { navigate } = await import('/assets/js/router.js'); navigate('/case/04'); });
+    await shelf.locator('.idx-marks[data-ch="CASE04"] .idx-mark.on[data-eid="E8"]').waitFor();
     await shelf.close();
 
     // 움직임 그대로 — 보일 때만 결과 영상이 돈다. 참고 영상은 멈춰 있고, 탭을 바꾸거나 화면을 떠나면 멈춘다
@@ -409,6 +436,6 @@ const ch = (no) => `.lg-ch[data-chapter="${no}"]`;
     assert.deepEqual(await live.evaluate(() => [scrollY, document.querySelectorAll('.ev-card.is-back').length]), [0, 0], 'the header tab keeps the saved place');
 
     assert.deepEqual(errors, []);
-    console.log('PASS E8 retro: map (pack, core, four a side, joins at the pack), cover panel stays with the cover, play links never clicked, no red spine or connectors, no lead line, map and rail jumps with focus, mine/AI split, tabs and keys, same-size pair, videos (reduced motion, toggle, play only in view, tab switch), notice open and credits folded, tables and sources, 320–1920px, shelf and popup labels (try vs read), shelf summary popup (no collect, memo compass = map, find in statement, unlock to page or document, remaining-evidence button), play chip lands on the play button, back to the portfolio lands on the card (header tab keeps the saved place).');
+    console.log('PASS E8 retro: map (pack, core, four a side, joins at the pack), cover panel stays with the cover, play links never clicked, no red spine or connectors, no lead line, map and rail jumps with focus, mine/AI split, tabs and keys, same-size pair, videos (reduced motion, toggle, play only in view, tab switch), notice open and credits folded, tables and sources, 320–1920px, shelf and popup labels (try vs read), shelf summary popup (no collect, memo compass = map, find in statement, unlock to page or document, remaining-evidence button), play chip lands on the play button, index marks only for chapters already read, a red flag beside each evidence sentence (checked once collected), back to the portfolio lands on the card (header tab keeps the saved place).');
   } finally { await browser.close(); }
 })().catch(e => { console.error(e); process.exitCode = 1; });

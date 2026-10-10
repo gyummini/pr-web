@@ -5,6 +5,7 @@
 // 넓고 높은 화면의 펼친 수첩(펼친 쪽 스크롤 없음)과 화면이 바뀔 때 보던 장을 잇는 것.
 // 10/11(2): 2부는 두 화면 모두 세 쪽(메모 2 · 2 · 1+종합 소견+플레이 기록) — 한 쪽 화면은 일곱 쪽이고 1366×768에서 종합 소견이 첫 화면 안.
 // 펼침은 다섯 면(넘김 네 번) — 3부는 사진마다 한 쪽(380px 안팎), 마지막 면 오른쪽은 글자 없는 뒤표지, 알약은 두 화면이 같은 일곱 쪽을 센다.
+// 넘어가는 쪽은 앞으로든 뒤로든 독자 쪽으로 들린다(10/11 사용자 지적 — 책 뒤로 젖혀지던 방향을 바로잡음).
 // 키 큰 화면의 종이는 높이 ÷ 폭 1.45까지(2560×1300 펼침 · 900×1600 한 쪽) — 남는 높이의 가운데에 놓이고 단추 · 알약 · 탭은 종이 밖. 휴대폰은 묶지 않는다.
 const assert = require('node:assert/strict');
 const { chromium } = require('playwright');
@@ -41,12 +42,20 @@ const IMG = /memo_\d|notebook_photo_\d/;
     const s = p.querySelector('.nb-scroll');
     return { ch: p.dataset.ch, paper: r('.nb-paper'), holes: r('.nb-spiral'), title: r('.nb-h2'), room: s ? s.scrollHeight - s.clientHeight : 0 };
   }));
-  // 넘김 도중(0.3초) 보이는 쪽은 모두 불투명이고, 도는 쪽이 있다
+  // 넘김 도중(0.3초) 보이는 쪽은 모두 불투명이고, 도는 쪽이 있다. 도는 쪽은 묶음 반대편 끝이 독자 쪽으로 들린다(lift 1)
+  // — 10/11 사용자 지적: 전에는 회전 부호가 반대라 쪽이 화면 안쪽(책 뒤)으로 젖혀졌다
   const midTurn = async (page, sel) => {
     await page.locator(sel).click();
     await page.waitForTimeout(300);
     const r = await page.evaluate(() => [...document.querySelectorAll('.nb-page')].filter((p) => getComputedStyle(p).visibility !== 'hidden')
-      .map((p) => ({ opacity: +getComputedStyle(p).opacity, running: p.getAnimations().some((a) => a.playState === 'running') })));
+      .map((p) => {
+        const cs = getComputedStyle(p);
+        const m = cs.transform.startsWith('matrix3d(') ? cs.transform.slice(9, -1).split(',').map(Number) : null;
+        // 돌림 축(묶음)에서 반대편 끝까지 x만큼 떨어진 점의 깊이는 m[2]·x — 양수면 화면 밖, 독자 쪽
+        const ox = parseFloat(cs.transformOrigin), w = p.offsetWidth;
+        const lift = m && Math.abs(m[2]) > 0.01 ? Math.sign(m[2] * (ox < w / 2 ? w - ox : -ox)) : 0;
+        return { opacity: +cs.opacity, running: p.getAnimations().some((a) => a.playState === 'running'), lift };
+      }));
     await page.waitForTimeout(500);
     return r;
   };
@@ -115,6 +124,7 @@ const IMG = /memo_\d|notebook_photo_\d/;
             const mid = await midTurn(page, '.nb-next');
             assert.ok(mid.length >= 2 && mid.every((m) => m.opacity === 1), `turning pages stay opaque ${JSON.stringify(mid)}`);
             assert.ok(mid.some((m) => m.running), 'the turn plays under reduced motion');
+            assert.ok(mid.every((m) => m.lift >= 0) && mid.some((m) => m.lift > 0), `[new] the turning page lifts toward the reader ${JSON.stringify(mid)}`);
           } else await next(page);
         }
       }
@@ -254,6 +264,7 @@ const IMG = /memo_\d|notebook_photo_\d/;
       assert.deepEqual([...new Set(imgs)].sort(), ['memo_1.jpg', 'memo_2.jpg'], 'the cover loads only the next spread');
       const mid = await midTurn(page, '.nb-next');
       assert.ok(mid.length >= 3 && mid.every((m) => m.opacity === 1), `spread turn stays opaque ${JSON.stringify(mid)}`);
+      assert.ok(mid.every((m) => m.lift >= 0) && mid.some((m) => m.lift > 0), `[new] the turning right page lifts toward the reader ${JSON.stringify(mid)}`);
       // 끝 면까지 넘기며 면마다 적는다 — 알약, 보이는 쪽, 지금 장 탭, 3부 사진 폭(흰 테두리 안의 사진, 기울이기 전), 받은 그림
       const views = [{ indicator: '1 / 7' }];
       for (let i = 0; i < 8; i++) {
@@ -304,6 +315,9 @@ const IMG = /memo_\d|notebook_photo_\d/;
       const book = await page.evaluate(() => document.querySelector('.nb-book').getBoundingClientRect().width / innerWidth);
       assert.ok(book > 0.6 && book < 0.72, `the spread is about 65% of the screen (${book.toFixed(2)})`);
       assert.equal(await overX(page), 0);
+      // 뒤로 넘길 때도 왼쪽 쪽이 독자 쪽으로 들려 넘어온다
+      const back = await midTurn(page, '.nb-prev');
+      assert.ok(back.every((m) => m.lift >= 0) && back.some((m) => m.lift > 0), `[new] turning back, the left page lifts toward the reader ${JSON.stringify(back)}`);
       // 넘기는 동안 누른 넘김 하나를 기억한다 — 새 면에서도(4–5에서 두 번 누르면 3부를 지나 마지막 면)
       await page.locator('.nb-tab[data-ch="p1"]').click();
       await page.waitForTimeout(760);
@@ -343,7 +357,7 @@ const IMG = /memo_\d|notebook_photo_\d/;
     }
 
     assert.deepEqual(errors, []);
-    console.log('PASS notebook: one paper size · binding · title line on every page (seven pages, 2부 in three), opaque turns (also under reduced motion), four index tabs with the current chapter, keys scroll inside first, pictures only for the current and next page, the 2부 closing note on screen at 1366×768 (with the play record at 1440×900), 3부 photo window (focus kept, Esc · outside · close, focus back), weight of the conclusion, last page (signature · CASE CLOSED stamp with the visit date · card · back, stamp covers nothing, phones not longer than before), spreads at 1920×1080 (five views, four turns, 3부 photo per page, blank back cover, outer folded corner, kept turn) and back to single pages on a low screen, paper height ÷ width 1.45 or less on tall screens (phones not capped).');
+    console.log('PASS notebook: one paper size · binding · title line on every page (seven pages, 2부 in three), opaque turns that lift toward the reader (also under reduced motion), four index tabs with the current chapter, keys scroll inside first, pictures only for the current and next page, the 2부 closing note on screen at 1366×768 (with the play record at 1440×900), 3부 photo window (focus kept, Esc · outside · close, focus back), weight of the conclusion, last page (signature · CASE CLOSED stamp with the visit date · card · back, stamp covers nothing, phones not longer than before), spreads at 1920×1080 (five views, four turns, 3부 photo per page, blank back cover, outer folded corner, kept turn) and back to single pages on a low screen, paper height ÷ width 1.45 or less on tall screens (phones not capped).');
   } finally {
     await browser.close();
   }
