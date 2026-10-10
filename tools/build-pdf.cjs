@@ -19,7 +19,6 @@ const { chromium } = createRequire(path.join(__dirname, '..', 'tests', 'package.
 const root = path.resolve(__dirname, '..');
 const read = (f) => fs.readFileSync(path.join(root, f), 'utf8');
 const resume = JSON.parse(read('data/resume.json'));
-const cards = JSON.parse(read('콘텐츠_증거카드.json')).evidences;
 const essay = parseEssay(read('콘텐츠_자기소개서.md'));
 // 표 머리·제목 같은 고정 문구 — 사이트 기본 사항과 같은 키(콘텐츠_화면문구.json)
 const ui = JSON.parse(read('콘텐츠_화면문구.json'));
@@ -52,21 +51,13 @@ function parseEssay(md) {
 }
 
 // 앵커는 사이트에서만 의미가 있다 — 문장만 남긴다.
-// 다만 문단 전체가 '참고 · …' 앵커면 PDF에서는 가리킬 곳이 없어지므로 원본 문서로 링크한다.
+// '참고 · …' 줄도 글자만 남긴다 — 진술 안의 연결을 뺀 것처럼 참고 포트폴리오 링크도 뺐다(10/11 사용자 결정).
 function essayBlock(b) {
-  // '참고 · {{E4:문서 이름}}' 줄(10/04 원고 형식) — 앵커 대신 원본 문서로 링크한 작은 줄
+  // '참고 · {{E9:문서 이름}}' 줄(10/04 원고 형식) — 본문보다 작은 보조 줄, 링크 없이
   const ref = b.match(/^(참고 · )\{\{(E\d+):([^}]+)\}\}$/);
-  if (ref) {
-    const card = cards.find((c) => c.id === ref[2]);
-    const text = esc(ref[3]);
-    return `<p class="ref">${esc(ref[1])}${card && card.url ? `<a href="${esc(card.url)}">${text} ↗</a>` : text}</p>`;
-  }
+  if (ref) return `<p class="ref">${esc(ref[1])}${esc(ref[3])}</p>`;
   const only = b.match(/^\{\{(E\d+):([^}]+)\}\}$/);
-  if (only && only[2].startsWith('참고')) {
-    const card = cards.find((c) => c.id === only[1]);
-    const text = esc(only[2]);
-    return `<p class="ref">${card && card.url ? `<a href="${esc(card.url)}">${text} ↗</a>` : text}</p>`;
-  }
+  if (only && only[2].startsWith('참고')) return `<p class="ref">${esc(only[2])}</p>`;
   const plain = b.replace(/\{\{E\d+:([^}]+)\}\}/g, '$1').replace(/\*\*(.+?)\*\*/g, '$1');
   if (plain.startsWith('### ')) return `<h4>${esc(plain.slice(4))}</h4>`;
   return `<p>${esc(plain).replace(/\n/g, '<br>')}</p>`;
@@ -85,7 +76,7 @@ function resumeHtml(r) {
 
   // 사이트 주소 — PDF만 전달받은 검토자가 포트폴리오로 올 길(10/08 사용자 요청). 새 문구 없이 주소만 링크로(플레이 기록 링크와 같은 꼴)
   const site = has(r.site)
-    ? `\n    <p class="site"><a href="${esc(r.site)}">${esc(r.site.replace(/^https?:\/\//, ''))} ↗</a></p>`
+    ? `\n    <p class="site"><a class="link" href="${esc(r.site)}">${esc(r.site)} ↗</a></p>`
     : '';
   out.push(`<header class="who"><h1>${esc(r.name)}</h1>
     <p>${esc(fill(ui.pdf.resume_head, { email: r.email, phone: r.phone }))}</p>${site}</header>`);
@@ -155,7 +146,7 @@ function resumeHtml(r) {
   const playRows = ((play && play.highlights) || []).filter((h) => has(h.name) && (h.items || []).length);
   if (play && (playRows.length || has(play.url))) {
     const link = has(play.url)
-      ? `<div class="t"><a href="${esc(play.url)}">${esc(play.url.replace(/^https?:\/\//, '').split('?')[0])} ↗</a></div>
+      ? `<div class="t"><a class="link" href="${esc(play.url)}">${esc(play.url.split('?')[0])} ↗</a></div>
           ${has(play.note) ? `<div class="d">${esc(play.note)}</div>` : ''}`
       : '';
     const inRow = link && playRows.some((h) => h.link);
@@ -205,6 +196,8 @@ const CSS = `
   body { margin: 0; font-family: 'Malgun Gothic', '맑은 고딕', 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
          word-break: keep-all; overflow-wrap: anywhere; }
   a { color: inherit; text-decoration: none; }
+  /* PDF에서 누를 수 있는 곳 — 회색 본문과 구별되게 파란 글씨 + 밑줄, 주소는 https://까지(10/11 사용자 요청: 전에는 회색 글자라 링크인지 몰랐다) */
+  a.link { color: #1a56c4; text-decoration: underline; text-decoration-thickness: 0.6pt; text-underline-offset: 2pt; }
 
   .resume { page: resume; color: #1c1b18; font-size: 10.5pt; }
   .who h1 { font-size: 20pt; margin: 0; font-weight: 700; }
