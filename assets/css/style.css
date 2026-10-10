@@ -15,6 +15,7 @@
   --scene-panel: rgba(24, 23, 30, 0.92);
   --dialogue-panel: rgba(24, 23, 30, 0.86);
   --header-h: 60px;
+  --reading-max: 640px;   /* 긴 글의 한 줄 폭(10/10 — 자기소개서 글 칸, E8 글 칸과 같은 값) */
   /* 흰색은 뜻이 둘이다 — 종이 위에 올린 흰 면(카드 · 버튼 · 칸의 바탕, 흰 테두리)과
      채운 칸(레드 · 초록 · 검정) 위의 글자. 지금은 값이 같아도 따로 둔다(10/05 정리) */
   --surface: #fff;
@@ -38,14 +39,40 @@
   --radius-card: 8px;     /* 카드 · 패널 · 팝업 · 대사창 */
   --radius-pill: 999px;   /* 배지 · 알약 */
   --radius-circle: 50%;
+  /* 그림자 네 가지(10/11 가4 — 같은 뜻 같은 모양). 종이: 책상 위의 종이 · 사진 · 쪽지. 카드: 누를 수 있는 카드 · 단추와 작은 부착물(테이프 · 탭 · 봉인).
+     들림: 마우스를 올리거나 끌거나 날아가는 것. 떠 있음: 알림 · 팝업 · 확인 창처럼 페이지 위에 뜬 것.
+     안쪽 고리 · 겹친 종이 · 줄 긋기 · 게임 단추의 두께처럼 모양을 그리는 그림자는 여기에 들지 않는다 */
+  --shadow-paper: 0 3px 14px rgba(0, 0, 0, .08);
+  --shadow-card: 0 1px 3px rgba(0, 0, 0, .06);
+  --shadow-lift: 0 8px 20px rgba(0, 0, 0, .12);
+  --shadow-float: 0 6px 20px rgba(0, 0, 0, .4);
+  /* 키보드 초점(10/11 가4) — 도장 레드 2px 하나. 어두운 바탕(머리말 · 장면 · 알림 · 보너스 칸 안)에서는 같은 레드를 밝게 써서 바탕과 3:1을 넘긴다 */
+  --accent-on-dark: #e0675c;
+  --focus: var(--accent);
   /* 움직임 3단계(10/09). 반복 리듬(누를 것 테두리 · 깜빡임 · 숨쉬기)과 JS 타이머에 맞춘 연출(오프닝 · 수첩 넘김 · 스탠딩 교체 ·
      수집 비행 · E1 비행)은 단계 밖 — 값을 바꾸면 JS와 어긋난다 */
   --motion-fast: 180ms;   /* 마우스 올림 · 누름 · 페이지 바뀜 */
   --motion-page: 380ms;   /* 칸 · 알림 · 강조가 나타나고 사라짐 */
   --motion-slow: 560ms;   /* 판 · 칸의 배치가 바뀜(E2 판 펼침과 같은 길이) */
   --motion-ease: cubic-bezier(.22,.61,.36,1);
+  /* 종이 재질(10/10 나1 · 나2) — 오프닝 표지의 결을 본편 종이에 옅게 잇는다. 그림 파일 없이 SVG 잡음 한 칸(160px)을 깔아 되풀이한다.
+     글자 대비에 닿지 않을 만큼 옅다(가장 진한 점도 알파 .09 안팎) */
+  --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' seed='7' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .2 0 0 0 0 .17 0 0 0 0 .12 0 0 0 .11 -.02'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
+  /* 형광펜 — 끝이 거친 마커 자국(10/10 나2). 줄마다 다시 그려지고(box-decoration-break), 색은 --highlight와 같은 노랑 */
+  --marker: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 24' preserveAspectRatio='none'%3E%3Cpath d='M3 6.6C40 4.6 82 6.4 121 5C152 4 178 4.4 197.6 5.6L198.8 19.4C171 21 134 19.3 98 20.4C61 21.4 27 19.6 1.6 20.8Z' fill='rgb(232,184,62)' fill-opacity='.5'/%3E%3Cpath d='M3 6.6L8.5 6.3L7.6 20.5L1.6 20.8Z' fill='rgb(206,150,34)' fill-opacity='.3'/%3E%3C/svg%3E");
+  --metal: #8b8a84;       /* 클립(10/10) — 종이 위의 쇠붙이. 글자색이 아니다 */
+  --manila: #f1e9d6;      /* 마닐라 파일철(10/10) — 보관함 카드 · 표지 탭 · 짙은 철 위의 밝은 칸 */
+  --manila-edge: #d6c9ab; /* 파일철 테두리 · 탭 */
 }
 
+/* 글꼴이 오기 전에 잠깐 보이는 대체 글꼴을 Pretendard의 폭 · 높이에 맞춘다(10/11 가8). 맑은 고딕을 0.853배로 줄이면 같은 글이 같은 폭이 된다
+   (자기소개서 1장 본문 759자로 잼). 그래서 Pretendard가 온 순간 줄바꿈이 거의 바뀌지 않는다. 높이 값은 Pretendard(UPM 2048 · 위 1950 · 아래 494)를
+   같은 비율로 나눈 값. Mac의 Apple SD Gothic Neo는 이 PC에서 잴 수 없어 그대로 둔다 */
+@font-face {
+  font-family: 'Pretendard Fallback';
+  src: local('Malgun Gothic'), local('맑은 고딕');
+  size-adjust: 85.28%; ascent-override: 111.65%; descent-override: 28.29%; line-gap-override: 0%;
+}
 * { box-sizing: border-box; }
 html, body { margin: 0; padding: 0; }
 body {
@@ -53,7 +80,7 @@ body {
   color: var(--ink);
   /* Pretendard는 index.html이 싣는다(assets/fonts/pretendard — 10/09). 전에는 이름만 적고 싣지 않아
      Windows는 맑은 고딕, Mac은 Apple SD Gothic Neo로 방문자마다 다르게 보였다. 뒤의 글꼴은 받기 전 · 실패했을 때만 쓴다 */
-  font-family: "Pretendard Variable", "Pretendard", "Malgun Gothic", "Apple SD Gothic Neo", system-ui, sans-serif;
+  font-family: "Pretendard Variable", "Pretendard", "Pretendard Fallback", "Malgun Gothic", "Apple SD Gothic Neo", system-ui, sans-serif;
   line-height: 1.6;
   /* 한국어는 어절 단위로 줄을 바꾼다. 기본값(글자 단위)이면 좁은 화면에서 '세/트', '더합니/다'처럼
      낱말이 쪼개진다(10/04). 한 줄보다 긴 낱말(메일 주소·영문 식별자)만 넘칠 때 끊는다. PDF도 같은 규칙이다. */
@@ -62,6 +89,15 @@ body {
 }
 a { color: inherit; }
 button { font-family: inherit; }
+/* 키보드 초점은 한 모양 — 도장 레드 2px(10/11 가4). 전에는 레드 2px · 브라우저 기본 · 페이지 색(E1 먹 · E3 파랑 3px · E5 초록 3px · E8 먹)이 섞여 있었다.
+   요소마다 다른 것은 간격(outline-offset)뿐이다 */
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+/* 페이지를 옮길 때 라우터가 초점을 두는 제목은 누를 것이 아니라 테두리를 두르지 않는다(전에는 키보드로 옮기면 굵은 검은 상자가 감쌌다) */
+:is(h1, h2, h3)[tabindex="-1"]:focus { outline: none; }
+/* 어두운 바탕 위에서는 같은 레드를 밝게 — 머리말 · 인트로 · 엔딩 장면 · 알림 · 보너스 칸 안(칸 자체의 테두리는 밝은 페이지 위라 그대로) */
+#site-header, .scene, .toast, .hidden-slot.unlocked > * { --focus: var(--accent-on-dark); }
+/* 줄을 바꾸지 않는 묶음 — 단추 끝의 화살표와 마지막 낱말(text.js setLabel) */
+.nowrap { white-space: nowrap; }
 /* 화면에는 보이지 않고 화면 낭독기만 읽는 글(진행 · 결론 알림) */
 .sr-only {
   position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0;
@@ -74,7 +110,7 @@ button { font-family: inherit; }
   height: var(--header-h);
   background: var(--ink);
   color: #f0eee9;
-  box-shadow: 0 2px 8px rgba(0,0,0,.25);
+  box-shadow: var(--shadow-paper);
 }
 .header-inner {
   max-width: 1120px; margin: 0 auto; height: 100%;
@@ -86,25 +122,46 @@ button { font-family: inherit; }
   display: flex; align-items: baseline; gap: 10px; white-space: nowrap;
 }
 .brand-sub { font-weight: 500; font-size: var(--text-sm); letter-spacing: .05em; color: #b7b3a8; }
-#tabs { display: flex; gap: 4px; }
+/* 탭은 머리말 아랫변에 붙는다 — 지금 탭은 아래 종이(페이지 바탕)와 같은 색으로 이어진 파일철 색인 탭이고, 윗변에 도장 레드 띠(10/11 재3).
+   글자는 브랜드와 같은 가운데 줄에 앉는다(탭 위 10px · 아래 10px 여백) */
+#tabs { display: flex; gap: 4px; align-self: stretch; }
+/* 글자와 배지를 같은 가운데 줄에 — 배지가 든 '포트폴리오'만 다른 탭보다 1px 낮게 앉던 것(10/10 휴대폰) */
 #tabs a {
-  text-decoration: none; padding: 8px 14px; border-radius: var(--radius-button);
-  font-size: var(--text-ui); color: #d8d5cc; white-space: nowrap;
-  border-bottom: 2px solid transparent;
+  position: relative; display: inline-flex; align-items: center;
+  margin-top: 10px; padding: 0 14px 10px; border-radius: var(--radius-button) var(--radius-button) 0 0;
+  text-decoration: none; font-size: var(--text-ui); color: #d8d5cc; white-space: nowrap;
 }
 #tabs a:hover { background: rgba(255,255,255,.08); }
-#tabs a.active { color: var(--on-fill); border-bottom-color: var(--accent); background: rgba(255,255,255,.06); }
+#tabs a.active { color: var(--ink); font-weight: 700; background: var(--paper-dark); box-shadow: inset 0 3px 0 var(--accent); }
+/* 머리말 아래 그림자가 탭과 종이 사이를 가르지 않게, 탭 아래를 몇 px 더 칠한다 */
+#tabs a.active::after { content: ''; position: absolute; left: 0; right: 0; bottom: -6px; height: 6px; background: var(--paper-dark); }
+#tabs a.active:hover { background: var(--paper-dark); }
+/* 배지 — 도장 찍힌 숫자(10/11 재3): 붉은 칸 안쪽에 얇은 흰 고리, 가장자리는 잉크 번짐(#ink-rough), 살짝 기울인 도장. 전에는 알약 */
 .badge {
   display: inline-block; min-width: 34px; text-align: center;
-  background: var(--accent); color: var(--on-fill); border-radius: var(--radius-pill);
-  font-size: var(--text-xs); font-weight: 700; padding: 1px 8px; margin-left: 4px;
+  background: var(--accent); color: var(--on-fill); border-radius: var(--radius-tag);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .55);
+  font-size: var(--text-xs); font-weight: 800; padding: 1px 7px; margin-left: 6px;
+  transform: rotate(-4deg); filter: url(#ink-rough);
 }
-.badge.pulse { animation: badge-pulse var(--motion-page) ease; }
-@media (prefers-reduced-motion: reduce) { .badge.pulse { animation: none; } }
+/* 증거가 내려앉으면 배지가 도장처럼 한 번 눌리고, 얇은 잉크 고리가 퍼진다(10/10 다1 — 전에는 1.45배로 튀며 밝은 빨강) */
+.badge { position: relative; }
+.badge::after {
+  content: ''; position: absolute; inset: -3px; border: 1.5px solid var(--accent); border-radius: inherit;
+  opacity: 0; pointer-events: none;
+}
+.badge.pulse { animation: badge-pulse var(--motion-page) var(--motion-ease); }
+.badge.pulse::after { animation: badge-ring var(--motion-slow) ease-out; }
+@media (prefers-reduced-motion: reduce) { .badge.pulse, .badge.pulse::after { animation: none; } }
 @keyframes badge-pulse {
-  0% { transform: scale(1); }
-  40% { transform: scale(1.45); background: #e0584a; }
-  100% { transform: scale(1); }
+  0% { transform: rotate(-4deg) scale(1); }
+  30% { transform: rotate(-4deg) scale(1.2); }
+  60% { transform: rotate(-4deg) scale(.9); }
+  100% { transform: rotate(-4deg) scale(1); }
+}
+@keyframes badge-ring {
+  0% { opacity: .95; transform: scale(.92); }
+  100% { opacity: 0; transform: scale(1.7, 1.9); }
 }
 
 /* 장식(지금 누를 것의 퍼지는 테두리 같은)이 화면 끝을 넘어도 가로 스크롤이 생기지 않게 자른다.
@@ -122,14 +179,39 @@ button { font-family: inherit; }
   max-width: 860px; margin: 32px auto; padding: 44px 52px;
   background: var(--paper);
   border: 1px solid var(--line);
-  box-shadow: 0 3px 14px rgba(0,0,0,.08);
+  box-shadow: var(--shadow-paper);
 }
 .stamp {
   position: absolute; top: 20px; right: 24px;
   border: 2px solid var(--accent); color: var(--accent);
-  font-weight: 800; font-size: var(--text-sm); letter-spacing: .25em;
+  font-weight: 800; font-size: var(--text-sm); letter-spacing: .04em; /* 10/11 가4 — 한글 도장(전에는 .25em) */
   padding: 4px 10px; transform: rotate(6deg); opacity: .95; /* 10/05 대비 정리: .85면 3.9~4.2:1 */
   user-select: none;
+  /* 잉크가 번진 가장자리(10/10 나2). 거르개는 index.html의 #ink-rough — 잡음으로 테두리 · 글자 가장자리를 1px 남짓 흔든다.
+     흐리게 하는 것이 아니라서 12.8px 도장 글자도 그대로 읽힌다(흐림은 여전히 큰 글자 도장에만 — DESIGN.md 2절) */
+  filter: url(#ink-rough);
+}
+
+/* ---------- 철해 둔 종이(10/10 나2) ----------
+   조서 종이에 파일철의 물성을 옅게 입힌다: 종이 결 · 종이 위로 걸친 탭 · 클립 · 뒤에 겹친 종이 한 장.
+   글자가 든 상자는 기울이지 않는다 — 기울기는 붙인 것(클립)에만(DESIGN.md 4절) */
+.paper.filed { background-color: var(--paper); background-image: var(--grain); }
+/* 탭 — 종이 윗변에 걸친 짙은 이름표. 장 이름(CASE 01 · WHY?)과 이력서 제목이 여기 온다 */
+.file-tab {
+  position: absolute; left: 22px; bottom: 100%; z-index: 1; margin: 0;
+  padding: 7px 16px 5px; background: var(--ink); color: var(--on-fill);
+  font-size: var(--text-sm); font-weight: 800; letter-spacing: .14em; line-height: 1.5;
+  border-radius: var(--radius-button) var(--radius-button) 0 0; white-space: nowrap;
+}
+/* 클립 — 쇠붙이 고리 둘을 선으로 그린다. 종이 윗변에 반쯤 걸친다 */
+.clip {
+  position: absolute; z-index: 2; width: 13px; height: 38px; pointer-events: none;
+  border: 2px solid var(--metal); border-radius: 7px;
+  transform: rotate(8deg); filter: drop-shadow(0 1px 1px rgba(0,0,0,.22));
+}
+.clip::before {
+  content: ''; position: absolute; left: 1.5px; right: 1.5px; top: 7px; height: 21px;
+  border: 2px solid var(--metal); border-bottom: 0; border-radius: 5px 5px 0 0;
 }
 .btn {
   display: inline-flex; align-items: center; gap: 6px;
@@ -156,6 +238,9 @@ button { font-family: inherit; }
   /* 대화 씬 배경 — 탐정 사무소 (design 폴더 원본, 웹 최적화본) */
   background: var(--scene-bg) url('../img/bg_office.jpg') center / cover no-repeat;
 }
+/* 한국 시간 밤(19 ~ 6시)에는 같은 사무소의 밤 그림 — 창밖은 달, 책상 등에 불, 바닥의 해 자국은 달빛(10/11 나4, design/office_night.py).
+   html.night는 index.html 머리의 짧은 스크립트가 첫 프레임 전에 붙인다 */
+html.night .scene { background-image: url('../img/bg_office_night.jpg'); }
 /* 대사 가독성·캐릭터 부각용 비네트 */
 .scene::before {
   content: '';
@@ -164,39 +249,57 @@ button { font-family: inherit; }
     linear-gradient(to top, rgba(20, 18, 24, .38), transparent 34%);
 }
 /* ---------- 첫 진입 오프닝 (사건 파일 표지) ---------- */
-/* 인트로 DOM은 이미 렌더된 뒤 표지가 그 위를 덮을 뿐이다 — 콘텐츠 준비를 지연시키지 않는다.
-   전체 0.8s: 정지 0.3s + 열림 0.5s. 새 이미지·폰트 없이 기존 종이 톤과 도장 컴포넌트만 사용. */
+/* 표지는 index.html에 있다(#boot-cover, 10/10 나1) — 스크립트와 데이터를 받기 전 첫 프레임부터 보인다. 첫 진입(/ · /intro)이면
+   index.html 머리의 짧은 스크립트가 html에 .boot-cover를 붙여 보이게 하고, intro.js가 준비되면 .turn을 붙여 넘긴다.
+   머리말 아래를 덮는다(머리말과 탭은 그대로 보인다). 새 그림 · 글꼴 없이 종이 톤 · 결 · 도장 컴포넌트만 쓴다 */
+#boot-cover { display: none; }
+.boot-cover #boot-cover { display: block; }
 .opening {
-  position: fixed; inset: 0; z-index: 60;
+  position: fixed; left: 0; right: 0; bottom: 0; top: var(--header-h); z-index: 45;
   perspective: 1600px; overflow: hidden;
 }
-.opening.through { pointer-events: none; } /* 대사 시작 후 남은 회전은 입력을 막지 않는다 */
+.opening.through { pointer-events: none; } /* 대사 시작 후 남은 회전은 입력을 가로채지 않는다 */
 
 .opening-cover {
   position: absolute; inset: 0;
-  background: var(--paper);
-  /* 서류철 결·좌측 접힘 음영 (이미지 없이 그라디언트만) */
-  background-image:
-    linear-gradient(90deg, rgba(38,36,31,.13), rgba(38,36,31,0) 72px),
-    repeating-linear-gradient(0deg, rgba(38,36,31,.022) 0 2px, transparent 2px 4px);
+  /* 종이 결(10/10 — 전에는 가로 잔줄) · 왼쪽 접힘 그늘 */
+  background-color: var(--paper);
+  background-image: linear-gradient(90deg, rgba(38,36,31,.13), rgba(38,36,31,0) 72px), var(--grain);
   border-right: 1px solid var(--line);
   display: flex; align-items: center; justify-content: center;
   transform-origin: left center;
   backface-visibility: hidden;
-  animation: coverOpen .5s cubic-bezier(.55, .06, .38, .96) .3s forwards;
 }
+#boot-cover.turn .opening-cover { animation: coverOpen .5s cubic-bezier(.55, .06, .38, .96) forwards; }
 /* 넘어가는 면에 은은한 그림자 (수첩 페이지 넘김과 같은 방식) */
 .opening-cover::after {
   content: ''; position: absolute; inset: 0; pointer-events: none;
   background: linear-gradient(90deg, rgba(20,18,14,.45), rgba(20,18,14,0) 58%);
   opacity: 0;
-  animation: coverShade .5s ease-in .3s forwards;
 }
+#boot-cover.turn .opening-cover::after { animation: coverShade .5s ease-in forwards; }
 @keyframes coverOpen {
   from { transform: rotateY(0deg); }
   to   { transform: rotateY(-105deg); }
 }
 @keyframes coverShade { from { opacity: 0; } to { opacity: 1; } }
+
+/* 표지 재질(10/10 나1 시안) — 파일철의 등 · 클립에 물린 쪽지 · 오른쪽 위 라벨 탭. 모두 붙인 것이고 글자가 없다 */
+.cover-spine {
+  position: absolute; left: 0; top: 0; bottom: 0; width: 46px;
+  background: var(--paper) linear-gradient(90deg, rgba(38,36,31,.09), rgba(38,36,31,.05) 70%, rgba(38,36,31,.08));
+  border-right: 1px solid rgba(38,36,31,.12); box-shadow: 1px 0 0 rgba(255,255,255,.5);
+}
+.cover-slip {
+  position: absolute; left: 76px; top: -6px; width: min(210px, 34vw); height: 30px;
+  background: var(--surface); border: 1px solid var(--line); box-shadow: var(--shadow-paper);
+}
+.cover-clip { top: -12px; left: 118px; }
+.cover-tab {
+  position: absolute; right: 150px; top: -1px; width: 92px; height: 34px;
+  background: color-mix(in srgb, var(--manila) 55%, var(--manila-edge)); border: 1px solid var(--manila-edge); border-top: 0; border-radius: 0 0 var(--radius-button) var(--radius-button);
+}
+.cover-tab::after { content: ''; position: absolute; left: 12px; right: 12px; top: 9px; height: 13px; background: var(--surface); border: 1px solid var(--manila-edge); }
 
 .opening-kicker {
   position: absolute; top: 13%; left: 0; right: 0; text-align: center;
@@ -209,28 +312,39 @@ button { font-family: inherit; }
 }
 .opening-foot {
   position: absolute; bottom: 13%; left: 0; right: 0; text-align: center;
-  font-size: var(--text-sm); letter-spacing: .26em; color: var(--ink-soft);
+  font-size: var(--text-sm); letter-spacing: .04em; color: var(--ink-soft); /* 한글 줄이라 자간을 넓히지 않는다(DESIGN.md 3절 — 전에는 .26em) */
 }
-/* 기존 .stamp를 그대로 쓰되 표지 중앙 아래로 재배치 */
+/* 기존 .stamp를 그대로 쓰되 표지 중앙 아래로 재배치(잉크 번짐은 .stamp가 가진다) */
 .opening-stamp {
   top: calc(50% + 74px); right: auto; left: 50%;
   transform: translateX(-50%) rotate(-7deg);
-  font-size: var(--text-md); padding: 6px 14px;
+  font-size: var(--text-md); padding: 6px 14px; letter-spacing: .25em; /* 영어 'CONFIDENTIAL' — 넓은 자간 그대로 */
 }
+/* 표지 위의 SKIP — 첫 프레임부터 누를 수 있다. 인트로의 SKIP과 같은 자리 · 모양이라 표지가 넘어가도 그 자리에 그대로 있다 */
+.opening .cover-skip {
+  z-index: 2; background: rgba(38,36,31,.06); color: var(--ink); border-color: rgba(38,36,31,.35); text-decoration: none;
+}
+.opening .cover-skip:hover { background: rgba(38,36,31,.12); }
+/* 넘어가기 시작하면 같은 자리의 장면 SKIP이 이어받는다 — 둘이 겹쳐 보이지 않게 */
+#boot-cover.turn .cover-skip { visibility: hidden; }
+.opening .cover-skip:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
 
 /* 표지가 열리는 동안 그 아래에서 사무실 배경이 페이드인 */
-.view-intro.opening-active .scene { animation: sceneReveal .45s ease-out .3s both; }
+.view-intro.opening-turn .scene { animation: sceneReveal .45s ease-out both; }
 @keyframes sceneReveal { from { opacity: 0; } to { opacity: 1; } }
 
 @media (max-width: 600px) {
   .opening-kicker { letter-spacing: .3em; }
-  .opening-foot { letter-spacing: .18em; }
   .opening-stamp { top: calc(50% + 60px); }
+  .cover-spine { width: 22px; }
+  .cover-slip { left: 40px; }
+  .cover-clip { left: 74px; }
+  .cover-tab { right: 130px; width: 70px; }
 }
-/* reduced-motion에서는 JS가 표지를 만들지 않는다 (아래는 안전망) */
+/* 움직임 줄이기 설정에서는 표지를 쓰지 않는다(index.html이 .boot-cover를 붙이지 않는다 — 아래는 안전망) */
 @media (prefers-reduced-motion: reduce) {
   .opening { display: none; }
-  .view-intro.opening-active .scene { animation: none; }
+  .view-intro.opening-turn .scene { animation: none; }
 }
 
 .skip-btn {
@@ -303,18 +417,18 @@ button { font-family: inherit; }
 }
 .dlg-choice.on { display: flex; }
 .choice-prompt {
-  text-align: center; color: #d8d5cc; font-size: var(--text-md); letter-spacing: .08em;
+  text-align: center; color: #d8d5cc; font-size: var(--text-md); letter-spacing: .04em;
   margin-bottom: 2px; text-shadow: 0 1px 4px rgba(0,0,0,.6);
 }
 .choice-btn {
   display: flex; flex-direction: column; align-items: center; gap: 2px;
   background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius-card);
   padding: 13px 18px; cursor: pointer;
-  box-shadow: 0 3px 10px rgba(0,0,0,.35);
+  box-shadow: var(--shadow-float);
   transition: transform var(--motion-fast) ease, border-color var(--motion-fast) ease;
 }
 .choice-btn:hover, .choice-btn:focus-visible {
-  border-color: var(--accent); transform: translateY(-2px); outline: none;
+  border-color: var(--accent); transform: translateY(-2px);
 }
 .choice-label { font-weight: 800; font-size: var(--text-base); color: var(--ink); }
 .choice-sub { font-size: var(--text-sm); color: var(--ink-soft); }
@@ -360,18 +474,24 @@ button { font-family: inherit; }
 .popup-sd .dlg-text { font-size: var(--text-ui); line-height: 1.6; min-height: 3em; }
 
 /* ---------- 세부 사항 (진술 기록) ---------- */
+/* 글 칸은 640px(10/10 가9 — DESIGN.md 13절 '한 줄 600~720px, 한글 40~48자'). Pretendard가 맑은 고딕보다 좁아 720px 칸에서 한 줄이
+   58~65자까지 길어졌다. 종이 폭을 글 칸 + 여백(52 × 2) + 테두리로 맞춰 종이와 목차를 가운데에 둔다 */
 .dossier {
   max-width: 1120px; margin: 0 auto; padding: 32px 20px;
-  display: grid; grid-template-columns: 1fr 230px; gap: 24px; align-items: start;
+  display: grid; grid-template-columns: minmax(0, calc(var(--reading-max) + 106px)) 230px; gap: 24px; align-items: start;
+  justify-content: center;
 }
 .dossier .paper { margin: 0; max-width: none; }
-.case-no {
-  display: inline-block; background: var(--ink); color: var(--on-fill);
-  font-weight: 800; font-size: var(--text-sm); letter-spacing: .2em;
-  padding: 3px 12px; margin-bottom: 10px;
+/* 탭(30px)과 뒤에 겹친 종이(10px)가 위로 나온 만큼 종이를 내린다 — 목차 상자의 윗변이 탭의 윗변과 맞는다 */
+.dossier .paper.filed { margin-top: 34px; }
+/* 뒤에 겹친 종이 한 장(추가 시안 나) — 그림자 둘로 그린다: 종이색 면 위에 1px 큰 선색 면. 위로 10px, 양옆은 안쪽으로 */
+.paper.essay.filed { box-shadow: 3px -21px 0 -11px var(--paper), 3px -21px 0 -10px var(--line), var(--shadow-paper); }
+.paper.essay .clip { top: -17px; left: 62%; }
+/* 장 머리(10/10 나3) — 그 장의 주장이 제목이다. 오른쪽 위 도장 자리는 비워 둔다 */
+.essay .chapter-claim {
+  margin: 0 0 26px; padding-right: 116px;
+  font-size: var(--text-2xl); font-weight: 800; line-height: 1.4; text-wrap: balance;
 }
-.essay h2 { margin: 0 0 4px; font-size: var(--text-2xl); }
-.chapter-sub { margin: 0 0 26px; color: var(--ink-soft); font-size: var(--text-ui); }
 .essay-body p { margin: 0 0 1.15em; font-size: var(--text-base); line-height: 1.85; }
 .essay-body h3 {
   margin: 1.8em 0 .7em; font-size: var(--text-lg);
@@ -381,30 +501,42 @@ button { font-family: inherit; }
 /* 원고의 '참고 · …' 줄 — 본문 흐름에서 한 발 물러난 보조 줄 */
 .essay-body p.essay-ref { font-size: var(--text-md); line-height: 1.7; color: var(--ink-soft); }
 
+/* 증거로 이어지는 문장 — 끝이 거친 마커 자국 + 줄마다 빨간 밑줄 + 끝의 빨간 원 스티커(10/10 나2) */
 .anchor {
-  cursor: pointer; padding: 0 2px;
-  background: linear-gradient(transparent 55%, var(--highlight) 55%);
+  cursor: pointer; padding: 0 3px;
+  background: var(--marker) 0 62% / 100% 92% no-repeat;
   border-bottom: 2px solid var(--accent);
   transition: background-color var(--motion-fast) ease;
   /* 여러 줄로 나뉠 때 각 줄마다 형광펜이 다시 그려지도록 (없으면 윗줄이 빠짐) */
   -webkit-box-decoration-break: clone;
   box-decoration-break: clone;
 }
-.anchor:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.anchor:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
 .anchor:hover { background-color: var(--highlight); }
 .anchor-tail { white-space: nowrap; }
-/* 돋보기 — 이모지 🔍 대신 CSS로(10/09, DESIGN.md 8절). 운영체제마다 그림이 달랐다. 글자 크기를 따라 커진다 */
+/* 돋보기 스티커 — 빨간 원 위에 흰 돋보기(10/10 나2 · 전에는 빨간 선 돋보기, 그 전에는 이모지 🔍). 글자 크기를 따라 커진다 */
 .anchor-ic {
-  position: relative; display: inline-block; width: .62em; height: .62em; margin: 0 .44em 0 .26em; vertical-align: .06em;
-  border: .13em solid var(--accent); border-radius: var(--radius-circle); box-sizing: border-box;
+  position: relative; display: inline-block; width: 1.08em; height: 1.08em; margin: 0 .34em 0 .3em; vertical-align: -.17em;
+  border-radius: var(--radius-circle); background: var(--accent);
+  box-shadow: var(--shadow-card); transform: rotate(-10deg);
+}
+.anchor-ic::before {
+  content: ''; position: absolute; left: .24em; top: .22em; width: .44em; height: .44em; box-sizing: border-box;
+  border: .1em solid var(--on-fill); border-radius: var(--radius-circle);
 }
 .anchor-ic::after {
-  content: ''; position: absolute; right: -.31em; bottom: -.33em; width: .14em; height: .38em;
-  background: var(--accent); border-radius: .07em; transform: rotate(-45deg);
+  content: ''; position: absolute; left: .64em; top: .58em; width: .1em; height: .27em;
+  background: var(--on-fill); border-radius: .05em; transform: rotate(-45deg);
+}
+/* 모은 문장 — 스티커 뒤에 선으로 그린 체크 하나(10/10 다1). ✓는 Pretendard에 없는 글자라 선으로 그린다(DESIGN.md 8절) */
+.anchor.got .anchor-tail::after,
+.anchor.got:not(:has(.anchor-tail))::after {
+  content: ''; display: inline-block; width: .34em; height: .66em; margin: 0 .16em 0 -.12em; vertical-align: .02em;
+  border: solid var(--accent); border-width: 0 .13em .13em 0; transform: rotate(40deg);
 }
 /* 보관함 요약 팝업의 '자기소개서에서 확인하기'로 내려앉은 문장(10/07) — 형광펜을 세 번 깜빡이고 칠한 채로 둔다. 누르면(수집) 지운다 */
 .anchor.found {
-  background-color: var(--highlight); outline: 2px solid var(--accent); outline-offset: 2px;
+  background-color: var(--highlight); outline: 2px solid var(--focus); outline-offset: 2px;
   animation: anchor-found .8s ease-in-out 3;
 }
 @keyframes anchor-found { 50% { background-color: transparent; } }
@@ -418,10 +550,10 @@ button { font-family: inherit; }
 .chapter-index {
   position: sticky; top: calc(var(--header-h) + 20px);
   background: var(--paper); border: 1px solid var(--line);
-  padding: 14px; box-shadow: 0 2px 8px rgba(0,0,0,.06);
+  padding: 14px; box-shadow: var(--shadow-paper);
 }
 .index-title {
-  font-size: var(--text-sm); font-weight: 800; letter-spacing: .15em;
+  font-size: var(--text-sm); font-weight: 800; letter-spacing: .04em;
   color: var(--ink-soft); margin-bottom: 10px;
 }
 .chapter-index .idx {
@@ -430,11 +562,32 @@ button { font-family: inherit; }
 }
 .chapter-index .idx:hover { background: var(--accent-soft); }
 .chapter-index .idx.active { border-left-color: var(--accent); background: var(--accent-soft); }
-.idx-case { display: block; font-size: var(--text-xs); font-weight: 800; color: var(--accent); letter-spacing: .1em; }
+/* 장 번호는 이름표라 보조 글자색(10/11 재1 — 붉은색은 누를 것 · 상태 · 도장에만. 지금 장은 왼쪽 레드 막대와 바탕이 알린다) */
+.idx-case { display: block; font-size: var(--text-xs); font-weight: 800; color: var(--ink-soft); letter-spacing: .1em; }
 .idx-name { display: block; font-size: var(--text-ui); font-weight: 600; }
+/* 그 장의 증거 칸 — 모으면 채운다(10/10 다1). 채워질 때 한 번 눌린다 */
+.idx-marks { display: flex; gap: 4px; margin-top: 5px; }
+.idx-mark { width: 10px; height: 10px; border: 1.5px solid var(--muted); border-radius: 1px; }
+.idx-mark.on { background: var(--accent); border-color: var(--accent); }
+.idx-mark.just { animation: mark-in var(--motion-page) var(--motion-ease); }
+@keyframes mark-in { 0% { transform: scale(1.6); } 100% { transform: scale(1); } }
+@media (prefers-reduced-motion: reduce) { .idx-mark.just { animation: none; } }
 
 /* ---------- 기본 사항 (조서) ---------- */
-.record-title { margin: 0 0 24px; }
+/* 제목 '이력서'는 종이 위에 걸친 탭(10/10 나2 추가 시안 다) — 한글이라 자간은 넓히지 않는다(DESIGN.md 3절) */
+.paper.record.filed { margin-top: 62px; }
+/* 요약 화면(10/11 재2 · 재3) — 머리 줄('증거 E6 · 첫 등장: CASE 04')이 종이 위 탭, 클립, 표지는 카드와 같은 클립에 물린 종이 한 장 */
+.paper.detail.filed { margin-top: 62px; }
+.detail .file-tab.detail-tab { font-size: var(--text-sm); letter-spacing: .02em; } /* 한글이 든 탭 — 자간을 넓히지 않는다 */
+.detail-cover { position: relative; width: min(400px, 100%); aspect-ratio: 4 / 3; margin: 4px 0 18px; }
+.detail-cover .ev-sheet { left: 0; transform: translateY(-50%); }
+.record > .clip { top: -14px; right: 132px; }
+/* 없는 주소(404)도 철해 둔 종이 — 머리 줄('조회한 경로')은 종이 위 탭, 클립(10/11 재채점: 결 · 탭 · 클립이 없는 맨 종이였다) */
+.view-notfound .detail > .clip { top: -14px; right: 132px; }
+.record .file-tab {
+  left: 26px; padding: 8px 22px 6px;
+  font-size: var(--text-lg); letter-spacing: .02em;
+}
 .record-sec { margin-bottom: 26px; }
 .record-sec h3 {
   margin: 0 0 8px; font-size: var(--text-base);
@@ -455,8 +608,10 @@ button { font-family: inherit; }
   font-size: var(--text-md); color: var(--ink-soft); line-height: 1.55;
   padding-left: 14px; position: relative;
 }
+/* 꺾인 줄 표시 — └는 Pretendard 조각 파일에 없는 글자라(글자 범위에는 들어 있다) 맑은 고딕으로 그려졌다. 선으로 그린다(10/11 가2) */
 .skill-notes li::before {
-  content: '└'; position: absolute; left: 0; color: var(--muted);
+  content: ''; position: absolute; left: 2px; top: .3em; width: 7px; height: .5em;
+  border-left: 1.5px solid var(--muted); border-bottom: 1.5px solid var(--muted);
 }
 .record-actions { display: flex; gap: 10px; margin-top: 30px; flex-wrap: wrap; }
 
@@ -464,7 +619,7 @@ button { font-family: inherit; }
 .evidence-page { max-width: 1120px; margin: 0 auto; padding: 32px 20px 60px; }
 .page-head { position: relative; margin-bottom: 24px; padding-right: 140px; }
 .page-head .stamp { top: 0; right: 0; }
-.page-head h2 { margin: 0; }
+.page-head h2 { margin: 0; font-size: var(--text-xl); } /* 10/11 가4 — 페이지 제목. 전에는 브라우저 기본 24px */
 .page-lead { margin: 6px 0 0; font-size: var(--text-ui); color: var(--ink-soft); }
 
 /* 보관함은 묶음(문서 · 게임 · 추가 포트폴리오)을 위아래로 쌓고, 묶음 안에서 카드 그리드를 편다.
@@ -480,29 +635,43 @@ button { font-family: inherit; }
 /* 포트폴리오 카드 그리드: 데스크톱 3열 / 태블릿 2열 / 모바일 1열.
    칸 폭으로 열 수가 정해진다(카드 280px 이상 — 열이 바뀌는 폭이 예전 기준과 거의 같다: 1열 ~619 · 2열 620~919 · 3열 920~) — 전에는 화면 폭 900 · 620px 두 기준으로 바꿨다(10/09 화면 폭 기준 정리).
    보관함 최대 폭(1120 − 여백 40)에서는 3열을 넘지 않는다 */
+/* 카드는 철해 둔 마닐라 파일철(10/10 라5 시안) — 종류 태그는 위로 올라선 탭에, 표지는 클립으로 물린 종이 한 장(라2 가안).
+   탭이 카드 위로 올라서므로 줄 사이를 그만큼 띄운다 */
 .ev-cards {
   display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
-  gap: 20px; align-items: stretch;
+  gap: 38px 20px; padding-top: 22px; align-items: stretch;
 }
 .ev-card {
-  display: flex; flex-direction: column; height: 100%;
-  background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius-card);
-  overflow: hidden; cursor: pointer;
-  box-shadow: 0 1px 3px rgba(0,0,0,.05);
+  position: relative; display: flex; flex-direction: column; height: 100%;
+  background: var(--manila) var(--grain); border: 1px solid var(--manila-edge);
+  border-radius: 0 var(--radius-card) var(--radius-card) var(--radius-card);
+  cursor: pointer; box-shadow: var(--shadow-card);
   transition: transform var(--motion-fast) ease, box-shadow var(--motion-fast) ease, border-color var(--motion-fast) ease;
 }
-.ev-card:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(0,0,0,.12); border-color: var(--ink-soft); }
+.ev-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-lift); border-color: var(--ink-soft); }
+.ev-card:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; }
+/* 파일철 탭 — 카드 윗변 왼쪽에서 올라선다. 종류 태그가 그 위에 붙는다(태그가 없는 카드는 빈 탭) */
+.ev-tab {
+  position: absolute; left: -1px; bottom: 100%; display: flex; align-items: center;
+  min-width: 108px; min-height: 18px; padding: 4px 9px 3px;
+  background: var(--manila); border: 1px solid var(--manila-edge); border-bottom: 0;
+  border-radius: var(--radius-button) var(--radius-button) 0 0;
+}
+.ev-card:hover .ev-tab { border-color: var(--ink-soft); }
 
-/* 표지 썸네일 — 4:3 종이 프레임. 이미지가 없으면 아이콘 폴백이 보인다. */
-.ev-thumb {
-  position: relative; aspect-ratio: 4 / 3; width: 100%;
-  background: var(--paper-dark); border-bottom: 1px solid var(--line);
-  display: grid; place-items: center; overflow: hidden;
+/* 표지 칸 — 4:3 자리 안에 표지 전체를 종이 한 장으로 놓는다. 종이의 비율은 그림 비율(--ar, 그림을 받은 뒤 evidence.js가 넣는다).
+   폭은 칸의 86% · 높이는 칸의 85%(= 폭의 63.75%) 안에서 큰 쪽에 맞춘다 — 세로 그림 E3는 세로 종이, 넓은 E8은 가로로 긴 종이.
+   그림 속 글자가 흐려지지 않게 종이는 기울이지 않는다(DESIGN.md 4절) — 기울기는 클립에만 */
+.ev-thumb { position: relative; aspect-ratio: 4 / 3; width: 100%; display: grid; place-items: center; }
+.ev-sheet {
+  --ar: 1.7778;
+  position: absolute; left: 50%; top: 52%; transform: translate(-50%, -50%);
+  width: min(86%, calc(63.75% * var(--ar))); aspect-ratio: var(--ar);
+  padding: 4px; background: var(--surface); box-shadow: var(--shadow-paper), 0 0 0 1px rgba(38,36,31,.06);
 }
-.ev-thumb-img {
-  position: absolute; inset: 0; width: 100%; height: 100%;
-  object-fit: cover; object-position: top;
-}
+.ev-photo { display: block; width: 100%; height: 100%; overflow: hidden; background: var(--paper-dark); }
+.ev-thumb-img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.ev-sheet .clip { top: -13px; left: 14%; }
 /* 그림이 없을 때의 문서 모양(괘선 세 줄) — 이모지 📄 · ❔ 대신 CSS로(10/09). 모으지 않은 카드는 줄 대신 물음표 */
 .ev-thumb-fallback {
   position: relative; width: 40px; height: 52px; opacity: .5;
@@ -517,17 +686,18 @@ button { font-family: inherit; }
   font-size: var(--text-xl); font-weight: 800; color: var(--muted);
 }
 .ev-card.unknown .ev-thumb-fallback::before { content: '?'; }
-/* 썸네일 이미지가 있으면 폴백 아이콘을 숨긴다 (로드 실패 시 img가 제거되며 다시 나타남) */
+/* 썸네일 이미지가 있으면 폴백 아이콘을 숨긴다 (로드 실패 시 종이째 지워지며 다시 나타남) */
 .ev-thumb:has(.ev-thumb-img) .ev-thumb-fallback { display: none; }
 
-.ev-info { display: flex; flex-direction: column; flex: 1; padding: 14px 16px 12px; }
+.ev-info { display: flex; flex-direction: column; flex: 1; padding: 4px 16px 12px; }
+/* 분류 이름표 — 보조 글자색(10/11 재1. 전에는 도장 레드 글자 · 연한 레드 바탕이라 누를 것처럼 보였다) */
 .ev-type {
-  align-self: flex-start; margin-bottom: 6px;
-  font-size: var(--text-xs); font-weight: 700; letter-spacing: .04em;
-  color: var(--accent); background: var(--accent-soft);
-  border: 1px solid rgba(178, 58, 47, .25); border-radius: var(--radius-tag); padding: 2px 8px;
+  font-size: var(--text-xs); font-weight: 700; letter-spacing: .04em; line-height: 1.4;
+  color: var(--ink-soft); background: var(--surface);
+  border: 1px solid var(--manila-edge); border-radius: var(--radius-tag); padding: 1px 7px;
 }
-.ev-card .ev-title { margin: 0 0 5px; font-size: var(--text-lg); line-height: 1.4; }
+/* 제목이 두 줄이면 비슷한 길이로 나눈다 — 320px에서 끝 낱말 하나('회고')만 다음 줄로 떨어지던 것(10/10 휴대폰) */
+.ev-card .ev-title { margin: 0 0 5px; font-size: var(--text-lg); line-height: 1.4; text-wrap: balance; }
 .ev-card .ev-sub {
   margin: 0; font-size: var(--text-md); line-height: 1.55; color: var(--ink-soft);
   display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
@@ -558,71 +728,147 @@ button { font-family: inherit; }
 /* 행동 문구 + 원본 지름길은 한 묶음. 증거 코드 옆에 다 안 들어가면 묶음째 다음 줄 오른쪽으로 내려간다(10/07 — 긴 행동 문구에 밀려
    '원본 ↗'이 카드 밖으로 잘렸다). 묶음 하나도 안 들어가는 좁은 칸이면 그 안에서 다시 줄을 나눈다 */
 .ev-acts { display: inline-flex; flex-wrap: wrap; justify-content: flex-end; align-items: baseline; gap: 6px 8px; margin-left: auto; }
-.ev-code { font-size: var(--text-xs); letter-spacing: .06em; color: var(--muted); white-space: nowrap; }
+.ev-code { font-size: var(--text-xs); letter-spacing: .06em; color: var(--ink-soft); white-space: nowrap; }
 .ev-open { font-size: var(--text-sm); font-weight: 700; color: var(--accent); white-space: nowrap; }
 
-/* 미수집: 썸네일만 흐리게 — 카드는 그대로 클릭 가능 */
-.ev-card.unknown { border-style: dashed; background: var(--paper-dark); }
+/* 미수집: 표지만 흐리게, 그 위에 '미확인 증거' 도장(10/10 라5) — 모을 때마다 도장이 하나씩 사라진다. 카드는 그대로 누를 수 있다 */
+.ev-card.unknown { border-style: dashed; }
+.ev-card.unknown .ev-tab { border-style: dashed; }
 .ev-card.unknown .ev-thumb-img { filter: blur(10px) saturate(.35); transform: scale(1.08); }
-.ev-card.unknown .ev-thumb { background: var(--paper-dark); }
 .ev-card.unknown .ev-title { color: var(--ink-soft); }
 .ev-card.unknown .ev-open { color: var(--ink-soft); }
-.ev-card.unknown .ev-type { color: var(--ink-soft); background: transparent; border-color: var(--line); }
+.ev-card.unknown .ev-type { color: var(--ink-soft); background: transparent; border-color: var(--manila-edge); }
+/* 모은 카드의 번호 도장(10/11 재3) — 증거 메모의 둥근 번호 도장과 같은 모양, 그림 종이 오른쪽 아래에 반쯤 걸쳐 찍는다 */
+.ev-seal {
+  position: absolute; right: 9%; bottom: 3%; z-index: 1; display: grid; place-items: center;
+  width: 44px; height: 44px; border: 2px solid var(--accent); border-radius: var(--radius-circle);
+  box-shadow: inset 0 0 0 3px var(--manila), inset 0 0 0 4.5px var(--accent);
+  color: var(--accent); font-size: var(--text-sm); font-weight: 800; line-height: 1; letter-spacing: .02em;
+  background: rgba(241, 233, 214, .72); transform: rotate(-12deg); opacity: .95; filter: url(#ink-rough); pointer-events: none;
+}
+.ev-stamp {
+  position: absolute; left: 50%; top: 52%; z-index: 1; transform: translate(-50%, -50%) rotate(-8deg);
+  padding: 5px 12px; border: 2px solid var(--accent); color: var(--accent); background: rgba(245, 243, 239, .88);
+  font-size: var(--text-sm); font-weight: 800; letter-spacing: .04em; white-space: nowrap;
+  opacity: .95; filter: url(#ink-rough); pointer-events: none;
+}
 
 @media (max-width: 600px) {
-  .ev-cards { gap: 14px; }
+  .ev-cards { gap: 34px 14px; }
 }
 
 .hidden-slot-wrap { margin: 0 0 26px; }
 .ev-doc-actions { margin-top: 22px; display: flex; gap: 10px; flex-wrap: wrap; }
-.hidden-slot {
-  display: flex; align-items: center; gap: 18px;
-  border-radius: var(--radius-card); padding: 22px 24px;
+/* 보너스 칸(10/10 라1 다안 · 라3 · 라4 시안 가) — 위에 두되 상태에 따라 크기를 바꾼다.
+   잠김: 한 줄 띠(약 56px — 전에는 226px라 1366×768에서 첫 카드 제목이 화면 밖이었다). 해금: 같은 자리에서 짙은 파일철로 펼침.
+   금빛 칸 · 빛남 · 자물쇠는 뺐다(두 번째 강조색). 'BONUS FILE' 글자도 10/11 가5로 띠의 크림색 */
+.view-evidence {
+  --ar-folder: #3a3026;       /* 보너스 칸 — 짙은 파일철(라4 시안 가). 카드의 연한 마닐라는 사이트 변수 --manila */
+  --ar-folder-edge: #5a4a3b;
+  --ar-on-folder: #f0e9da;    /* 짙은 철 위의 글자 — 10.6:1 */
+  --ar-on-folder-soft: #d4cbb9; /* 짙은 철 위의 보조 글자 — 8.0:1 */
 }
+.hidden-slot { display: flex; align-items: center; flex-wrap: wrap; gap: 10px 14px; border-radius: var(--radius-card); }
 .hidden-slot.locked {
-  background: var(--ink); color: #d8d5cc;
-  border: 1px dashed rgba(255,255,255,.35);
+  background: var(--ink); color: #d8d5cc; border: 1px dashed rgba(255,255,255,.35);
+  padding: 10px 16px; min-height: 56px;
 }
-.hidden-slot.locked h3 { margin: 0 0 4px; color: var(--on-fill); }
+.hidden-slot.locked .hidden-title { margin: 0; font-size: var(--text-base); color: var(--on-fill); }
 .hidden-cond { margin: 0; font-size: var(--text-md); }
-/* 자물쇠 — 잠김 · 열림(고리가 들린다). 이모지 🔒 · 🗝️ 대신 CSS로(10/09) */
-.hidden-icon { position: relative; flex: none; width: 36px; height: 42px; color: #d9b85e; }
-.hidden-icon::before {
-  content: ''; position: absolute; left: 8px; top: 2px; width: 20px; height: 20px; box-sizing: border-box;
-  border: 3.5px solid currentColor; border-bottom: 0; border-radius: 10px 10px 0 0;
-}
-.hidden-icon::after { content: ''; position: absolute; left: 2px; bottom: 0; width: 32px; height: 24px; border-radius: var(--radius-tag); background: currentColor; }
-.hidden-slot.unlocked .hidden-icon { color: #ffd766; }
-.hidden-slot.unlocked .hidden-icon::before { transform: translate(8px, -7px); }
-.hidden-info { flex: 1; }
+.hidden-info { flex: 1; min-width: 0; }
 .hidden-kicker {
-  display: block; margin-bottom: 4px; color: #d9b85e;
-  font-size: var(--text-xs); font-weight: 800; letter-spacing: .12em;
+  display: block; color: var(--ar-on-folder-soft); /* 10/11 가5 — 전에는 금색(#d9b85e), 사이트의 두 번째 강조색이었다 */
+  font-size: var(--text-xs); font-weight: 800; letter-spacing: .04em;
 }
-.hidden-progress { margin: 10px 0 0; font-size: var(--text-sm); color: #bdb9ae; }
-.hidden-bar {
-  margin-top: 10px; height: 8px; border-radius: var(--radius-pill);
-  background: rgba(255,255,255,.15); overflow: hidden; max-width: 360px;
+.hidden-slot.unlocked .hidden-kicker { margin-bottom: 4px; }
+/* 봉인 도장 — 잠김은 작은 붉은 고리(가로줄 하나로 닫힘), 해금은 종이 원 위의 겹고리 + 체크. 글자 없이 모양으로 말한다 */
+.hidden-seal {
+  position: relative; flex: none; width: 28px; height: 28px; border-radius: var(--radius-circle);
+  border: 2px solid var(--accent); box-shadow: inset 0 0 0 3px var(--ink), inset 0 0 0 4.5px var(--accent);
+  transform: rotate(-12deg);
 }
-.hidden-bar-fill { height: 100%; background: var(--accent); transition: width var(--motion-slow) ease; }
-.hidden-slot-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
-.hidden-slot-actions .btn { padding: 8px 13px; font-size: var(--text-sm); }
-.hidden-slot.locked .hidden-find { background: #f2ead5; color: var(--ink); border-color: #f2ead5; }
-.hidden-slot.locked .hidden-direct { color: #f2ead5; border-color: rgba(255,255,255,.45); }
+/* 잠김 — 열쇠 구멍(위 원 + 아래로 벌어진 다리). 가로줄 하나는 '진입 금지' 표지처럼 읽혔다(10/10 재채점) */
+.hidden-seal::after { content: ''; position: absolute; left: 50%; top: 6px; width: 7px; height: 7px; margin-left: -3.5px; border-radius: var(--radius-circle); background: var(--accent); }
+.hidden-seal::before { content: ''; position: absolute; left: 50%; top: 11px; width: 6px; height: 8px; margin-left: -3px; background: var(--accent); clip-path: polygon(30% 0, 70% 0, 100% 100%, 0 100%); }
+.hidden-seal.open::before { content: none; }
+.hidden-seal.open {
+  width: 58px; height: 58px; border-width: 2.5px; background: var(--manila);
+  box-shadow: inset 0 0 0 4px var(--manila), inset 0 0 0 5.5px var(--accent), var(--shadow-card);
+  filter: url(#ink-rough);
+}
+.hidden-seal.open::after {
+  left: 20px; right: auto; top: 13px; width: 12px; height: 22px; margin: 0; background: none;
+  border: solid var(--accent); border-width: 0 3px 3px 0; transform: rotate(42deg);
+}
+/* 진행 칸 여덟 개(10/10 라3) — 기본 증거 일곱 + 잠긴 수첩 하나. 배지 n/8과 같은 것을 센다. 빈 칸은 누르면 그 증거의 요약 팝업 */
+.hidden-meter { display: flex; flex-wrap: wrap; gap: 4px; }
+.hm-cell {
+  display: grid; place-items: center; min-width: 32px; height: 26px; padding: 0 5px;
+  border-radius: var(--radius-tag); font: inherit; font-size: var(--text-xs); font-weight: 700; line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+button.hm-cell { border: 1px dashed rgba(255,255,255,.42); background: transparent; color: #bdb9ae; cursor: pointer; }
+button.hm-cell:hover { border-style: solid; color: var(--on-fill); }
+.hm-cell:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.hm-cell.on { background: var(--manila); border: 1px solid var(--manila); color: var(--ink); }
+.hm-cell.lock { position: relative; width: 36px; border: 1px solid var(--accent); background: rgba(178, 58, 47, .28); }
+/* 자물쇠 — 고리와 몸통. 전에는 원 하나라 자물쇠로 읽히지 않았다(10/10 재채점) */
+.hm-cell.lock::before { content: ''; position: absolute; left: 50%; top: 4px; width: 10px; height: 8px; margin-left: -5px; border: 1.5px solid var(--manila); border-bottom: 0; border-radius: 5px 5px 0 0; }
+.hm-cell.lock::after { content: ''; position: absolute; left: 50%; top: 11px; width: 14px; height: 10px; margin-left: -7px; border-radius: 2px; background: var(--manila); }
+.hidden-slot-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-left: auto; }
+.hidden-slot-actions .btn { padding: 7px 12px; font-size: var(--text-sm); }
+.hidden-slot.locked .hidden-find { background: var(--manila); color: var(--ink); border-color: var(--manila); }
+.hidden-slot.locked .hidden-direct { color: var(--manila); border-color: rgba(255,255,255,.45); }
 
+/* 해금 — 짙은 파일철. 위에 탭, 왼쪽에 '해제' 도장(모양), 오른쪽에 지금 누를 것 */
 .hidden-slot.unlocked {
-  background: linear-gradient(135deg, #2c2417, #4a3a1c);
-  color: #f5edd8; border: 1px solid #c9a34a; cursor: pointer;
-  box-shadow: 0 0 18px rgba(201, 163, 74, .35);
+  position: relative; margin-top: 16px; padding: 20px 24px; gap: 14px 20px;
+  background: var(--ar-folder) var(--grain); color: var(--ar-on-folder);
+  border: 1px solid var(--ar-folder-edge); border-radius: 0 var(--radius-card) var(--radius-card) var(--radius-card);
+  box-shadow: var(--shadow-card); cursor: pointer;
 }
-.hidden-slot.unlocked h3 { margin: 0 0 4px; color: #ffe9ad; }
-.hidden-slot.unlocked .ev-open { color: #ffd766; }
-.hidden-slot.unlocked:hover { box-shadow: 0 0 26px rgba(201, 163, 74, .6); }
-.hidden-slot.flash { animation: hidden-flash 1.6s ease 2; }
-@keyframes hidden-flash {
-  0%, 100% { box-shadow: 0 0 18px rgba(201,163,74,.35); }
-  50% { box-shadow: 0 0 46px rgba(255,215,102,.95); transform: scale(1.012); }
+.hidden-slot.unlocked::before {
+  content: ''; position: absolute; left: -1px; bottom: 100%; width: 168px; height: 16px;
+  background: var(--ar-folder); border: 1px solid var(--ar-folder-edge); border-bottom: 0;
+  border-radius: var(--radius-button) var(--radius-button) 0 0;
 }
+.hidden-slot.unlocked .hidden-info { flex: 1 1 240px; } /* 기본 폭 — 좁으면 단추가 다음 줄로 내려간다(10/10 재채점: 320px에서 글 칸이 11px까지 눌렸다) */
+.hidden-slot.unlocked .hidden-title { margin: 0 0 4px; font-size: var(--text-xl); color: var(--ar-on-folder); }
+.hidden-slot.unlocked .hidden-cond { color: var(--ar-on-folder-soft); }
+.hidden-slot.unlocked .ev-open {
+  margin-left: auto; padding: 10px 16px; border-radius: var(--radius-button);
+  background: var(--accent); color: var(--on-fill); font-size: var(--text-ui); font-weight: 700; white-space: nowrap;
+}
+.hidden-slot.unlocked:hover .ev-open { background: var(--accent-hover); }
+.hidden-slot.unlocked:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; }
+/* 처음 해금되는 순간(한 번) — 같은 자리에서 파일철이 아래로 펼쳐지고, 도장이 찍힌다. 신호는 '내려앉기 → 펼침 → 알림 하나' */
+.hidden-slot.unlocked.flash { animation: folder-open var(--motion-slow) var(--motion-ease) both; }
+.hidden-slot.unlocked.flash .hidden-seal { animation: seal-stamp var(--motion-page) var(--motion-ease) .32s both; }
+@keyframes folder-open {
+  from { clip-path: inset(-20px -2px 100% -2px); }
+  to { clip-path: inset(-20px -2px 0 -2px); }
+}
+@keyframes seal-stamp {
+  0% { opacity: 0; transform: scale(1.7) rotate(-34deg); }
+  70% { opacity: 1; }
+  100% { opacity: 1; transform: scale(1) rotate(-12deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hidden-slot.unlocked.flash, .hidden-slot.unlocked.flash .hidden-seal { animation: none; }
+}
+
+/* 잠긴 수첩을 바로 열 때의 작은 창(10/10 라1) — 증거 팝업과 같은 종이 · 모서리 · 그림자 */
+.confirm {
+  position: relative; width: min(440px, 100%);
+  display: flex; flex-direction: column; gap: 10px; padding: 24px 26px 22px;
+  background: var(--paper) var(--grain); border-radius: var(--radius-card); box-shadow: var(--shadow-float);
+}
+.confirm:focus { outline: none; }
+.confirm-kicker { font-size: var(--text-xs); font-weight: 800; letter-spacing: .12em; color: var(--ink-soft); } /* 이름표 — 10/11 재1과 같은 판단 */
+.confirm-title { margin: 0; padding-right: 32px; font-size: var(--text-lg); line-height: 1.45; text-wrap: balance; }
+.confirm-body { margin: 0; font-size: var(--text-ui); line-height: 1.7; color: var(--ink-soft); }
+.confirm-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
+.confirm-actions .btn:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
 
 /* ---------- 앵커 팝업 ---------- */
 .modal-overlay {
@@ -637,7 +883,7 @@ button { font-family: inherit; }
   /* 팝업 끝까지 스크롤해도 뒤의 진술이 이어서 밀려 올라가지 않게 */
   overscroll-behavior: contain;
   display: grid; grid-template-columns: 280px 1fr;
-  box-shadow: 0 12px 40px rgba(0,0,0,.4);
+  box-shadow: var(--shadow-float);
 }
 /* 열리면 초점이 팝업 자체로 온다(제목이 읽히고, 위아래 키 · Space로 바로 스크롤된다). 상자 전체에 초점 테두리를 두르지는 않는다 */
 .popup:focus { outline: none; }
@@ -653,7 +899,7 @@ button { font-family: inherit; }
 }
 .popup-close svg { display: block; }
 .popup-close:hover { color: var(--ink); background: var(--paper-dark); }
-.popup-close:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+.popup-close:focus-visible { outline: 2px solid var(--focus); outline-offset: -2px; }
 .popup-sd { background: var(--scene-bg); min-height: 320px; }
 .popup-body { --body-x: 28px; padding: 30px var(--body-x) 24px; }
 .popup-body .ev-title { margin: 6px 0 2px; font-size: var(--text-xl); text-wrap: balance; }
@@ -692,15 +938,21 @@ button { font-family: inherit; }
 .popup-actions .btn.accent { font-weight: 800; }
 .popup-actions .btn.ghost { font-size: var(--text-md); color: var(--ink-soft); }
 .popup-actions .btn.ghost:hover { color: var(--accent); }
-.popup-actions .btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.popup-actions .btn:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
 
 /* ---------- 미수집 증거 상세 / 제작기 ---------- */
 .detail-summary h3, .making-contact h3 {
   font-size: var(--text-base); border-left: 4px solid var(--accent); padding-left: 10px; margin: 22px 0 8px;
 }
 .detail-summary .ev-summary { font-size: var(--text-base); line-height: 1.8; }
+/* 요약 화면의 클루 메모(10/10 라6) — 증거 팝업과 같은 메모를 그대로 쓴다 */
+.detail-memo { margin-top: 20px; }
 .detail-actions { display: flex; gap: 10px; margin-top: 26px; flex-wrap: wrap; }
-.view-detail .ev-title, .view-making .ev-title { margin: 8px 0 2px; }
+/* 휴대폰에서는 도장이 표지 그림 위에 겹쳤다(10/10 점검) — 표지 아래 제자리에 찍는다 */
+@media (max-width: 600px) {
+  .view-detail .detail > .stamp { position: static; display: inline-block; margin: 0 0 14px; }
+}
+.view-detail .ev-title, .view-making .ev-title, .view-notfound .ev-title { margin: 8px 0 2px; font-size: var(--text-xl); } /* 10/11 가4 — 팝업의 증거 제목과 같은 크기. 전에는 브라우저 기본 24px */
 .view-detail .ev-sub, .view-making .ev-sub { margin: 0; color: var(--ink-soft); }
 .making-divider { border: none; border-top: 1px dashed var(--line); margin: 34px 0 6px; }
 
@@ -906,22 +1158,22 @@ button { font-family: inherit; }
 
 /* ---------- 수집 애니메이션 / 토스트 ---------- */
 #fly-root { position: fixed; inset: 0; pointer-events: none; z-index: 300; }
-.fly-ghost {
-  position: fixed; width: 46px; height: 46px;
-  margin: 0; transform: translate(-50%, -50%);
-  background: var(--paper); border: 1px solid var(--accent); border-radius: var(--radius-card);
-  display: grid; place-items: center;
-  box-shadow: 0 4px 14px rgba(0,0,0,.25);
-  transition: transform .68s cubic-bezier(.45, -0.15, .25, 1), opacity .68s ease;
-  opacity: 1;
+/* 날아가는 쪽지(10/10 다1) — 그 증거의 E번호 도장이 찍힌 작은 종이. 움직임은 ui.js(flyFromRect, FLY_MS)가 건다.
+   전에는 46px 흰 칸 속 문서 모양이 날면서 흐려져 거의 보이지 않았다 */
+.fly-slip {
+  position: fixed; width: 74px; height: 52px; margin: 0; transform: translate(-50%, -50%);
+  background: var(--surface) var(--grain); border: 1px solid var(--line); border-radius: 2px;
+  box-shadow: var(--shadow-lift);
 }
-/* 날아가는 카드 속 문서 모양 — 이모지 📄 대신 CSS로(10/09) */
-.fly-ghost::before {
-  content: ''; width: 18px; height: 23px; box-sizing: border-box;
-  border: 1.5px solid var(--accent); border-radius: 2px;
-  background:
-    linear-gradient(var(--accent), var(--accent)) 50% 35% / 10px 1.5px no-repeat,
-    linear-gradient(var(--accent), var(--accent)) 50% 62% / 10px 1.5px no-repeat;
+.fly-slip::before {
+  content: ''; position: absolute; left: 9px; top: 12px; width: 28px; height: 2px;
+  background: var(--line); box-shadow: 0 7px 0 var(--line), 0 14px 0 var(--line);
+}
+.fly-slip-id {
+  position: absolute; right: 6px; bottom: 6px; display: grid; place-items: center;
+  width: 30px; height: 30px; border: 1.5px solid var(--accent); border-radius: var(--radius-circle);
+  color: var(--accent); font-size: var(--text-xs); font-weight: 800; line-height: 1;
+  transform: rotate(-12deg);
 }
 #toast-root {
   position: fixed; right: 18px; bottom: 18px; z-index: 400;
@@ -933,7 +1185,7 @@ button { font-family: inherit; }
   background: #1f1e24; color: #f0eee9;
   border: 1px solid #3a3944; border-left: 4px solid var(--accent);
   border-radius: var(--radius-card); padding: 12px 16px;
-  box-shadow: 0 6px 20px rgba(0,0,0,.4);
+  box-shadow: var(--shadow-float);
   animation: toast-in var(--motion-page) ease;
 }
 .toast.out { animation: toast-out var(--motion-page) ease forwards; }
@@ -958,25 +1210,36 @@ button { font-family: inherit; }
 .toast-icon[data-kind="open"]::after { content: ''; position: absolute; left: 8px; top: 14px; width: 14px; height: 10px; border-radius: 2px; background: currentColor; }
 .toast-title { font-weight: 800; font-size: var(--text-ui); }
 .toast-sub { font-size: var(--text-sm); color: #b7b3a8; }
-.toast-persistent { position: relative; pointer-events: auto; padding-right: 38px; }
+.toast-persistent { position: relative; pointer-events: auto; padding-right: 48px; }
 .toast-persistent .toast-body { flex: 1; }
+/* 알림 속 누를 것은 사이트의 '누를 것'과 같은 도장 레드 단추(10/11 재채점 — 전에는 노란 글자 #ffd766, 본편에서 레드가 아닌 유일한 누를 것) */
 .toast-action {
-  display: inline-block; margin-top: 7px; color: #ffd766;
+  display: inline-block; margin-top: 8px; padding: 6px 12px; border-radius: var(--radius-button);
+  background: var(--accent); color: var(--on-fill);
   font-size: var(--text-sm); font-weight: 800; text-decoration: none;
 }
-.toast-action:hover { text-decoration: underline; }
+.toast-action:hover { background: var(--accent-hover); }
+/* 닫기는 팝업 · 사진 창과 같은 선 그림(✕), 누르는 자리는 44px(10/11 재채점 — 전에는 28px 글자 ×) */
 .toast-close {
-  position: absolute; top: 5px; right: 7px; width: 28px; height: 28px;
-  border: 0; background: transparent; color: #c9c5bb; cursor: pointer;
-  font-size: 1.25rem; line-height: 1;
+  position: absolute; top: 0; right: 0; width: 44px; height: 44px; padding: 0;
+  display: grid; place-items: center; border: 0; border-radius: var(--radius-circle);
+  background: transparent; color: #c9c5bb; cursor: pointer;
 }
-.toast-close:hover { color: var(--on-fill); }
+.toast-close svg { display: block; }
+.toast-close:hover { color: var(--on-fill); background: rgba(255, 255, 255, .08); }
 
 @media (max-width: 600px) {
-  .hidden-slot { align-items: flex-start; padding: 18px; }
-  .hidden-slot-actions { flex-direction: column; }
-  .hidden-slot-actions .btn { width: 100%; text-align: center; }
-  #toast-root { left: 12px; right: 12px; bottom: 12px; }
+  /* 잠긴 띠는 두세 줄로 접힌다: 도장 · 이름 / 칸 여덟 개 / 단추 둘 */
+  .hidden-slot.locked { padding: 12px 14px; }
+  .hidden-slot.locked .hidden-meter { flex-basis: 100%; }
+  .hidden-slot-actions { margin-left: 0; }
+  .hidden-slot.unlocked { padding: 18px; align-items: flex-start; }
+  .hidden-slot.unlocked .hidden-seal { width: 46px; height: 46px; }
+  .hidden-slot.unlocked .hidden-seal::after { left: 15px; top: 9px; width: 10px; height: 18px; }
+  .hidden-slot.unlocked .hidden-info { flex: 1 1 calc(100% - 66px); } /* 봉인(46px)과 사이(20px) 옆의 한 줄을 다 쓴다 */
+  .hidden-slot.unlocked .ev-open { flex: 1 1 100%; margin-left: 0; text-align: center; white-space: normal; }
+  /* 알림은 화면 위쪽(머리말 아래)에 — 아래에 두면 다음 장 단추를 덮었다(10/10 휴대폰 — 단추의 72%를 3.2초) */
+  #toast-root { left: 12px; right: 12px; top: calc(var(--header-h) + 10px); bottom: auto; }
   .toast { min-width: 0; max-width: none; width: 100%; }
 }
 
@@ -1079,11 +1342,45 @@ body.plain-mode #view { min-height: 100vh; }
   --nb-rule: #ddd6c2;
   --nb-hl: var(--highlight);
   --nb-navy: #2c4a6e; /* 본편 연결 요소 전용 컬러 */
+  --nb-amber: #e0aa3e; /* 2부 색인 탭 — 먹 글자 7.4:1(10/11 이름을 붙였다 — 전에는 규칙 안의 16진수) */
+  --nb-sage: #67735f;  /* 3부 색인 탭 — 종이색 글자 4.6:1(10/05 대비 정리: #7d8c74면 3.3:1) */
   --nb-font-hand: 'Kyobo Handwriting 2025 lyb', 'Pretendard Variable', 'Malgun Gothic', sans-serif;
   --nb-font-body: 'Gowun Dodum', 'Pretendard Variable', 'Malgun Gothic', sans-serif;
 }
 
-.view-notebook { overflow: hidden; }
+.view-notebook {
+  overflow: hidden;
+  /* 공책 줄 — 글줄 높이와 줄 간격이 같은 값이다. 문단 사이 · 칸 사이도 이 값의 배수로 두어 모든 글이 줄 위에 앉는다(10/10).
+     줄은 .nb-content 위에서부터 그어진다(전에는 아래에서부터라 쪽마다 글과 줄이 어긋났다). */
+  --nb-line: 36px;
+  --nb-rule-y: calc(var(--nb-line) / 2 + 11px); /* 한 줄 칸 안에서 줄이 그어지는 높이 — 손글씨(20.8px) 잉크 아랫선 3px 아래 */
+  --nb-rule-mid: calc(var(--nb-rule-y) - var(--nb-line) / 2); /* 줄 칸 맨 위에서 두 줄의 한가운데까지 — 점선 · 칸 테두리를 줄과 겹치지 않게 놓는 자리 */
+  --nb-shot-gap: 10px;                          /* 2부 작품명과 사진 · 포스트잇 줄 사이 */
+  /* 화면 아래 알약(넓은 화면) · 쪽 넘김 단추(좁은 화면)가 차지하는 높이 — 종이는 그 위에서 끝나 글이 그 밑으로 들어가지 않는다 */
+  --nb-nav-h: 60px;
+  /* 종이 자리(10/11 가) — 표지와 속지가 한 크기 · 같은 묶음 자리다. 높이는 머리말과 알약 자리를 뺀 화면 높이 하나.
+     전에는 쪽마다 종이 크기가 달라(1440: 표지 760×373 · 속지 880×516~1056) 묶음이 48px 옆으로 뛰고 제목 줄이 최대 199px 위아래로 옮겨 다녔다 */
+  --nb-gap-t: 30px;    /* 머리말 아래 ~ 종이 윗변 */
+  --nb-gap-b: 16px;    /* 종이 아랫변 ~ 알약 자리 */
+  --nb-btn-gap: 28px;  /* 종이 ~ 넘김 단추 */
+  --nb-tab-out: 56px;  /* 오른쪽 가장자리 색인 탭이 종이 밖으로 나오는 폭(넓은 화면) */
+  --nb-side: calc(14px + 52px + var(--nb-btn-gap) + var(--nb-tab-out)); /* 종이 양옆에 비워 둘 폭 — 넘김 단추와 탭 */
+  --nb-page-w: min(880px, calc(100% - 2 * var(--nb-side)));
+  --nb-book-w: var(--nb-page-w);
+  /* 종이 안 여백 — 묶음 쪽(in)과 바깥쪽(out). 구멍 줄은 묶음 쪽 가장자리에서 --nb-holes-x, 붉은 여백선은 --nb-margin-x */
+  --nb-pad-t: 36px;
+  --nb-pad-b: 48px;
+  --nb-pad-in: 104px;
+  --nb-pad-out: 56px;
+  --nb-holes-x: 26px;
+  --nb-margin-x: 76px;
+  --nb-corner: 56px; /* 마지막 쪽 접힌 귀퉁이 */
+  /* 수첩 넘김(TURN_MS .6s와 동기). 움직임 줄이기 예외 규칙도 이 값을 그대로 쓴다. 펼침(.nb-spreads)은 반씩 나눠 둘이 잇는다 */
+  --nb-turn-fold: nbFold .6s ease-in forwards;
+  --nb-turn-unfold: nbUnfold .6s ease-out both;
+  --nb-turn-shade-in: nbShadeIn .6s ease-in forwards;
+  --nb-turn-shade-out: nbShadeOut .6s ease-out both;
+}
 /* 폰트 준비 전 짧게 가림 — 서체가 튀며 교체되는 것을 막는다 (최대 900ms, JS에서 해제) */
 .view-notebook.nb-fontwait .nb-stage,
 .view-notebook.nb-fontwait .nb-indicator,
@@ -1093,67 +1390,61 @@ body.plain-mode #view { min-height: 100vh; }
 .nb-stage {
   position: relative;
   height: calc(100vh - var(--header-h));
+  /* 휴대폰 브라우저는 100vh가 주소창 · 도구 막대를 뺀 높이보다 커서, 쪽 아래 끝이 도구 막대 밑으로 들어가 단추가 글을 덮었다 — 보이는 높이(dvh)로 */
+  height: calc(100dvh - var(--header-h));
   overflow: hidden;
-  perspective: 1600px; /* 3D 넘김용 */
   background: var(--nb-desk);
   background-image: radial-gradient(circle at 30% 20%, rgba(255,255,255,.35), transparent 60%);
   font-family: var(--nb-font-body);
   color: var(--nb-ink);
 }
-/* 임계값 전환: 페이지는 절대배치로 겹쳐두고 활성 페이지만 표시.
-   각 페이지가 자체 스크롤 컨테이너 — 내부 스크롤 우선 규칙의 기반. */
+/* 수첩 한 권 — 종이 자리. 쪽은 이 안에 겹쳐 두고 지금 면의 쪽만 보인다. 색인 탭은 이 자리의 가장자리에 붙는다 */
+.nb-book {
+  position: absolute; top: var(--nb-gap-t); bottom: calc(var(--nb-nav-h) + var(--nb-gap-b));
+  left: 50%; width: var(--nb-book-w); margin-left: calc(var(--nb-book-w) / -2);
+}
+.nb-leaves { position: absolute; inset: 0; perspective: 2400px; }
+/* 쪽 — 종이 하나. 한 쪽씩이면 수첩 자리를 채우고, 펼침이면 왼쪽(.at-l) · 오른쪽(.at-r) 자리. 넘김은 묶음 쪽 가장자리를 축으로 돈다 */
 .nb-page {
-  position: absolute;
-  inset: 0;
-  overflow-y: auto;
-  overscroll-behavior: contain;
-  -webkit-overflow-scrolling: touch;
-  box-sizing: border-box;
-  display: flex;
-  padding: 30px 24px 40px;
+  position: absolute; inset: 0;
   visibility: hidden;
-}
-.nb-page.active { visibility: visible; }
-.nb-page > * { margin: auto; } /* 짧으면 중앙, 길면 상단부터 스크롤 */
-
-/* 넘어가는 면의 입체감 그림자 */
-.nb-page::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  opacity: 0;
-  background: linear-gradient(100deg, rgba(38,36,31,.22), transparent 45%);
-  transition: opacity var(--motion-fast) ease;
-}
-.nb-leave-fwd::after, .nb-enter-back::after { opacity: 1; }
-
-/* 종이 넘김 애니메이션 — 들림 + 페이드 교차 (TURN_MS와 동기: .6s) */
-.nb-leave-fwd, .nb-enter-back { z-index: 2; }
-.nb-leave-fwd {
-  animation: nbLeaveFwd .6s cubic-bezier(.55, .06, .38, .96) forwards;
   transform-origin: left center;
+  --nb-dir: 1; /* 넘김 방향 — 왼쪽 자리는 거꾸로 돈다 */
 }
-@keyframes nbLeaveFwd {
-  from { transform: none; opacity: 1; }
-  to   { transform: rotateY(-18deg) translateX(-4%); opacity: 0; }
+.nb-page.active { visibility: visible; z-index: 1; }
+.nb-paper { position: absolute; inset: 0; border-radius: 4px 12px 12px 4px; }
+/* 넘길 때 젖혀지는 쪽에 드리우는 그늘 */
+.nb-paper::after {
+  content: ''; position: absolute; inset: 0; z-index: 6; border-radius: inherit; pointer-events: none; opacity: 0;
+  background: linear-gradient(100deg, rgba(38,36,31,.3), rgba(38,36,31,.12) 60%);
 }
-.nb-enter-fwd { animation: nbEnterFwd .6s ease-out; }
-@keyframes nbEnterFwd {
-  from { opacity: .3; transform: translateY(8px); }
-  to   { opacity: 1; transform: none; }
+
+/* 종이 넘김(10/11 가) — 새 쪽은 처음부터 불투명하게 아래에 깔려 있고, 넘어가는 쪽만 묶음 쪽을 축으로 젖혀진다
+   (전에는 새 쪽이 30% 투명에서 시작하고 나가는 쪽도 투명해져 두 쪽 글이 함께 비쳤다). 쪽은 화면 안쪽으로 젖혀져 사라지고,
+   뒤로 넘기면 앞 쪽이 거꾸로 돌아와 덮는다. 펼침에서는 앞 절반에 한 쪽이 접히고 뒤 절반에 반대편 쪽이 펼쳐진다 */
+.nb-page.nb-fold, .nb-page.nb-unfold { z-index: 3; will-change: transform; }
+.nb-page.nb-fold { animation: var(--nb-turn-fold); }
+.nb-page.nb-unfold { animation: var(--nb-turn-unfold); }
+.nb-fold > .nb-paper::after { animation: var(--nb-turn-shade-in); }
+.nb-unfold > .nb-paper::after { animation: var(--nb-turn-shade-out); }
+@keyframes nbFold {
+  from { transform: none; }
+  to   { transform: rotateY(calc(var(--nb-dir) * 90deg)); }
 }
-.nb-leave-back { animation: nbLeaveBack .6s ease-in forwards; }
-@keyframes nbLeaveBack {
-  to { opacity: 0; transform: translateY(8px) scale(.995); }
+@keyframes nbUnfold {
+  from { transform: rotateY(calc(var(--nb-dir) * 90deg)); }
+  to   { transform: none; }
 }
-.nb-enter-back {
-  animation: nbEnterBack .6s cubic-bezier(.55, .06, .38, .96);
-  transform-origin: left center;
-}
-@keyframes nbEnterBack {
-  from { transform: rotateY(-18deg) translateX(-4%); opacity: 0; }
-  to   { transform: none; opacity: 1; }
+@keyframes nbShadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes nbShadeOut { from { opacity: 1; } to { opacity: 0; } }
+/* 예외 하나 — 수첩 넘김은 움직임 줄이기 설정에서도 재생한다(7/12 사용자 결정, DESIGN.md 6절 · 되돌리지 말 것).
+   맨 아래의 일괄 규칙(#view * { animation: none !important })은 그대로 두고, #view를 붙여 더 구체적인 규칙으로
+   넘김 두 가지와 넘길 때의 그늘만 다시 켠다. 다른 움직임(단추 확대 · 글꼴 대기 페이드 등)은 꺼진 채다(10/10). */
+@media (prefers-reduced-motion: reduce) {
+  #view .nb-page.nb-fold { animation: var(--nb-turn-fold) !important; }
+  #view .nb-page.nb-unfold { animation: var(--nb-turn-unfold) !important; }
+  #view .nb-fold > .nb-paper::after { animation: var(--nb-turn-shade-in) !important; }
+  #view .nb-unfold > .nb-paper::after { animation: var(--nb-turn-shade-out) !important; }
 }
 
 /* 페이지 내비게이션 — 책처럼 좌우 중앙에 넘김 버튼, 하단에 인디케이터 */
@@ -1162,6 +1453,7 @@ body.plain-mode #view { min-height: 100vh; }
   font-family: var(--nb-font-hand); font-size: var(--text-base); font-weight: 700;
   background: rgba(38,36,31,.78); color: var(--nb-paper);
   padding: 5px 16px; border-radius: var(--radius-pill); letter-spacing: .1em;
+  font-variant-numeric: tabular-nums; white-space: nowrap;
   pointer-events: none;
 }
 .nb-nav-btn {
@@ -1171,66 +1463,87 @@ body.plain-mode #view { min-height: 100vh; }
   background: var(--nb-paper); color: var(--nb-ink);
   font-size: var(--text-lg); line-height: 1;
   display: grid; place-items: center;
-  box-shadow: 0 4px 14px rgba(38,36,31,.3);
+  box-shadow: var(--shadow-lift);
   transition: transform var(--motion-fast) ease, background var(--motion-fast) ease, opacity var(--motion-fast) ease;
   transform: translateY(-50%);
 }
-/* 수첩(880px) 바깥쪽에 배치하되, 화면이 좁으면 가장자리에 붙임 */
-.nb-prev { left: max(14px, calc(50% - 560px)); }
-.nb-next { right: max(14px, calc(50% - 560px)); }
+/* 종이(펼침이면 두 쪽) 바깥에 두고, 화면이 좁으면 가장자리에 붙인다. 오른쪽은 색인 탭 자리만큼 더 바깥 */
+.nb-prev { left: max(14px, calc(50% - var(--nb-book-w) / 2 - 52px - var(--nb-btn-gap))); }
+.nb-next { right: max(14px, calc(50% - var(--nb-book-w) / 2 - 52px - var(--nb-btn-gap) - var(--nb-tab-out))); }
 .nb-nav-btn:hover:not(:disabled) { background: var(--surface); transform: translateY(-50%) scale(1.12); }
 .nb-nav-btn:active:not(:disabled) { transform: translateY(-50%) scale(.94); }
 .nb-nav-btn:disabled { opacity: .25; cursor: default; box-shadow: none; }
+.nb-nav-btn:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; }
+
+/* 색인 탭(10/11 가) — 장마다 하나가 종이 오른쪽 가장자리에 붙어 늘 보인다. 지금 보이는 장은 더 튀어나오고, 누르면 그 장의 첫 쪽으로.
+   전에는 지금 장의 탭 하나만 쪽마다 같은 자리에 있어 색인 노릇을 못 했고, 820px 이하에서는 숨었다 */
+.nb-tabs {
+  position: absolute; z-index: 4; left: 100%; top: 26px;
+  display: flex; flex-direction: column; align-items: flex-start; gap: 6px;
+}
+.nb-tab {
+  margin-left: -8px; /* 종이 가장자리에 붙인 몫 */
+  min-width: 52px; padding: 7px 12px 7px 16px;
+  border: 0; border-radius: 0 6px 6px 0; box-shadow: var(--shadow-card);
+  font-family: var(--nb-font-hand); font-weight: 700; font-size: var(--text-lg); line-height: 1.3; text-align: left; white-space: nowrap;
+  cursor: pointer; transition: transform var(--motion-fast) ease;
+}
+.nb-tab[aria-current="true"] { transform: translateX(12px); }
+.nb-tab:hover:not([aria-current="true"]) { transform: translateX(4px); }
+.nb-tab:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.nb-tab[data-ch="p1"] { background: var(--nb-red); color: var(--nb-paper); }
+.nb-tab[data-ch="p2"] { background: var(--nb-amber); color: var(--nb-ink); }
+.nb-tab[data-ch="p3"] { background: var(--nb-sage); color: var(--nb-paper); }
+.nb-tab[data-ch="end"] { background: var(--nb-kraft); color: var(--nb-ink); } /* 먹 글자 6.9:1 — 뒤표지 색 */
 
 /* ---- 표지 ---- */
 .nb-cover {
-  position: relative; width: min(760px, 100%);
   background: var(--nb-kraft);
   background-image: linear-gradient(105deg, rgba(255,255,255,.14), transparent 40%),
     repeating-linear-gradient(0deg, rgba(0,0,0,.03) 0 2px, transparent 2px 5px);
   border-radius: 6px 14px 14px 6px;
-  box-shadow: 0 12px 28px rgba(38,36,31,.28), inset 0 0 0 1px rgba(0,0,0,.08);
-  padding: 64px 64px 72px;
+  box-shadow: var(--shadow-paper), inset 0 0 0 1px rgba(0,0,0,.08);
+  display: grid; place-items: center;
+  padding: 48px calc(var(--nb-pad-out) - 8px) 72px calc(var(--nb-pad-in) - 24px);
 }
+/* 구멍 줄 — 표지와 속지가 같은 자리 · 같은 간격(10/11 가). 표지는 쇠 고리, 속지는 뚫린 구멍 */
 .nb-spiral {
-  position: absolute; left: 14px; top: 24px; bottom: 24px; width: 14px;
-  background-image: radial-gradient(circle at 50% 9px, var(--nb-ring) 0 4.5px, #6f675a 4.5px 5.5px, transparent 6.5px);
-  background-size: 14px 26px; background-repeat: repeat-y;
-}
-.nb-sheet .nb-spiral {
-  left: 26px; top: 30px; bottom: 30px; width: 16px;
+  position: absolute; left: var(--nb-holes-x); top: 30px; bottom: 30px; width: 16px;
   background-image: radial-gradient(circle at 50% 10px, #d3ccb9 0 5px, rgba(0,0,0,.1) 5px 6px, transparent 7px);
-  background-size: 16px 30px;
+  background-size: 16px 30px; background-repeat: repeat-y;
+}
+.nb-cover .nb-spiral {
+  background-image: radial-gradient(circle at 50% 10px, var(--nb-ring) 0 4.5px, #6f675a 4.5px 5.5px, transparent 6.5px);
 }
 .nb-tape {
   position: absolute; width: 120px; height: 30px;
   background: rgba(240, 222, 158, .75);
-  box-shadow: 0 1px 2px rgba(0,0,0,.12); mix-blend-mode: multiply;
+  box-shadow: var(--shadow-card); mix-blend-mode: multiply;
 }
-.nb-tape.top { top: -12px; left: 110px; transform: rotate(-5deg); }
+.nb-tape.top { top: -16px; left: 46px; transform: rotate(-5deg); }
 .nb-tape.small { width: 96px; height: 26px; top: -12px; left: 50%; transform: translateX(-50%) rotate(3deg); background: rgba(178,209,190,.65); }
 .nb-cover-label {
-  position: relative; background: var(--nb-paper); border-radius: var(--radius-tag);
-  box-shadow: 0 3px 8px rgba(0,0,0,.18);
+  position: relative; width: min(632px, 100%); background: var(--nb-paper); border-radius: var(--radius-tag);
+  box-shadow: var(--shadow-paper);
   padding: 44px 40px 40px; text-align: center;
 }
-.nb-cover-kicker { font-family: var(--nb-font-hand); font-size: var(--text-lg); color: var(--nb-ink-faint); letter-spacing: 4px; }
+.nb-cover-kicker { font-family: var(--nb-font-hand); font-size: var(--text-lg); color: var(--nb-ink-faint); letter-spacing: .04em; }
 .nb-cover-title { font-family: var(--nb-font-hand); font-weight: 700; font-size: var(--text-4xl); margin: 6px 0 10px; color: var(--nb-ink); letter-spacing: 2px; }
 .nb-cover-sub { font-family: var(--nb-font-hand); font-size: var(--text-xl); color: var(--nb-ink-faint); }
 .nb-stamp {
   position: absolute; right: 26px; top: -18px; transform: rotate(8deg);
   border: 3px double var(--nb-red); color: var(--nb-red); border-radius: var(--radius-button);
-  padding: 8px 18px; font-family: var(--nb-font-hand); font-weight: 700; font-size: var(--text-xl); letter-spacing: 6px;
+  padding: 8px 18px; font-family: var(--nb-font-hand); font-weight: 700; font-size: var(--text-xl); letter-spacing: .04em;
   background: rgba(178,58,47,.06); opacity: .95; /* 10/05 대비 정리: 좁은 화면(16px)에서 .9면 4.2:1 */
   -webkit-mask-image: radial-gradient(circle at 40% 60%, black 60%, rgba(0,0,0,.7));
   mask-image: radial-gradient(circle at 40% 60%, black 60%, rgba(0,0,0,.7));
 }
 .nb-seal {
-  position: absolute; left: 44px; bottom: -26px; width: 110px; height: 110px; border-radius: var(--radius-circle);
+  position: absolute; left: -20px; bottom: -96px; width: 110px; height: 110px; border-radius: var(--radius-circle);
   background: var(--nb-red); color: var(--nb-paper);
   background-image: radial-gradient(circle, transparent 62%, rgba(0,0,0,.15) 63%);
   display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
-  transform: rotate(-10deg); box-shadow: 0 6px 14px rgba(0,0,0,.25);
+  transform: rotate(-10deg); box-shadow: var(--shadow-card);
 }
 .nb-seal-top { font-size: .6rem; letter-spacing: 2px; opacity: .95; } /* 10/05 대비 정리: .85면 붉은 도장 위 4.3:1 */
 .nb-seal-main { font-family: var(--nb-font-hand); font-weight: 700; font-size: var(--text-lg); line-height: 1.2; text-align: center; }
@@ -1239,35 +1552,53 @@ body.plain-mode #view { min-height: 100vh; }
 
 /* ---- 내지 공통 ---- */
 .nb-sheet {
-  position: relative; width: min(880px, 100%);
   background: var(--nb-paper);
-  border-radius: 4px 12px 12px 4px;
-  box-shadow: 0 14px 32px rgba(38,36,31,.25);
-  background-image: linear-gradient(90deg, rgba(178,58,47,.35) 0, rgba(178,58,47,.35) 1px, transparent 1px);
-  background-position: 76px 0;
-  padding: 36px 56px 48px 104px;
+  box-shadow: var(--shadow-paper);
 }
-.nb-parttab {
-  position: absolute; right: -14px; top: 96px;
-  font-family: var(--nb-font-hand); font-weight: 700; font-size: var(--text-lg);
-  padding: 7px 12px 7px 16px; border-radius: 0 6px 6px 0;
-  box-shadow: 2px 2px 4px rgba(0,0,0,.15);
+/* 붉은 여백선 — 묶음 쪽에서 --nb-margin-x */
+.nb-sheet::before {
+  content: ''; position: absolute; top: 0; bottom: 0; left: var(--nb-margin-x); width: 1px;
+  background: rgba(178,58,47,.35); pointer-events: none;
 }
-.nb-parttab.tab1 { background: var(--nb-red); color: var(--nb-paper); }
-.nb-parttab.tab2 { background: #e0aa3e; color: var(--nb-ink); }
-.nb-parttab.tab3 { background: #67735f; color: var(--nb-paper); } /* 10/05 대비 정리: #7d8c74면 3.3:1 */
+/* 쪽 안 — 종이보다 길면 이 칸이 스크롤한다. 스크롤 막대 자리는 늘 비워 두어(scrollbar-gutter) 쪽마다 글 칸 폭이 같다
+   (전에는 막대가 생기는 쪽에서 종이가 7px 옆으로 밀렸다) */
+.nb-scroll {
+  position: absolute; inset: 0;
+  overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch;
+  scrollbar-gutter: stable; scrollbar-width: thin; scrollbar-color: var(--nb-ring) transparent;
+  padding: var(--nb-pad-t) var(--nb-pad-out) var(--nb-pad-b) var(--nb-pad-in);
+  display: flex; flex-direction: column;
+  container: nb-page / size;
+}
 .nb-content {
-  background-image: repeating-linear-gradient(0deg, transparent 0 35px, var(--nb-rule) 35px 36px);
-  line-height: 36px; font-size: var(--text-base);
+  flex: 1 0 auto; /* 짧은 쪽도 종이 아래까지 — 남은 자리는 빈 공책 줄 */
+  /* 공책 줄 — 위에서부터 --nb-line마다 한 줄. 글줄 높이도 같은 값이라 글자가 줄 위에 앉는다 */
+  background-image: linear-gradient(transparent var(--nb-rule-y), var(--nb-rule) var(--nb-rule-y) calc(var(--nb-rule-y) + 1px), transparent calc(var(--nb-rule-y) + 1px));
+  background-size: 100% var(--nb-line);
+  line-height: var(--nb-line); font-size: var(--text-base);
 }
-.nb-h2 { font-family: var(--nb-font-hand); font-weight: 700; font-size: var(--text-3xl); line-height: 72px; margin: 0 0 4px; color: var(--nb-ink); }
+/* 쪽이 종이보다 길 때 — 종이 아래 끝에 종이색 그늘과 아래 화살표(10/10 수첩 점검). 끝까지 내리면 사라진다 */
+.nb-more {
+  position: absolute; z-index: 5; left: calc(var(--nb-margin-x) + 1px); right: 12px; bottom: 0; height: 46px;
+  background: linear-gradient(to bottom, rgba(248, 244, 233, 0), var(--nb-paper) 72%);
+  border-radius: 0 0 12px 0;
+  pointer-events: none; opacity: 0; transition: opacity var(--motion-fast) ease;
+}
+.nb-more::after {
+  content: ''; position: absolute; left: 50%; bottom: 13px; width: 10px; height: 10px; margin-left: -5px;
+  border: solid var(--nb-muted); border-width: 0 2px 2px 0; transform: rotate(45deg);
+}
+.nb-paper.has-more .nb-more { opacity: 1; }
+/* 제목은 첫 줄에 쓰고 한 줄을 비운다(전에는 두 줄 높이 가운데에 떠서 줄이 글자를 가로질렀다) */
+.nb-h2 { font-family: var(--nb-font-hand); font-weight: 700; font-size: var(--text-3xl); line-height: var(--nb-line); margin: 0 0 var(--nb-line); color: var(--nb-ink); }
 .nb-h2 > span:first-child {
   background: linear-gradient(transparent 55%, rgba(232,184,62,.5) 55% 92%, transparent 92%);
   padding: 0 6px;
   -webkit-box-decoration-break: clone; box-decoration-break: clone;
 }
-.nb-cont { font-family: var(--nb-font-hand); font-size: var(--text-xl); color: var(--nb-muted); margin-left: 12px; }
-.nb-lead { font-family: var(--nb-font-hand); font-size: var(--text-xl); color: var(--nb-ink-faint); margin-bottom: 36px; }
+/* line-height 1 — 제목 줄 높이(36px)를 물려받으면 작은 글자의 위아래 여백 때문에 제목 줄이 4px 높아져 아래 글이 모두 줄에서 밀렸다 */
+.nb-cont { font-family: var(--nb-font-hand); font-size: var(--text-xl); color: var(--nb-muted); margin-left: 12px; line-height: 1; }
+.nb-lead { font-family: var(--nb-font-hand); font-size: var(--text-xl); color: var(--nb-ink-faint); margin-bottom: var(--nb-line); }
 .nb-hl {
   background: linear-gradient(transparent 50%, var(--nb-hl) 50% 90%, transparent 90%);
   -webkit-box-decoration-break: clone; box-decoration-break: clone;
@@ -1279,82 +1610,113 @@ body.plain-mode #view { min-height: 100vh; }
   text-decoration: underline wavy; text-underline-offset: 4px;
 }
 .nb-evlink:hover { color: #1d3450; }
-.nb-back {
-  display: inline-flex; align-items: center; gap: 8px; margin-top: 18px;
-  background: var(--nb-navy); color: var(--nb-paper); text-decoration: none;
-  font-size: var(--text-ui); letter-spacing: 1px; padding: 12px 22px; border-radius: var(--radius-tag);
-  box-shadow: 0 4px 10px rgba(0,0,0,.2);
-}
-.nb-back:hover { background: #223a57; }
-.nb-back span { font-size: var(--text-xs); }
 
 /* ---- 1부 프로필 ---- */
-.nb-profile { display: flex; gap: 36px; align-items: flex-start; flex-wrap: wrap; }
+.nb-profile { display: flex; gap: var(--nb-line); align-items: flex-start; flex-wrap: wrap; }
 .nb-polaroid { flex: none; position: relative; transform: rotate(-3deg); }
-.nb-polaroid-inner { background: var(--surface); padding: 12px 12px 14px; box-shadow: 0 6px 14px rgba(0,0,0,.18); }
+/* 신상표가 사진 아래로 내려가는 좁은 폭에서도 표가 줄 위에서 시작하도록 사진 칸을 줄 수의 배수로(사진 실제 높이 236px) */
+.nb-profile > .nb-polaroid { height: calc(var(--nb-line) * 7); }
+.nb-polaroid-inner { display: block; background: var(--surface); padding: 12px 12px 14px; box-shadow: var(--shadow-paper); }
 .nb-sd { width: 176px; height: 176px; object-fit: contain; display: block; background: #f3ead8; image-rendering: pixelated; }
-.nb-polaroid-cap { font-family: var(--nb-font-hand); font-size: var(--text-lg); text-align: center; color: var(--nb-ink-faint); margin-top: 8px; line-height: 1.5; }
+.nb-polaroid-cap { display: block; font-family: var(--nb-font-hand); font-size: var(--text-lg); text-align: center; color: var(--nb-ink-faint); margin-top: 8px; line-height: 1.5; }
 .nb-dl {
-  flex: 1; min-width: 300px; margin: 0;
+  flex: 1; min-width: min(300px, 100%); margin: 0; /* 300px 고정이면 320 화면에서 종이 밖으로 42px 나갔다(10/10) */
   display: grid; grid-template-columns: 132px 1fr;
 }
 .nb-dl dt { font-family: var(--nb-font-hand); font-weight: 700; font-size: var(--text-xl); color: var(--nb-red); }
 .nb-dl dd { margin: 0; }
 
 /* ---- 2부 메모 ---- */
-.nb-quote { display: flex; gap: 14px; align-items: flex-start; margin-bottom: 36px; }
+/* 말풍선은 반쯤 비치는 바탕이라 줄이 보인다 — 위아래 여백을 반 줄로 두고 말풍선을 반 줄 끌어올려
+   말풍선 안 글도 줄 위에 앉게 한다(제목 아래 빈 줄의 아래 절반에 걸친다) */
+.nb-quote {
+  display: flex; gap: 14px; align-items: flex-start;
+  margin: calc(var(--nb-line) / -2) 0 calc(var(--nb-line) * 1.5);
+}
 .nb-quote-sd { width: 52px; height: 52px; object-fit: contain; flex: none; image-rendering: pixelated; }
+/* 가장 좁은 폰(글 칸 260px 이하 — 320 · 360px 화면)은 클루 얼굴을 말풍선 위 한 줄로 올린다. 옆에 두면 말풍선이 101px 기둥이 되어
+   한 줄에 4~8자였다(10/11 수첩 재점검). 얼굴 높이가 줄 간격 하나라 말풍선 글은 그대로 줄 위에 앉는다 */
+@container nb-page (max-width: 260px) {
+  .nb-quote { flex-direction: column; gap: 0; }
+  .nb-quote-sd { width: var(--nb-line); height: var(--nb-line); }
+}
 .nb-quote-bubble {
   font-family: var(--nb-font-hand); font-size: var(--text-xl); color: var(--nb-ink-faint);
-  background: rgba(178,58,47,.06); border-radius: 4px 16px 16px 16px; padding: 18px;
+  background: rgba(178,58,47,.06); border-radius: 4px 16px 16px 16px; padding: calc(var(--nb-line) / 2) 18px;
 }
-.nb-memos { display: flex; flex-direction: column; gap: 36px; }
-.nb-memo-row { display: flex; gap: 26px; align-items: flex-start; flex-wrap: wrap; }
+/* 메모 칸 — 칸의 높이를 줄 간격의 배수로 맞춰 다음 칸의 분류 · 작품명도 줄 위에 온다.
+   사진이 있는 칸: 분류 · 작품명 한 줄 → 그 아래 사진과 포스트잇이 같은 높이에서 나란히(10/10 사용자 결정).
+   사진 높이는 세 줄, 포스트잇은 (글줄 수 + 1)줄이라 둘 다 줄의 배수다. 위 간격(--nb-shot-gap)만큼 아래에서 덜어 낸다. */
+.nb-memos { display: flex; flex-direction: column; }
+.nb-memo-row {
+  display: flex; column-gap: 26px; row-gap: var(--nb-shot-gap); align-items: flex-start; flex-wrap: wrap;
+  padding-bottom: var(--nb-line);
+}
+.nb-memo-row.has-shot { padding-bottom: calc(var(--nb-line) - var(--nb-shot-gap)); }
 .nb-memo-subject { flex: 1; min-width: 200px; }
-.nb-memo-cat { font-size: var(--text-md); letter-spacing: 2px; color: var(--nb-red); }
+.nb-memo-row.has-shot .nb-memo-subject { flex-basis: 100%; }
+.nb-memo-cat { font-size: var(--text-md); letter-spacing: .04em; color: var(--nb-red); }
 .nb-memo-name { font-size: var(--text-xl); font-weight: 700; }
 
-/* 작품명 아래 스크랩 사진 — 수첩에 붙여둔 작은 사진 느낌 */
+/* 작품명 아래 스크랩 사진 — 수첩에 붙여둔 작은 사진 느낌. 높이 세 줄(16:9) */
 .nb-memo-shot {
-  position: relative; width: 100%; max-width: 190px;
-  aspect-ratio: 16 / 9; margin-top: 10px;
+  flex: none; position: relative; height: calc(var(--nb-line) * 3); max-width: 100%;
+  aspect-ratio: 16 / 9;
   background: var(--surface); padding: 5px; border: 1px solid var(--nb-rule);
-  box-shadow: 0 3px 7px rgba(0,0,0,.14);
+  box-shadow: var(--shadow-paper);
   transform: rotate(-1.2deg);
 }
 .nb-memo-img { width: 100%; height: 100%; object-fit: cover; display: block; }
+/* 아직 받지 않은 그림(그 쪽에 가까워지면 받는다 — 10/11 가)은 대체 글자 대신 빈 틀만 */
+.nb-memo-img[data-src], .nb-photo-img[data-src] { visibility: hidden; }
 /* 파일이 아직 없을 때: 빈 사진 자리 */
 .nb-memo-shot.empty {
   background: repeating-linear-gradient(45deg, var(--nb-paper-dim) 0 10px, #ede7d4 10px 20px);
   border-style: dashed;
 }
 .nb-postit {
-  flex: none; width: 400px; max-width: 100%; box-sizing: border-box;
-  background: var(--nb-postit); box-shadow: 0 5px 10px rgba(0,0,0,.12);
-  padding: 18px 20px; font-family: var(--nb-font-hand); font-size: var(--text-xl); color: var(--nb-ink-soft);
+  flex: none; width: 400px; max-width: 100%; box-sizing: border-box; margin-left: auto; /* 사진 옆에서도 전처럼 오른쪽 끝에 */
+  background: var(--nb-postit); box-shadow: var(--shadow-paper);
+  padding: calc(var(--nb-line) / 2) 20px; font-family: var(--nb-font-hand); font-size: var(--text-xl); color: var(--nb-ink-soft);
 }
 .nb-memo-row:nth-child(odd) .nb-postit { transform: rotate(-1.2deg); }
 .nb-memo-row:nth-child(even) .nb-postit { transform: rotate(1deg); }
 .nb-postit-by { color: var(--nb-red); font-weight: 700; }
 
-/* 2부 종합 소견 — 메모 목록을 정리하는 마무리 한 단락 */
+/* 2부 종합 소견(10/11 가 — 결론의 무게) — 메모를 다 적은 뒤 따로 붙인 흰 쪽지. 글자는 한 단계 크게(20.8 → 25.6px), 가장 진한 먹.
+   전에는 말풍선 · 포스트잇과 같은 손글씨 20.8px · 같은 먹이라 결론이 다른 글과 같은 무게였다.
+   쪽지 높이는 줄 간격의 배수(위아래 여백 반 줄씩)라 뒤에 오는 플레이 기록도 줄 위에 앉는다 */
 .nb-closing {
-  margin-top: 30px; padding: 16px 20px;
-  border-top: 1px dashed var(--nb-rule);
-  font-family: var(--nb-font-hand); font-size: var(--text-xl); line-height: 36px;
-  color: var(--nb-ink-soft);
+  position: relative; margin: 0 0 var(--nb-line);
+  padding: calc(var(--nb-line) / 2) 24px;
+  background: var(--surface); box-shadow: var(--shadow-paper);
+  font-family: var(--nb-font-hand); font-size: var(--text-2xl); line-height: var(--nb-line);
+  color: var(--nb-ink);
 }
+.nb-closing .nb-tape.small { top: -14px; left: 50%; transform: translateX(-50%) rotate(-2deg); background: rgba(240,222,158,.75); }
 
 /* ---- 3부 사진 ---- */
-.nb-photos { display: flex; gap: 44px; justify-content: center; flex-wrap: wrap; padding: 10px 0 8px; }
-.nb-polaroid.photo { transform: rotate(-2.5deg); }
+/* 사진은 단추(10/11 가) — 누르면 크게 보는 창. 넓은 화면은 380px 안팎(전 300px — 원본 720×540의 굿즈를 알아보기 어려웠다) */
+.nb-photos { display: flex; gap: 28px 30px; justify-content: center; flex-wrap: wrap; padding: 10px 0 8px; }
+.nb-polaroid.photo { flex: 1 1 300px; max-width: 380px; min-width: 0; transform: rotate(-2.5deg); }
 .nb-polaroid.photo.p2 { transform: rotate(1.8deg); margin-top: 26px; }
 .nb-polaroid.photo .nb-tape.small { left: -22px; top: -13px; width: 104px; height: 28px; background: rgba(240,222,158,.7); transform: rotate(-40deg); }
 .nb-polaroid.photo.p2 .nb-tape.small { left: auto; right: -20px; transform: rotate(38deg); background: rgba(178,209,190,.65); }
+/* 넓은 화면의 한 쪽 — 붙인 사진은 글 칸을 넘어 여백선 옆 · 오른쪽 여백까지 걸친다(폴라로이드 370px 안팎) */
+@media (min-width: 1181px) {
+  .view-notebook:not(.nb-spreads) .nb-photos { gap: 24px; margin: 0 calc(16px - var(--nb-pad-out)) 0 calc(var(--nb-margin-x) + 4px - var(--nb-pad-in)); }
+}
+.nb-photo-btn {
+  display: block; width: 100%; padding: 0; margin: 0; border: 0; background: none;
+  font: inherit; color: inherit; text-align: inherit; cursor: zoom-in;
+}
+.nb-photo-btn .nb-polaroid-inner { transition: box-shadow var(--motion-fast) ease; }
+.nb-photo-btn:hover .nb-polaroid-inner { box-shadow: var(--shadow-lift); }
+.nb-photo-btn:focus-visible { outline: 2px solid var(--focus); outline-offset: 4px; }
 .nb-photo-area {
-  position: relative; width: 300px; height: 224px; max-width: 100%;
+  position: relative; display: flex; align-items: center; justify-content: center;
+  width: 100%; aspect-ratio: 4 / 3;
   background: repeating-linear-gradient(45deg, var(--nb-paper-dim) 0 12px, #ede7d4 12px 24px);
-  display: flex; align-items: center; justify-content: center;
 }
 .nb-photo-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 .nb-photo-label {
@@ -1363,20 +1725,189 @@ body.plain-mode #view { min-height: 100vh; }
 }
 .nb-photo-area:not(.empty) .nb-photo-label { display: none; }
 .nb-photo-area.empty .nb-photo-label { display: inline-block; }
+.nb-photo-area.empty + .nb-polaroid-cap { cursor: default; }
 
-/* ---- 접힌 페이지 ---- */
-.nb-sheet.folded .nb-content { padding-right: 90px; }
-.nb-folded-line { font-family: var(--nb-font-hand); font-size: var(--text-xl); color: var(--nb-ink-faint); margin-bottom: 14px; }
-.nb-folded-line p { margin: 0 0 14px; line-height: 36px; max-width: 620px; }
-.nb-folded-line p:last-child { margin-bottom: 0; }
-.nb-folded-note { font-size: var(--text-sm); color: var(--nb-muted); line-height: 1.7; max-width: 520px; }
-.nb-corner {
-  position: absolute; right: 0; bottom: 0; width: 0; height: 0;
-  border-top: 88px solid #e4dcc4; border-right: 88px solid var(--nb-desk);
-  filter: drop-shadow(-3px -3px 4px rgba(0,0,0,.12));
+/* 사진 창 — 증거 팝업과 같은 어두운 바탕 · 닫기 단추. 원본(720×540)을 화면에 맞춰 크게 */
+.nb-zoom {
+  position: relative; width: min(900px, 100%); max-height: calc(100dvh - 40px); overflow: auto;
+  padding: 16px 16px 12px; background: var(--surface); border-radius: var(--radius-tag);
+  box-shadow: var(--shadow-float);
 }
-.nb-sheet.folded { padding-bottom: 64px; }
-.nb-sheet.folded .nb-corner { right: -12px; bottom: -12px; }
+.nb-zoom:focus { outline: none; }
+/* 설명 줄이 위(닫기 단추는 다른 팝업처럼 오른쪽 위), 그 아래 사진 */
+.nb-zoom-cap { margin: 0 44px 10px 4px; min-height: 30px; font-family: var(--nb-font-hand); font-size: var(--text-xl); line-height: 1.4; color: var(--nb-ink-soft); }
+.nb-zoom-img { display: block; width: 100%; height: auto; max-height: calc(100dvh - 140px); object-fit: contain; background: var(--nb-paper-dim); }
+
+/* ---- 마지막 쪽 — 사건 종결(10/11 수첩 끝) ---- */
+/* 문단 사이는 한 줄을 비운다(전에는 14px라 문단마다 글과 줄이 14px씩 어긋났다). 추신도 줄 위에.
+   편지는 메모와 같은 진한 먹(10/11 가 — 전에는 흐린 먹이라 대비가 메모 10.1 : 편지 6.5였다) */
+.nb-folded-line { font-family: var(--nb-font-hand); font-size: var(--text-xl); color: var(--nb-ink-soft); }
+.nb-folded-line p { margin: 0 0 var(--nb-line); max-width: 620px; }
+.nb-folded-line p:last-child { margin-bottom: 0; }
+/* 서명 — 편지 끝 오른쪽에 클루의 손글씨 이름과 작은 얼굴 도장(SD 그림을 붉은 잉크로). 한 줄 칸 */
+.nb-sign {
+  display: flex; justify-content: flex-end; align-items: center; gap: 10px;
+  max-width: 620px; height: var(--nb-line); margin: 0;
+  font-family: var(--nb-font-hand); font-weight: 700; font-size: var(--text-2xl); line-height: 1; color: var(--nb-ink);
+}
+.nb-sign-face {
+  position: relative; flex: none; width: 46px; height: 46px; overflow: hidden; isolation: isolate;
+  border: 2px solid var(--nb-red); border-radius: var(--radius-circle); background: var(--nb-paper);
+  transform: rotate(-8deg); opacity: .95; filter: url(#ink-rough);
+}
+/* 그림을 흑백 선으로 만든 뒤 붉은 잉크를 겹쳐(screen) 선은 붉게, 바탕은 종이색으로 남긴다 */
+.nb-sign-face img {
+  display: block; width: 100%; height: 100%; object-fit: cover; object-position: 50% 16%;
+  filter: grayscale(1) brightness(.92) contrast(3.2);
+}
+.nb-sign-face::after { content: ''; position: absolute; inset: 0; background: var(--nb-red); mix-blend-mode: screen; }
+.nb-folded-note { font-size: var(--text-sm); color: var(--nb-muted); max-width: 520px; }
+/* 명함과 돌아가기 — 연락처 · PDF는 클립에 물린 명함 한 장(본편 연결 네이비), 그 아래 '사건 파일로 돌아가기'(채움) */
+.nb-closeout {
+  position: relative; margin-top: calc(var(--nb-line) / 2);
+  display: flex; flex-direction: column; align-items: flex-start; gap: 14px;
+  padding-right: 172px; /* 도장 자리 — 명함 · 단추 글자를 가리지 않게 오른쪽을 비운다 */
+}
+/* 명함 — 곧게 둔다(글자가 든 상자는 기울이지 않는다). 클립만 비스듬히 물려 있다 */
+.nb-card {
+  position: relative; display: flex; flex-wrap: wrap; align-items: center; gap: 12px 28px;
+  width: min(520px, 100%); padding: 18px 22px 16px;
+  background: var(--surface); border-radius: var(--radius-tag); box-shadow: var(--shadow-paper);
+  line-height: 1.4;
+}
+.nb-card .clip { top: -16px; left: 24px; }
+.nb-card-lines { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; flex: 1 1 220px; min-width: 0; }
+.nb-contact {
+  color: var(--nb-navy); font-size: var(--text-ui); letter-spacing: .02em;
+  text-decoration: none; overflow-wrap: anywhere;
+}
+.nb-contact:hover { text-decoration: underline; text-underline-offset: 3px; }
+.nb-contact.nb-pdf {
+  flex: none; display: inline-flex; align-items: center; padding: 10px 16px;
+  border: 1.5px solid var(--nb-navy); border-radius: var(--radius-tag); background: var(--nb-paper);
+}
+.nb-contact.nb-pdf:hover { background: var(--surface); text-decoration: none; }
+.nb-back {
+  display: inline-flex; align-items: center; gap: 8px; max-width: 100%;
+  font-size: var(--text-ui); letter-spacing: 1px; line-height: 1.4; padding: 12px 22px; border-radius: var(--radius-tag);
+  text-decoration: none;
+  background: var(--nb-navy); color: var(--nb-paper);
+  box-shadow: var(--shadow-card);
+}
+.nb-back:hover { background: #223a57; }
+.nb-back span { font-size: var(--text-xs); }
+.nb-back:focus-visible, .nb-contact:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; }
+/* 'CASE CLOSED' 도장 — 둥근 붉은 도장, 약 10° 기울기, 가장자리 잉크 번짐(#ink-rough). 가운데는 방문한 날짜.
+   글자를 가리지 않는 오른쪽 아래 빈 자리에 찍혀 있을 뿐 누르는 데 끼어들지 않는다 */
+.nb-closed {
+  position: absolute; right: 4px; top: 50%; width: 150px; height: 150px; margin-top: -75px;
+  transform: rotate(10deg); opacity: .95; filter: url(#ink-rough); pointer-events: none;
+}
+/* 글 칸이 좁으면(휴대폰) 명함은 칸 폭 전체, 도장은 106px로 돌아가기 단추 오른쪽에 — 아래 끝은 쪽 아래 여백 안, 오른쪽은 여백까지 걸친다.
+   그래서 쪽 길이는 그대로다(10/11 바2 '지금 유지' — 390×844 스크롤 0) */
+@container nb-page (max-width: 440px) {
+  .nb-closeout { padding-right: 0; }
+  .nb-closed { top: auto; bottom: calc(0px - var(--nb-pad-b)); right: -28px; width: 106px; height: 106px; margin-top: 0; }
+}
+/* 가장 좁은 폰(글 칸 260px 이하 — 320 · 360px 화면)은 단추 옆에 자리가 없다 — 84px로 줄여 명함 오른쪽 위 빈 자리에 */
+@container nb-page (max-width: 260px) {
+  .nb-closed { top: -12px; bottom: auto; right: -26px; width: 84px; height: 84px; }
+}
+.nb-closed svg { display: block; width: 100%; height: 100%; overflow: visible; }
+.nb-closed-ring { fill: none; stroke: var(--nb-red); stroke-width: 3.2; }
+.nb-closed-ring.thin { stroke-width: 1.4; }
+/* 그림 안 글자 18 — 도장이 106px(휴대폰)이어도 실제 12px. 둘레보다 긴 글은 notebook.js가 글자 폭만 좁힌다 */
+.nb-closed-word { fill: var(--nb-red); font-family: "Pretendard Variable", "Pretendard", sans-serif; font-weight: 800; font-size: 18px; letter-spacing: .06em; }
+.nb-closed-date { fill: var(--nb-red); font-family: "Pretendard Variable", "Pretendard", sans-serif; font-weight: 700; font-size: 18px; font-variant-numeric: tabular-nums; }
+.nb-closed-star { fill: var(--nb-red); }
+/* 접힌 귀퉁이(10/11 가) — 종이 안쪽에서 접힌 모양. 잘린 자리는 종이를 오려 책상이 보이고(clip-path), 접힌 삼각형은 종이 뒷면.
+   종이 그림자는 오린 모양을 따라가게 쪽에 건다(전에는 종이 밖으로 12px 나온 네모 조각처럼 보였다) */
+.nb-sheet.folded {
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - var(--nb-corner)), calc(100% - var(--nb-corner)) 100%, 0 100%);
+  box-shadow: none;
+}
+.nb-page[data-ch="end"] { filter: drop-shadow(0 12px 14px rgba(38,36,31,.22)); }
+.nb-corner {
+  position: absolute; z-index: 5; right: 0; bottom: 0; width: var(--nb-corner); height: var(--nb-corner);
+  pointer-events: none; /* 그림이다 — 누르는 데 끼어들지 않는다 */
+  background: linear-gradient(to bottom right, var(--nb-paper) 0, var(--nb-paper-dim) 46%, transparent 50%);
+  filter: drop-shadow(-2px -2px 3px rgba(0,0,0,.14));
+}
+
+/* ---- 펼친 수첩(10/11 나 — 넓고 높은 화면, notebook.js SPREAD_MEDIA) ----
+   가운데 스프링을 두고 두 쪽씩. 1920에서 종이(두 쪽) 폭이 화면의 68% 안팎이고 넘김이 다섯 번에서 세 번으로 준다.
+   왼쪽 쪽은 묶음이 오른쪽에 있어 구멍 줄 · 여백선 · 안 여백이 거울처럼 놓이고, 넘김도 거꾸로 돈다 */
+.view-notebook.nb-spreads {
+  --nb-coil-w: 22px;
+  --nb-page-w: min(640px, calc((100% - 2 * var(--nb-side) - var(--nb-coil-w)) / 2));
+  --nb-book-w: calc(2 * var(--nb-page-w) + var(--nb-coil-w));
+  --nb-gap-t: 24px;
+  --nb-gap-b: 8px;
+  --nb-pad-t: 32px;
+  --nb-pad-b: 32px;
+  --nb-pad-in: 84px;
+  --nb-pad-out: 40px;
+  --nb-holes-x: 18px;
+  --nb-margin-x: 62px;
+  /* 넘김 하나(.6s)를 반씩 — 앞 절반에 한 쪽이 가운데 축으로 접히고, 뒤 절반에 반대편 쪽이 펼쳐진다 */
+  --nb-turn-fold: nbFold .3s ease-in forwards;
+  --nb-turn-unfold: nbUnfold .3s ease-out .3s both;
+  --nb-turn-shade-in: nbShadeIn .3s ease-in forwards;
+  --nb-turn-shade-out: nbShadeOut .3s ease-out .3s both;
+}
+/* 쪽 폭은 수첩 자리(두 쪽 + 스프링)의 반에서 스프링 몫을 뺀 것 — 쪽 안에서 % 값은 수첩 자리 기준이라 --nb-page-w를 다시 쓰지 않는다 */
+.nb-spreads .nb-page.at-l { right: auto; width: calc((100% - var(--nb-coil-w)) / 2); transform-origin: right center; --nb-dir: -1; }
+.nb-spreads .nb-page.at-r { left: auto; width: calc((100% - var(--nb-coil-w)) / 2); }
+.nb-spreads .at-l .nb-paper { border-radius: 12px 4px 4px 12px; }
+.nb-spreads .at-l .nb-spiral { left: auto; right: var(--nb-holes-x); }
+.nb-spreads .at-l .nb-sheet::before { left: auto; right: var(--nb-margin-x); }
+.nb-spreads .at-l .nb-scroll { padding-left: var(--nb-pad-out); padding-right: var(--nb-pad-in); }
+.nb-spreads .at-l .nb-more { left: 12px; right: calc(var(--nb-margin-x) + 1px); border-radius: 0 0 0 12px; }
+/* 가운데 스프링 — 두 쪽의 구멍을 잇는 쇠 고리(구멍과 같은 30px 간격). 그림 안 색은 --metal과 같은 값(데이터 URI라 변수를 못 쓴다 — 바꿀 때 둘 다) */
+.nb-coil {
+  position: absolute; z-index: 5; top: 30px; bottom: 30px; left: 50%; width: 76px; margin-left: -38px; pointer-events: none;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='76' height='30'%3E%3Crect x='3' y='5.5' width='70' height='9' rx='4.5' fill='none' stroke='%238b8a84' stroke-width='3'/%3E%3Cpath d='M9 7.2H67' stroke='%23fff' stroke-opacity='.55' stroke-width='1.2' stroke-linecap='round'/%3E%3C/svg%3E") repeat-y center top / 76px 30px;
+  filter: drop-shadow(0 1px 1px rgba(0,0,0,.25));
+}
+/* 펼친 쪽은 글 칸이 좁다 — 포스트잇은 사진 옆 남은 폭을 채우고, 제목은 한 단계 작게 */
+.nb-spreads .nb-h2 { font-size: var(--text-2xl); }
+.nb-spreads .nb-postit { flex: 1 1 0; width: auto; min-width: 0; }
+/* 스크랩 사진은 두 줄 높이로 줄여 포스트잇에 폭을 준다(윗변은 그대로 포스트잇과 맞춘다).
+   분류와 작품명은 한 줄에(칸이 좁으면 두 줄로 내려간다), 말풍선 아래는 한 줄만 비운다 — 2부 첫 쪽이 1080p 모니터의 브라우저 높이(약 930px)에 들어오게 */
+.nb-spreads .nb-memo-shot { height: calc(var(--nb-line) * 2); }
+.nb-spreads .nb-memo-subject { display: flex; flex-wrap: wrap; align-items: baseline; column-gap: 12px; }
+.nb-spreads .nb-quote { margin-bottom: var(--nb-line); }
+/* 1부 — 사진은 제목 오른쪽에 붙이고 신상표는 그 아래 글 칸 전체로(사진 일곱 줄 뒤 한 줄 비우고) */
+.nb-spreads .nb-page[data-ch="p1"] .nb-content { display: grid; grid-template-columns: 1fr auto; column-gap: 24px; align-content: start; }
+.nb-spreads .nb-page[data-ch="p1"] .nb-h2 { grid-column: 1; grid-row: 1; }
+.nb-spreads .nb-page[data-ch="p1"] .nb-lead { grid-column: 1; grid-row: 2; }
+.nb-spreads .nb-page[data-ch="p1"] .nb-profile { display: contents; }
+.nb-spreads .nb-page[data-ch="p1"] .nb-polaroid { grid-column: 2; grid-row: 1 / span 3; margin-right: 6px; }
+.nb-spreads .nb-page[data-ch="p1"] .nb-dl { grid-column: 1 / -1; grid-row: 4; margin-top: var(--nb-line); }
+/* 3부 사진은 위아래로 엇갈려 붙인다 — 크기는 쪽 높이에 맞춘다(제목 · 말풍선 일곱 줄을 뺀 높이를 둘로) */
+.nb-spreads .nb-photos { flex-direction: column; flex-wrap: nowrap; align-items: stretch; gap: 0; padding: 0 0 6px; }
+.nb-spreads .nb-polaroid.photo {
+  /* 폴라로이드 높이 = 그림 + 60px(테두리 · 설명). 그림은 4:3 */
+  flex: none; width: min(360px, 80%, calc(((100cqh - 7 * var(--nb-line) - 36px) / 2 - 60px) * 4 / 3 + 24px));
+}
+.nb-spreads .nb-polaroid.photo.p1 { align-self: flex-start; }
+.nb-spreads .nb-polaroid.photo.p2 { align-self: flex-end; margin-top: 4px; }
+
+/* ---- 1180px 이하 — 한 쪽씩. 색인 탭은 종이 위 가장자리로 올라간다(오른쪽에 탭과 단추를 함께 둘 자리가 없다) ---- */
+@media (max-width: 1180px) {
+  .view-notebook { --nb-tab-out: 0px; --nb-btn-gap: 20px; }
+  .nb-tabs {
+    left: auto; right: 26px; top: auto; bottom: 100%;
+    flex-direction: row; align-items: flex-end; gap: 4px;
+  }
+  .nb-tab {
+    margin: 0 0 -6px; min-width: 0; padding: 4px 10px 9px;
+    border-radius: 6px 6px 0 0; box-shadow: 0 -1px 3px rgba(0,0,0,.12);
+    font-size: var(--text-sm); line-height: 1.2;
+  }
+  .nb-tab[aria-current="true"] { transform: translateY(-5px); }
+  .nb-tab:hover:not([aria-current="true"]) { transform: translateY(-2px); }
+}
 
 /* ---- 수첩 모바일 폴백: 일반 스크롤 + 연출 축소 ---- */
 @media (max-width: 820px) {
@@ -1391,28 +1922,70 @@ body.plain-mode #view { min-height: 100vh; }
   .nb-nav-btn:active:not(:disabled) { transform: none; }
   /* 버튼 사이 중앙에 인디케이터 */
   .nb-indicator { bottom: 26px; padding: 4px 10px; font-size: var(--text-ui); }
-  .nb-page { padding: 18px 10px 84px; }
-  .nb-cover { padding: 44px 26px 56px; }
+  /* 종이는 아래 단추 줄(아래 14px + 단추 46px) 위 8px에서 끝난다 — 전에는 쪽이 화면 끝까지 가서 첫 화면에 단추가 글을 덮었다.
+     위 28px은 색인 탭 자리 */
+  .view-notebook {
+    --nb-nav-h: 68px; --nb-gap-t: 28px; --nb-gap-b: 8px; --nb-side: 10px;
+    --nb-pad-t: 28px; --nb-pad-b: 40px; --nb-pad-in: 52px; --nb-pad-out: 22px;
+    --nb-holes-x: 10px; --nb-margin-x: 38px;
+  }
+  .nb-cover { padding: 44px 16px 72px 34px; }
   .nb-cover-title { font-size: var(--text-3xl); }
-  .nb-stamp { right: 8px; font-size: var(--text-base); letter-spacing: 3px; padding: 6px 12px; }
-  .nb-sheet { padding: 28px 22px 40px 52px; background-position: 38px 0; }
-  .nb-sheet .nb-spiral { left: 10px; width: 12px; background-size: 12px 26px; }
-  .nb-parttab { display: none; }
-  .nb-h2 { font-size: var(--text-2xl); line-height: 36px; margin-bottom: 14px; }
-  .nb-postit { width: 100%; }
+  .nb-stamp { right: 8px; font-size: var(--text-base); padding: 6px 12px; }
+  .nb-spiral { width: 12px; background-size: 12px 26px; }
+  .nb-h2 { font-size: var(--text-2xl); }
+  /* 좁은 화면은 포스트잇이 사진 아래로(전과 같다). 사진 → 포스트잇 사이는 줄 간격 − 10px, 칸 아래는 한 줄 */
+  .nb-postit { width: 100%; margin-top: calc(var(--nb-line) - var(--nb-shot-gap)); }
+  .nb-memo-row.has-shot .nb-postit { margin-top: calc(var(--nb-line) - 2 * var(--nb-shot-gap)); }
+  .nb-memo-row.has-shot { padding-bottom: var(--nb-line); }
   .nb-dl { grid-template-columns: 100px 1fr; font-size: var(--text-ui); }
   .nb-photos { gap: 24px; }
   .nb-polaroid.photo.p2 { margin-top: 0; }
+}
+/* 휴대폰 — 줄 간격을 30px로(PR #2로 손글씨가 20.8px가 되자 390 마지막 쪽이 27px 스크롤됐다) */
+@media (max-width: 600px) {
+  .view-notebook { --nb-line: 30px; --nb-pad-b: 24px; --nb-corner: 40px; }
+  .nb-profile > .nb-polaroid { height: calc(var(--nb-line) * 8); }
+  .nb-memo-shot { height: calc(var(--nb-line) * 4); }
+  /* 3부 사진이 글 칸보다 넓어(300px + 테두리) 쪽 밖으로 나갔다 — 칸에 맞춰 줄이고, 테이프는 안쪽으로 */
+  .nb-polaroid.photo { flex-basis: 100%; max-width: 100%; }
+  .nb-polaroid.photo .nb-tape.small { left: -10px; }
+  .nb-polaroid.photo.p2 .nb-tape.small { left: auto; right: -8px; }
+  /* 마지막 쪽 — 편지 · 서명 · 명함 · 돌아가기가 전과 같은 길이에 들어오게(10/11 바2 '지금 유지') */
+  .nb-sign { font-size: var(--text-xl); }
+  .nb-sign-face { width: 38px; height: 38px; }
+  .nb-closeout { gap: 10px; }
+  .nb-card { gap: 10px; padding: 16px 16px 14px; }
+  .nb-contact.nb-pdf { padding: 9px 14px; }
+  .nb-back { padding: 9px 16px; }
+  .nb-back { letter-spacing: .5px; }
+}
+/* 가장 좁은 폰 — 신상표는 이름표와 내용을 한 줄씩 쌓는다 */
+@media (max-width: 360px) {
+  .nb-dl { grid-template-columns: 1fr; }
 }
 
 /* ---------- 모바일 기본 대응 ---------- */
 @media (max-width: 820px) {
   .header-inner { padding: 0 10px; gap: 8px; }
   .brand-sub { display: none; }
-  #tabs a { padding: 8px 8px; font-size: var(--text-sm); }
+  #tabs a { padding: 0 8px 10px; font-size: var(--text-sm); }
   .paper { padding: 30px 22px; margin: 18px 12px; }
+  .paper.record.filed { margin-top: 52px; }
   .dossier { grid-template-columns: 1fr; padding: 18px 12px; }
-  .chapter-index { position: static; order: -1; display: flex; gap: 6px; overflow-x: auto; }
+  /* 좁은 화면 — 도장이 오른쪽 위 줄을 차지하므로 주장 제목은 도장 아래에서 시작한다 */
+  .essay .chapter-claim { padding-right: 0; margin-top: 30px; font-size: var(--text-xl); }
+  .chapter-index { position: static; order: -1; display: flex; gap: 6px; overflow-x: auto; overscroll-behavior-x: contain; }
+  /* 다섯째 장(EPILOGUE)이 띠 밖에 있어도 보이지 않았다(10/10 재채점) — 넘친 쪽 끝에 그늘을 깐다. 종이색 덮개는 내용과 함께 움직이고(local),
+     그늘은 띠에 붙어 있다(scroll) — 끝까지 밀면 덮개가 그늘을 가린다. 지금 장은 views/dossier.js가 띠 가운데로 옮긴다 */
+  .chapter-index {
+    background:
+      linear-gradient(90deg, var(--paper) 40%, rgba(245, 243, 239, 0)) left center / 28px 100% no-repeat local,
+      linear-gradient(270deg, var(--paper) 40%, rgba(245, 243, 239, 0)) right center / 28px 100% no-repeat local,
+      radial-gradient(farthest-side at 0 50%, rgba(38, 36, 31, .2), rgba(38, 36, 31, 0)) left center / 14px 100% no-repeat scroll,
+      radial-gradient(farthest-side at 100% 50%, rgba(38, 36, 31, .2), rgba(38, 36, 31, 0)) right center / 14px 100% no-repeat scroll,
+      var(--paper);
+  }
   .chapter-index .idx { flex: 1 0 auto; }
   .index-title { display: none; }
   .popup { grid-template-columns: 1fr; }
@@ -1452,23 +2025,28 @@ body.plain-mode #view { min-height: 100vh; }
 .memo {
   position: relative;
   margin: 0 0 16px;
-  padding: 13px 18px 16px 42px;
+  /* 아래 여백은 번호 도장(54px)의 절반을 더 둔다 — 도장이 마지막 줄 끝 글자('정리함.' · '했음.')를 덮었다(10/11 재채점) */
+  padding: 13px 18px 42px 42px;
   background: var(--nb-paper);
   border: 1px solid var(--nb-rule);
   border-radius: 3px 8px 8px 3px;
-  box-shadow: 0 4px 12px rgba(38, 36, 31, .12);
-  /* 좌측 마진 붉은 세로선 — 수첩 .nb-sheet과 같은 장치 */
+  box-shadow: var(--shadow-paper);
+  /* 좌측 마진 붉은 세로선 — 수첩 .nb-sheet과 같은 장치. 그 아래에 종이 결(10/10 다3)을 옅게 깐다 */
   background-image: linear-gradient(90deg,
-    transparent 0 30px, rgba(178, 58, 47, .35) 30px 31px, transparent 31px);
+    transparent 0 30px, rgba(178, 58, 47, .35) 30px 31px, transparent 31px), var(--grain);
 }
-/* 증거 코드 탭 — 위쪽은 스크랩 사진이 쓰므로 아래 모서리로 내린다 */
+/* 증거 번호 도장(10/10 다3 시안 다) — 오른쪽 아래 모서리에 반쯤 걸쳐 찍힌 둥근 잉크 도장. 전에는 오른쪽 모서리의 빨간 탭.
+   본문 칸 밖(모서리)에 걸치게 두어 글줄을 덮지 않는다. 잉크 가장자리는 큰 도장과 같은 거르개 */
 .memo-tab {
-  position: absolute; right: -9px; bottom: 16px;
-  background: var(--nb-red); color: var(--nb-paper);
-  font-size: var(--text-xs); font-weight: 700; letter-spacing: .06em;
-  padding: 2px 8px 2px 10px; border-radius: 0 4px 4px 0;
-  box-shadow: 2px 2px 3px rgba(0, 0, 0, .15);
+  position: absolute; right: -16px; bottom: -14px; z-index: 2;
+  display: grid; place-items: center; width: 54px; height: 54px;
+  border: 2.5px solid var(--nb-red); border-radius: var(--radius-circle);
+  box-shadow: inset 0 0 0 3px var(--nb-paper), inset 0 0 0 4.5px var(--nb-red);
+  color: var(--nb-red); font-size: var(--text-lg); font-weight: 800; letter-spacing: .02em; line-height: 1;
+  transform: rotate(-12deg); opacity: .95; filter: url(#ink-rough); pointer-events: none;
 }
+.memo .clip { top: -15px; left: 44px; }
+@media (max-width: 600px) { .memo-tab { right: -6px; } } /* 팝업 안쪽 여백 안에 둔다 — 전에는 4px 넘쳐 팝업이 옆으로 밀렸다(10/10 재채점) */
 /* 머리말 줄이 사진 높이를 그대로 떠안는다 — 사진이 본문 위로 넘칠 수 없다 */
 .memo-head {
   display: flex; align-items: center; justify-content: space-between; gap: 12px;
@@ -1484,7 +2062,7 @@ body.plain-mode #view { min-height: 100vh; }
 .memo-photo {
   flex: none; width: 50px; padding: 3px 3px 4px; margin-right: 2px;
   background: var(--surface); border: 1px solid var(--nb-rule);
-  box-shadow: 0 3px 8px rgba(38, 36, 31, .2);
+  box-shadow: var(--shadow-paper);
   transform: rotate(4deg);
 }
 .memo-photo img {
@@ -1507,8 +2085,9 @@ body.plain-mode #view { min-height: 100vh; }
   font-size: var(--text-xs); font-weight: 700; color: var(--nb-muted);
 }
 .memo-v { flex: 1; min-width: 0; font-size: var(--text-ui); line-height: 28px; color: var(--nb-ink); text-wrap: pretty; }
+/* 클루가 그은 형광펜 — 진술 문장과 같은 마커 자국(10/10). 빨간 밑줄은 없다 — 메모 안의 레드는 결정과 결론에만(DESIGN.md 2절) */
 .memo-hl {
-  background: linear-gradient(transparent 52%, var(--nb-hl) 52% 92%, transparent 92%);
+  background: var(--marker) 0 70% / 100% 80% no-repeat;
   -webkit-box-decoration-break: clone; box-decoration-break: clone;
   font-weight: 700;
 }
@@ -1518,7 +2097,7 @@ body.plain-mode #view { min-height: 100vh; }
   margin: 13px 0 0 -8px; padding: 9px 13px;
   background: var(--nb-postit); color: var(--nb-ink-soft);
   font-size: var(--text-sm); line-height: 1.6;
-  box-shadow: 0 3px 8px rgba(0, 0, 0, .12);
+  box-shadow: var(--shadow-paper);
   transform: rotate(-.7deg);
 }
 
@@ -1527,7 +2106,8 @@ body.plain-mode #view { min-height: 100vh; }
 
 @media (max-width: 820px) {
   .memo { padding-left: 34px; background-image: linear-gradient(90deg,
-    transparent 0 24px, rgba(178, 58, 47, .35) 24px 25px, transparent 25px); }
+    transparent 0 24px, rgba(178, 58, 47, .35) 24px 25px, transparent 25px), var(--grain); }
+  .memo .clip { left: 36px; }
 }
 
 /* ---------- 휴대폰: 클루는 얼굴과 대사의 띠로 (10/06) ----------
@@ -1577,7 +2157,7 @@ body.plain-mode #view { min-height: 100vh; }
   .popup-sd .dlg-text { font-size: var(--text-md); line-height: 1.55; min-height: 0; }
   .popup-sd .dlg-ctc, .popup-sd .dlg-choice { display: none; }
   .popup-body { --body-x: 16px; padding: 18px var(--body-x) 2px; }
-  .memo { padding: 12px 14px 14px 30px; background-image: linear-gradient(90deg,
+  .memo { padding: 12px 14px 40px 30px; background-image: linear-gradient(90deg,
     transparent 0 21px, rgba(178, 58, 47, .35) 21px 22px, transparent 22px); }
 }
 
@@ -1594,7 +2174,7 @@ body.plain-mode #view { min-height: 100vh; }
 .memo-cyc, .memo-map, .memo-red, .memo-bri, .memo-gra, .memo-spl, .memo-cmp {
   margin: 8px 0 10px; padding: 12px 14px;
   background: var(--surface); border: 1px solid var(--nb-rule); border-radius: var(--radius-tag);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, .08);
+  box-shadow: var(--shadow-paper);
   font-size: var(--text-sm); line-height: 1.45; color: var(--nb-ink-soft);
 }
 /* 결론 한 줄 — 블록마다 같은 크기 · 같은 굵기 · 같은 색 */
@@ -1949,7 +2529,7 @@ body.plain-mode #view { min-height: 100vh; }
 }
 .fx-card:not(.ready) { cursor: default; opacity: .6; }
 .fx-card.ready { background: var(--fx-bg); border-color: var(--fx-soft); }
-.fx-card.ready:hover { border-color: var(--fx-accent); box-shadow: 0 5px 14px rgba(178,58,47,.14); }
+.fx-card.ready:hover { border-color: var(--fx-accent); box-shadow: var(--shadow-lift); }
 .fx-card-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .fx-card-name { font-weight: 800; font-size: var(--text-ui); }
 /* 예외 1 — 코스트가 모자라면 현재/필요 비율만큼 시계방향으로 채워진다 */
@@ -2004,17 +2584,22 @@ body.plain-mode #view { min-height: 100vh; }
    진행할수록 밝은 노드가 늘어나 정작 '지금 여기'가 묻힌다. */
 .fx-node.past { opacity: .72; }
 .fx-node.past::after {
-  content: '✓'; position: absolute; top: -5px; right: -5px;
+  content: ''; position: absolute; top: -5px; right: -5px;
   width: 13px; height: 13px; border-radius: var(--radius-circle);
-  background: var(--fx-accent); color: var(--on-fill);
-  font-size: .5rem; line-height: 13px; text-align: center; font-weight: 700;
+  background: var(--fx-accent);
+}
+/* 붉은 원 안의 체크는 선으로 그린다(10/11 가2 — ✓는 Pretendard에 없는 글자라 운영체제 글꼴로 떨어졌다. DESIGN.md 8절, 진술 문장의 모은 체크와 같은 모양) */
+.fx-node.past::before {
+  content: ''; position: absolute; z-index: 1; top: -2.6px; right: -.8px;
+  width: 4.6px; height: 7.4px; box-sizing: border-box;
+  border: solid var(--on-fill); border-width: 0 1.6px 1.6px 0; transform: rotate(40deg);
 }
 .fx-node.on {
   opacity: 1;
-  box-shadow: var(--fx-ring), 0 6px 16px rgba(0,0,0,.14);
+  box-shadow: var(--fx-ring), var(--shadow-lift);
   transform: translateY(-1px) scale(1.06);
 }
-.fx-node.on::after { display: none; }
+.fx-node.on::after, .fx-node.on::before { display: none; }
 .fx-edge {
   font-size: var(--text-xs); color: var(--fx-mute); white-space: nowrap;
   position: relative; padding: 0 4px;
@@ -2046,8 +2631,9 @@ body.plain-mode #view { min-height: 100vh; }
   border: 1px solid var(--fx-line); border-radius: var(--radius-card); background: var(--fx-bg);
   transition: border-color var(--motion-fast) ease, box-shadow var(--motion-fast) ease;
 }
-/* 표만 가로로 스크롤한다 — 헤더 바가 함께 밀리면 배경색이 빠져나가 흰 여백이 남는다 */
-.fx-tscroll { overflow-x: auto; }
+/* 표만 가로로 스크롤한다 — 헤더 바가 함께 밀리면 배경색이 빠져나가 흰 여백이 남는다.
+   끝의 1px — 표 폭이 소수점(514.06px)이라 끝까지 밀어도 마지막 칸이 0.56px 상자 밖에 남았다(마1 켜진 칸 보이기, 10/10) */
+.fx-tscroll { overflow-x: auto; padding-inline-end: 1px; }
 .fx-table.on { border-color: var(--fx-accent); box-shadow: var(--fx-ring); }
 .fx-table-h {
   font-size: var(--text-xs); font-weight: 700; padding: 7px 11px;
@@ -2061,7 +2647,9 @@ body.plain-mode #view { min-height: 100vh; }
   vertical-align: top; white-space: nowrap;
 }
 .fx-table th b { display: block; font-size: var(--text-xs); }
-.fx-table th span { display: block; font-size: var(--text-xs); color: var(--fx-mute); font-family: ui-monospace, Consolas, monospace; }
+/* 등폭 글꼴 목록의 끝 monospace 앞에 한글 글꼴(Noto Sans KR — views/brief.js가 이 화면에서만 싣는다)을 둔다(10/10 사용자 결정 가3).
+   목록의 어느 글꼴에도 한글이 없어 Windows가 굴림체를 꺼냈다. 영문 · 숫자는 앞의 등폭 글꼴 그대로(Noto는 한글 · 한자 영역만 맡는다) */
+.fx-table th span { display: block; font-size: var(--text-xs); color: var(--fx-mute); font-family: ui-monospace, Consolas, "Noto Sans KR", monospace; }
 .fx-table td {
   padding: 5px 9px; border-bottom: 1px solid var(--fx-line);
   font-variant-numeric: tabular-nums; white-space: nowrap;
@@ -2088,8 +2676,8 @@ body.plain-mode #view { min-height: 100vh; }
 /* ---------- 추적 중 주의 집중 ----------
    한 번의 클릭과 상관없는 영역은 물러난다. 차트 노드(.42)와 마스터 표(.55)는
    이미 그렇게 동작하고 있었고, 나머지 두 영역만 같은 규칙에 합류시킨다. */
-.fx-side, .fx-tables .fx-table { transition: opacity var(--motion-page) ease; }
-.fx-tracing .fx-side { opacity: .5; }
+.fx-play, .fx-tables .fx-table { transition: opacity var(--motion-page) ease; }
+.fx-tracing .fx-play { opacity: .5; } /* 조작 칸만 — 그 아래 캡션(걸음마다 바뀌는 글)은 흐리지 않는다(10/10) */
 .fx-tracing .fx-tables .fx-table:not(.on) { opacity: .45; }
 
 /* 추적이 끝나면 조작권이 돌아온다 — 왼쪽이 다시 살아나는 순간을 짚어준다 */
@@ -2099,10 +2687,8 @@ body.plain-mode #view { min-height: 100vh; }
 }
 .fx-returned .fx-play { animation: fx-return 1.2s ease-out 2; border-radius: var(--radius-card); }
 
-.fx-foot {
-  display: flex; align-items: center; justify-content: space-between; gap: 14px;
-  flex-wrap: wrap; margin-top: 18px; border-top: 1px solid var(--fx-line); padding-top: 12px;
-}
+/* 범례(다섯 색의 뜻)는 '구조 ① 플로우 차트' 이름 바로 아래(10/11 사용자 결정 재9) — 판 맨 아래에 있을 때는 1366×768 · 1440×900에서 화면 밖이었다 */
+.fx-keys { margin: 0 0 12px; }
 .fx-legend { display: flex; gap: 12px; flex-wrap: wrap; font-size: var(--text-xs); color: var(--fx-mute); }
 .fx-key { display: inline-flex; align-items: center; gap: 5px; }
 .fx-key-m { width: 11px; height: 11px; border-radius: var(--radius-tag); display: inline-block; }
@@ -2132,6 +2718,24 @@ body.plain-mode #view { min-height: 100vh; }
   border-left: 3px solid var(--fx-line); padding-left: 12px;
 }
 .brief-docs { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 20px; }
+
+/* ---------- 결론 한 줄 — 다섯 페이지 공통 부품(10/10 사용자 동의 마6) ----------
+   조작 바로 뒤에 오는 한 줄 결론(DESIGN.md 13절 원칙 3). 같은 역할의 줄이 E1 34.5px 큰 제목 · E2 붉은 왼쪽 띠 13.8px ·
+   E3 굵은 16px · E5 초록 네모 14.7px로 달랐다 → 작은 이름표 아래 17px(--text-lg) 굵은(800) 한 줄. 크기 · 표시는 같고 색만 페이지 색을 따른다
+   (--concl-key 이름표 · --concl-ink 글 — 페이지 팔레트가 정한다). 붉은 왼쪽 띠는 절 제목 · 알림 전용이라 쓰지 않는다.
+   줄이 비어 있는 동안(조작 전)은 이름표까지 통째로 숨는다 */
+.view-brief { --concl-key: var(--fx-accent); --concl-ink: var(--fx-ink); }
+.brief-concl:has(> .brief-concl-line:empty) { display: none; }
+.brief-concl-key {
+  display: block; margin: 0 0 4px;
+  font-size: var(--text-xs); font-weight: 700; letter-spacing: .02em; line-height: 1.4;
+  color: var(--concl-key);
+}
+.brief-concl-line {
+  margin: 0; max-width: 40em;
+  font-size: var(--text-lg); font-weight: 800; line-height: 1.55; letter-spacing: -.01em;
+  color: var(--concl-ink); word-break: keep-all; text-wrap: pretty;
+}
 
 /* 카드 안 원본 문서 지름길 — 본체는 브리프로 가지만 문서는 2클릭을 유지한다 */
 .ev-direct {
@@ -2224,10 +2828,21 @@ body.plain-mode #view { min-height: 100vh; }
 /* 테이블 칸은 한 줄에 하나씩 — 값이 바뀌는 것이 보여야 한다 */
 .fx-tablecol .fx-tables { display: flex; flex-direction: column; gap: 12px; margin-top: 0; }
 
-.fx-caption {
-  margin: 18px 0 0; min-height: 2.4em;
-  font-size: var(--text-ui); line-height: 1.6;
-  border-left: 3px solid var(--fx-accent); padding-left: 12px;
+/* 캡션 — 조작 칸의 덱 아래 빈 자리(1440에서 약 190px)에 둔다(10/10 사용자 동의 마6 · 마4). 판 맨 아래에 있을 때는
+   첫 흐름이 끝나는 순간 1440×900 · 1536×864에서 화면 아래 끝에 걸려 잘렸다.
+   흐름 동안은 걸음마다 바뀌는 작은 글(흐린 이름표 자리는 남겨 두어 끝날 때 줄이 밀리지 않는다), 끝나면 결론 한 줄(.brief-concl).
+   전의 붉은 왼쪽 띠는 절 제목 · 알림 전용 표시라 뺐다 */
+.fx-concl { margin-top: 16px; padding-top: 12px; border-top: 1px dashed var(--fx-line); }
+.fx-tracing .fx-concl .brief-concl-key { visibility: hidden; }
+.fx-tracing .fx-concl .fx-caption { font-size: var(--text-md); font-weight: 500; line-height: 1.6; letter-spacing: normal; color: var(--fx-soft); }
+.fx-keep { white-space: nowrap; } /* '손패·덱'처럼 가운뎃점으로 이은 낱말 — 가운뎃점 앞뒤에서 줄이 바뀌지 않게(flow.js setCaption) */
+/* 한 단 배치(≤1180)에서는 캡션 칸이 차트 위에 놓인다 — 흐름 동안 칸이 나타나거나 높이가 바뀌면 아래 차트 · 표가 밀렸다(최대 132px).
+   판이 열린 뒤에는 비어 있어도 자리를 두고, 결론 한 줄(이름표 + 한 줄, 휴대폰은 두 줄) 높이를 미리 잡아 둔다 */
+@media (max-width: 1180px) {
+  .fx:not(.fx-closed) .fx-concl { display: block; min-height: calc(34px + var(--text-lg) * 1.55); }
+}
+@media (max-width: 600px) {
+  .fx:not(.fx-closed) .fx-concl { min-height: calc(34px + var(--text-lg) * 3.1); }
 }
 
 /* 좁은 화면에서는 한 열로 — PC 전제이지만 깨지지는 않게 */
@@ -2287,9 +2902,6 @@ body.plain-mode #view { min-height: 100vh; }
 .fx-tablecol .fx-table th b { font-size: var(--text-xs); }
 .fx-tablecol .fx-table th span { font-size: var(--text-xs); }
 .fx-tablecol .fx-table td { padding: 4px 8px; }
-
-.fx-caption { margin-top: 14px; min-height: 2.2em; font-size: var(--text-md); }
-.fx-foot { margin-top: 12px; padding-top: 10px; }
 
 /* 서문이 세로로 348px을 먹어 본문이 접혔다 — 제목과 도입을 좌우로 나란히 둔다 */
 .view-brief .brief {
@@ -2357,13 +2969,13 @@ body.plain-mode #view { min-height: 100vh; }
   display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap;
   background: var(--fx-data);
 }
-.fx-master-table .fx-table-h b { font-family: ui-monospace, Consolas, monospace; font-size: var(--text-xs); }
+.fx-master-table .fx-table-h b { font-family: ui-monospace, Consolas, "Noto Sans KR", monospace; font-size: var(--text-xs); }
 .fx-master-table .fx-table-h span { font-size: var(--text-xs); font-weight: 400; color: var(--fx-ink); } /* 10/06: #2c556f는 흐린 표에서 3.96:1 */
 .fx-master-table tbody:empty ~ * { display: none; }
 
 /* FK로 이어지는 열은 눈에 띄게 */
 .fx-master-table td[data-c$="_id"],
-.fx-master-table td[data-c="skill_id"] { font-family: ui-monospace, Consolas, monospace; }
+.fx-master-table td[data-c="skill_id"] { font-family: ui-monospace, Consolas, "Noto Sans KR", monospace; word-spacing: -.3em; } /* '210101 (히마리 EX)'의 한글이 굴림체였다(10/10) */
 
 /* 조립 결과 — 치환자에 값이 꽂힌 최종 문장 */
 .fx-assembled {
@@ -2419,7 +3031,7 @@ body.plain-mode #view { min-height: 100vh; }
   background: rgba(178, 58, 47, .07); color: var(--fx-ink); box-shadow: var(--fx-ring);
 }
 /* 날아가는 복제본 — 원본은 이미 손패에서 빠졌다 */
-.fx-ghost { box-shadow: 0 10px 24px rgba(0, 0, 0, .22); }
+.fx-ghost { box-shadow: var(--shadow-lift); }
 
 /* ---------- 스탠딩 호흡 ----------
    스탠딩은 정지 이미지라 가만히 있으면 화면이 굳어 보인다.
@@ -2464,21 +3076,29 @@ body.plain-mode #view { min-height: 100vh; }
 
 /* 수첩 2부 — 관찰 메모를 뒷받침하는 외부 기록.
    내지는 손글씨 독백체이므로 종합 소견과 같은 서체·색을 쓴다. */
+/* 반쯤 비치는 칸이라 줄이 보인다 — 칸 위아래 테두리는 두 줄의 한가운데에, 안의 글과 링크는 줄 위에(10/10 공책 줄 맞춤) */
 .nb-evidence {
-  margin-top: 18px; padding: 14px 18px;
+  margin-top: var(--nb-rule-mid);
+  padding: calc(var(--nb-line) - var(--nb-rule-mid) - 1px) 18px calc(var(--nb-rule-mid) - 1px);
   border: 1px dashed var(--nb-rule); border-radius: var(--radius-tag);
   background: rgba(178, 58, 47, .04);
 }
 .nb-evidence-line {
-  margin: 0 0 8px;
-  font-family: var(--nb-font-hand); font-size: var(--text-xl); line-height: 34px;
+  margin: 0;
+  font-family: var(--nb-font-hand); font-size: var(--text-xl); line-height: var(--nb-line);
   color: var(--nb-ink-soft);
 }
+/* 플레이 기록 링크 — 수첩에 하나뿐인 바깥 물증이라 본문 이상 크기(손글씨 20.8px)의 단추로(10/11 가 — 전에는 17px 글자 링크라 주변 글보다 작았다).
+   단추(44px)는 두 줄 칸의 가운데에 놓여 칸 아래 테두리도 두 줄의 한가운데에 남는다. ↗는 문구에 이미 있다 */
 .nb-evidence-link {
-  font-family: var(--nb-font-hand); font-size: var(--text-lg); font-weight: 700;
-  color: var(--nb-navy);
+  display: flex; align-items: center; width: fit-content; max-width: 100%; box-sizing: border-box;
+  min-height: 44px; margin: calc(var(--nb-line) - 22px) 0; padding: 6px 18px;
+  font-family: var(--nb-font-hand); font-size: var(--text-xl); font-weight: 700; line-height: 1.3;
+  color: var(--nb-navy); background: var(--nb-paper); text-decoration: none;
+  border: 1.5px solid var(--nb-navy); border-radius: var(--radius-tag); box-shadow: var(--shadow-card);
 }
-.nb-evidence-link:hover { color: #1d3450; text-decoration: underline; }
+.nb-evidence-link:hover { background: var(--surface); }
+.nb-evidence-link:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; }
 
 /* ---------- E1 · 캐릭터 호출 ----------
    편집 지면의 규칙을 그대로 쓴다 — 원본 분석서(PDF)에서 잰 치수다.
@@ -2495,7 +3115,11 @@ body.plain-mode #view { min-height: 100vh; }
   --cc-band: #f2f2f2;
   --cc-ink: #0a0a0a;
   --cc-tint: #f0f0f0;
-  --cc-mono: "Courier New", Courier, monospace;
+  /* 한글 라벨은 Noto Sans KR(10/10 — 전에는 굴림체). Courier 앞에 둔다 — 맨 끝 monospace 앞에 두면 Windows Chrome이
+     두 글자 이상의 한글 묶음에서 글자 일부를 굴림체로 그렸다('등장' → 한 글자 굴림, 실측). 영문 · 숫자는 Noto가 맡지 않아 그대로다 */
+  --cc-mono: "Courier New", "Noto Sans KR", Courier, monospace;
+  --concl-key: var(--cc-soft); /* 결론 한 줄(공통 부품)의 색 — 흑백 지면 */
+  --concl-ink: var(--cc-fg);
   color: var(--cc-fg);
   background: var(--surface);
   line-height: 1.62;
@@ -2539,7 +3163,7 @@ body.plain-mode #view { min-height: 100vh; }
   transition: background var(--motion-fast), color var(--motion-fast);
 }
 .cc-next:hover { background: var(--cc-fg); color: var(--on-fill); }
-.cc-next:focus-visible { outline: 2px solid var(--cc-ink); outline-offset: 3px; }
+.cc-next:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; }
 .cc-next-wrap { text-align: center; margin-top: 38px; }
 
 /* 01 · 역설 — 37명을 한 화면에 */
@@ -2568,7 +3192,7 @@ body.plain-mode #view { min-height: 100vh; }
 .cc-ph {
   display: flex; align-items: center; justify-content: center; text-align: center;
   background: var(--cc-panel); border: 1px dashed var(--cc-line);
-  font-family: var(--cc-mono); font-size: var(--text-xs); letter-spacing: .1em; color: var(--cc-mute);
+  font-family: var(--cc-mono); font-size: var(--text-xs); letter-spacing: .04em; color: var(--cc-mute);
 }
 
 /* 02 · 첫인상 — 한 줄짜리 카드를 초상에 끌어다 놓는다 */
@@ -2611,19 +3235,23 @@ body.plain-mode #view { min-height: 100vh; }
 }
 .cc-plate.cc-bare { border: 0; }
 .cc-cards .cc-plate { cursor: grab; touch-action: none; user-select: none; }
+/* 좁은 화면은 손가락으로 끌지 않는다 — 세로 손짓은 화면을 내린다(10/11 재채점). 누르기는 그대로 */
+@media (max-width: 600px) { .cc-cards .cc-plate { touch-action: manipulation; } }
+/* 숨김은 언제나 숨김 — 사이트 단추(.btn)의 display가 hidden 속성을 덮어 '건너뛰기'가 남았다(E3 · E5와 같은 보호 규칙) */
+.cc [hidden] { display: none !important; }
 .cc-cards .cc-plate.cc-used { visibility: hidden; }
 /* 지금 누를 것 표시(.cue)가 카드 묶음만 감싸고, 바로 아래 사용법 줄을 덮지 않게 */
 .cc-cards { width: fit-content; max-width: 100%; }
 .cc-cards + .cc-match-help { margin-top: 14px; }
 .cc-plate.cc-drag {
   position: fixed; z-index: 300; pointer-events: none; cursor: grabbing;
-  box-shadow: 0 14px 34px rgba(10, 10, 10, .24);
+  box-shadow: var(--shadow-lift);
 }
 @keyframes cc-nope { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
 .cc-zone.cc-nope { animation: cc-nope var(--motion-page); }
 .cc-match-done { margin-top: 34px; opacity: 0; transition: opacity var(--motion-slow); }
 .cc-match-done.cc-on { opacity: 1; }
-.cc-match-1 { font-size: 34.5px; font-weight: 800; letter-spacing: -.02em; line-height: 1.34; }
+/* 맞힌 직후의 결론 한 줄(.cc-match-1)은 공통 부품 .brief-concl-line(17px 굵게) — 10/10 사용자 동의 마6. 전에는 34.5px 큰 제목 */
 .cc-match-2 { font-size: 17.4px; color: var(--cc-soft); margin-top: 10px; }
 
 /* 03 · 호출 — 위에 고정된 레일, 아래로 흐르는 연재 */
@@ -2653,7 +3281,7 @@ body.plain-mode #view { min-height: 100vh; }
 .cc-stream:focus { outline: none; } /* 되감기 뒤 초점 자리(누를 것이 아니라 읽는 칸) — 테두리는 두르지 않는다 */
 .cc-ep { padding: 34px 0; border-bottom: 1px solid var(--cc-line); }
 .cc-ep-top { display: flex; align-items: baseline; gap: 18px; flex-wrap: wrap; }
-.cc-ep-no { font-family: var(--cc-mono); font-size: 13.5px; letter-spacing: .14em; color: var(--cc-mute); }
+.cc-ep-no { font-family: var(--cc-mono); font-size: 13.5px; letter-spacing: .04em; color: var(--cc-mute); }
 .cc-ep-need { font-size: var(--text-2xl); font-weight: 800; letter-spacing: -.01em; }
 .cc-ep-need::before { content: "# "; color: var(--cc-mute); }
 .cc-ep-src {
@@ -2711,7 +3339,7 @@ body.plain-mode #view { min-height: 100vh; }
   position: absolute; right: -6px; top: -26px; padding: 7px 14px; background: var(--surface);
   border: 1.5px solid var(--cc-ink); color: var(--cc-ink); color: color-mix(in srgb, var(--cc-ink) 72%, var(--cc-fg));
   font-size: var(--text-ui); font-weight: 800; white-space: nowrap;
-  box-shadow: 0 6px 18px rgba(10, 10, 10, .14);
+  box-shadow: var(--shadow-paper);
   opacity: 0; transform: translateY(6px); transition: opacity var(--motion-page), transform var(--motion-page);
 }
 .cc-bubble.cc-on { opacity: 1; transform: none; }
@@ -2731,7 +3359,7 @@ body.plain-mode #view { min-height: 100vh; }
   position: absolute; z-index: 150; pointer-events: none; box-sizing: border-box;
   display: flex; align-items: center; justify-content: center; gap: 10px; padding: 6px;
   border: 1.5px solid #0a0a0a; background: var(--surface);
-  box-shadow: 0 16px 38px rgba(10, 10, 10, .26);
+  box-shadow: var(--shadow-lift);
   transition: transform .58s cubic-bezier(.34, .72, .28, 1);
 }
 .cc-flyer .cc-slot-mini { width: 46px; height: 46px; flex: none; object-fit: cover; border: 1px solid #dfdfdf; opacity: 1; }
@@ -2739,7 +3367,7 @@ body.plain-mode #view { min-height: 100vh; }
 .cc-token {
   position: fixed; z-index: 150; pointer-events: none; padding: 6px 11px;
   border: 1.5px solid #0a0a0a; background: var(--surface); font-size: var(--text-sm); font-weight: 700;
-  box-shadow: 0 10px 26px rgba(10, 10, 10, .22);
+  box-shadow: var(--shadow-lift);
   transition: transform .7s cubic-bezier(.34, .72, .28, 1), opacity .7s ease;
 }
 .cc-rewinding {
@@ -2763,7 +3391,7 @@ body.plain-mode #view { min-height: 100vh; }
 .cc-rfacets .cc-facet { padding: 9px 12px; font-size: var(--text-ui); }
 .cc-band { background: var(--cc-band); padding: 26px 30px; margin-top: 44px; }
 .cc-band i {
-  display: block; font-family: var(--cc-mono); font-size: 11.2px; letter-spacing: .08em;
+  display: block; font-family: var(--cc-mono); font-size: 11.2px; letter-spacing: .04em;
   color: var(--cc-soft); font-style: normal; /* #6f7378은 띠 바탕에서 4.26:1(10/06) */
 }
 .cc-band b { display: block; font-size: var(--text-2xl); font-weight: 800; margin-top: 6px; letter-spacing: -.01em; line-height: 1.5; }
@@ -2799,7 +3427,7 @@ body.plain-mode #view { min-height: 100vh; }
 }
 
 @media (max-width: 1180px) {
-  .cc-title, .cc-match-1, .cc-worry-1 { font-size: var(--text-2xl); }
+  .cc-title, .cc-worry-1 { font-size: var(--text-2xl); }
   .cc-grid { grid-template-columns: repeat(8, 1fr); gap: 8px; }
   .cc-quiz { grid-template-columns: 1fr; gap: 24px; }
   .cc-quiz-side { position: static; }
@@ -2832,7 +3460,7 @@ body.plain-mode #view { min-height: 100vh; }
   position: relative; width: min(440px, 100%);
   padding: 34px 30px 26px;
   background: var(--nb-postit); color: var(--nb-ink);
-  box-shadow: 0 18px 44px rgba(0, 0, 0, .34), 0 2px 0 rgba(0, 0, 0, .06);
+  box-shadow: var(--shadow-float), 0 2px 0 rgba(0, 0, 0, .06);
   transform: rotate(-1.4deg);
   animation: notice-drop var(--motion-page) cubic-bezier(.2, .8, .3, 1) both .06s;
 }
@@ -2850,11 +3478,11 @@ body.plain-mode #view { min-height: 100vh; }
 .view-intro .notice-stamp {
   position: absolute; top: 16px; right: 18px;
   padding: 3px 9px; border: 1.5px solid var(--nb-red); border-radius: var(--radius-tag);
-  color: var(--nb-red); font-size: var(--text-xs); font-weight: 800; letter-spacing: .12em;
+  color: var(--nb-red); font-size: var(--text-xs); font-weight: 800; letter-spacing: .04em;
   transform: rotate(6deg); opacity: .85;
 }
 .view-intro .notice-by {
-  font-size: var(--text-xs); font-weight: 700; letter-spacing: .14em;
+  font-size: var(--text-xs); font-weight: 700; letter-spacing: .04em;
   color: var(--nb-muted); text-transform: uppercase;
 }
 .view-intro .notice-body {
@@ -2871,7 +3499,7 @@ body.plain-mode #view { min-height: 100vh; }
   transition: background var(--motion-fast) ease, color var(--motion-fast) ease;
 }
 .view-intro .notice-ok:hover { background: var(--nb-ink); color: var(--nb-postit); }
-.view-intro .notice-ok:focus-visible { outline: 2px solid var(--nb-navy); outline-offset: 3px; }
+.view-intro .notice-ok:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; }
 /* 메모를 읽는 동안 표지가 스스로 열리지 않는다 — 읽을 틈 없이 지나가는 걸 막는 게 목적이다 */
 .view-intro.notice-active .skip-btn { display: none; }
 
@@ -2889,7 +3517,7 @@ body.plain-mode #view { min-height: 100vh; }
 @media (prefers-reduced-motion: reduce) {
   /* body에 바로 붙는 연출(E1 되감기 막 · 날아가는 명찰, E2 날아가는 카드, 수집 비행)은 #view 밖이라 빠져 있었다(10/06 점검) */
   #view, #view *, #view *::before, #view *::after,
-  #fly-root *, .cc-flyer, .cc-token, .cc-rewinding, .fx-ghost { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+  #fly-root *, #toast-root *, .cc-flyer, .cc-token, .cc-rewinding, .fx-ghost { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
   ::view-transition-group(*) { animation-duration: 0s !important; }
 }
 /* Cycle 2: HTML retains every label; SVG carries directed relationships. */
@@ -2913,7 +3541,7 @@ body.plain-mode #view { min-height: 100vh; }
 .fx-master-table { opacity: .88; }
 /* 참조 표는 통째로 .88 — 그 안의 가장 흐린 글자(열 이름)는 한 단계 진하게 해야 4.5:1을 지킨다(10/05 대비 정리). 지나간 표(.past, .8)는 의도된 흐림 */
 .fx-master-table th span { color: var(--fx-soft); }
-.fx-tracing .fx-side, .fx-tracing .fx-tables .fx-table:not(.on) { opacity: .78; }
+.fx-tracing .fx-play, .fx-tracing .fx-tables .fx-table:not(.on) { opacity: .78; }
 .fx-card-wait:empty { visibility: hidden; }
 @media (max-width: 600px) {
   .fx-svg-chart { gap: 30px 20px; }
@@ -2933,12 +3561,14 @@ body.plain-mode #view { min-height: 100vh; }
 /* Cycle 3: restrained tactile feedback and a visible second reading. */
 .cc-slot { font: inherit; color: inherit; background: var(--surface); text-align: inherit; cursor: pointer; }
 .cc-slot.cc-near { box-shadow: 0 0 0 3px var(--cc-tint); border-color: var(--cc-ink); }
-.cc-slot:focus-visible, .cc-cards .cc-plate:focus-visible { outline: 2px solid var(--cc-ink, #435b7a); outline-offset: 5px; }
+.cc-slot:focus-visible, .cc-cards .cc-plate:focus-visible { outline: 2px solid var(--focus); outline-offset: 5px; }
 .cc-cards .cc-plate[aria-pressed='true'] { border-color: #345c81; box-shadow: 0 0 0 3px #d9e7f2; }
 .cc-plate.cc-drag { pointer-events: none; }
 .cc-zone.cc-nope { animation: none; }
 .cc-match-help { color: var(--cc-mute); font-size: var(--text-sm); line-height: 1.7; }
-.cc-skip { font-size: var(--text-sm); margin-top: 12px; }
+/* 건너뛰기 — E3와 같은 사이트 보조 단추(.btn.ghost, 10/11 재9). 전에는 다음 장 단추(.cc-next)와 같은 검은 테두리 단추 200×49 */
+.cc-skip { margin-top: 12px; line-height: 1.6; } /* 단추(button)는 줄 높이를 물려받지 않는다 — 링크로 된 다른 .btn(원본 문서 · 돌아가기)과 같은 높이 46px */
+.cc-skip:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
 .cc-pass { grid-column: 1 / -1; font: 600 12px var(--cc-mono); color: var(--cc-mute); letter-spacing: .04em; }
 .cc-rail { row-gap: 10px; }
 .cc-second-pass .cc-pass { color: #345c81; }
@@ -2962,7 +3592,7 @@ body.plain-mode #view { min-height: 100vh; }
 /* Cycle 4: two verbs become a relationship; the original text stays intact. */
 .fx-concept { display: flex; align-items: center; gap: 54px; padding: 6px 0 18px; }
 .fx-concept > div { position: relative; display: flex; align-items: baseline; flex-wrap: wrap; gap: 8px; }
-.fx-concept b { font: 800 clamp(20px, 2.4vw, 30px)/1.2 ui-monospace, Consolas, monospace; letter-spacing: -.04em; color: #397699; }
+.fx-concept b { font: 800 clamp(20px, 2.4vw, 30px)/1.2 ui-monospace, Consolas, "Noto Sans KR", monospace; letter-spacing: -.04em; color: #397699; }
 .fx-concept span { font-size: var(--text-xs); color: var(--fx-soft); }
 .fx-concept > div + div b { color: #aa427c; }
 .fx-concept > div + div::before { content: '→'; position: absolute; left: -35px; color: var(--fx-mute); font-size: 23px; }
@@ -2989,8 +3619,7 @@ body.plain-mode #view { min-height: 100vh; }
 .fx.fx-closed .fx-concept,
 .fx.fx-closed .fx-chartcol,
 .fx.fx-closed .fx-datacol,
-.fx.fx-closed .fx-caption,
-.fx.fx-closed .fx-foot { display: none; }
+.fx.fx-closed .fx-concl { display: none; }
 .fx.fx-closed .fx-grid { grid-template-columns: minmax(0, 1fr); }
 .fx.fx-closed .fx-side { width: min(660px, 100%); justify-self: center; }
 .fx.fx-closed .fx-play {
@@ -3071,6 +3700,10 @@ body.plain-mode #view { min-height: 100vh; }
 .cc-rl-slots { grid-column: 1 / -1; list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
 .cc-rl-slot { display: flex; align-items: baseline; gap: 10px; min-height: 26px; padding: 2px 9px; border: 1px dashed var(--cc-line); }
 .cc-rl-where { flex: none; font: 12px/1.6 var(--cc-mono); color: var(--cc-mute); visibility: hidden; }
+/* 등폭 라벨의 띄어쓰기(10/10 재채점) — 한글은 Noto Sans KR로 그려지는데 띄어쓰기는 Courier New(글자 크기의 0.6배)로 그려져
+   '여기에 놓기'의 낱말 사이가 두 칸처럼 벌어졌다. 띄어쓰기만 본문(0.25배)에 맞춘다 — 글자 모양 · 자간은 그대로 */
+.cc-mono, .cc-hero-key figcaption i, .cc-cap i, .cc-vlab, .cc-ph, .cc-quiz-lab, .cc-quiz-count, .cc-zone, .cc-ep-no, .cc-ep-src, .cc-ep-slot,
+.cc-rcap, .cc-band i, .cc-vrole, .cc-vmeta, .cc-stamp, .cc-pass, .cc-rl-where { word-spacing: -.35em; }
 .cc-rl-slot.is-called { border-color: var(--cc-dash); }
 .cc-rl-slot.is-called .cc-rl-where,
 .cc-rl-slot.is-on .cc-rl-where { visibility: visible; }
@@ -3082,7 +3715,7 @@ body.plain-mode #view { min-height: 100vh; }
 /* 회차 — 내려가며 펼쳐진다. 마지막 회차의 칸도 트리거 줄까지 올라오게 아래 여백(34vh)은 배포본 그대로 */
 /* 채워진 칸은 빈 칸 안내용 등폭 글꼴을 벗는다 — 안에 든 이름표가 등폭으로 벌어졌다 */
 .cc-ep.cc-filled .cc-ep-slot,
-.cc-zone.cc-done { font: inherit; letter-spacing: normal; }
+.cc-zone.cc-done { font: inherit; letter-spacing: normal; word-spacing: normal; } /* 띄어쓰기도 벗는다 — 등폭 라벨용 −.35em이 맞힌 한 줄에 남아 낱말이 붙었다(10/11 재채점) */
 /* 칸이 트리거 줄(화면 78%)에 닿을 때 위에 붙은 시트 줄 아래로 컷 전체가 보여야 '화면이 먼저'가 된다 —
    시트 줄이 배포본 레일보다 높아 컷 높이를 화면 높이에 묶는다(배포본 360px) */
 .cc-fig img { max-height: clamp(200px, 30vh, 330px); }
@@ -3114,9 +3747,12 @@ body.plain-mode #view { min-height: 100vh; }
   .cc-rl-face { width: 34px; height: 34px; }
   .cc-rl-name { display: none; }
   .cc-rl-plate { display: block; font-size: var(--text-xs); padding: 4px 5px; letter-spacing: -.03em; }
-  .cc-rl-slot { flex-direction: column; gap: 0; min-height: 0; padding: 2px 5px; }
-  .cc-rl-where { line-height: 1.4; }
-  .cc-rl-slot b { font-size: var(--text-xs); line-height: 1.35; }
+  /* 휴대폰에서는 시트의 회차 칸을 접고 얼굴과 한 줄만 위에 붙인다(10/10 사용자 동의 마7) — 위에 붙은 줄이 화면의 33%(390) ·
+     52%(320×568)를 덮었다. 면모가 붙을 때마다 시트 뒤에 쌓이는 종이(.cc-layers)는 그대로라 두께는 여전히 보인다.
+     칸 폭은 한 줄의 가장 긴 낱말보다 좁아지지 않게(min-content) — 같은 폭으로 나누면 320~360px에서 '나르시시/스트'처럼 낱말 중간에서 끊겼다 */
+  .cc-rail { grid-template-columns: repeat(3, minmax(min-content, 1fr)); }
+  .cc-rl-paper { grid-template-columns: minmax(min-content, 1fr); } /* 안쪽 칸도 낱말 폭을 알려야 바깥 칸이 그만큼 넓어진다 */
+  .cc-rl-slots { display: none; }
   .cc-quiz-side .cc-plate { flex: 1 1 150px; font-size: var(--text-md); padding: 9px 11px; }
   .cc-ep { padding: 24px 0; }
   .cc-ep-top { gap: 4px 12px; }

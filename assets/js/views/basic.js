@@ -91,10 +91,12 @@ function playSection(p) {
 export function renderBasic(view) {
   const r = DB.resume;
   view.className = 'view-basic';
+  // 제목 '이력서'는 종이 위에 걸친 파일철 탭이다(10/10 나2 추가 시안 다) — 종이 안의 큰 제목 자리는 비우고 표가 바로 시작한다
   view.innerHTML = `
-    <div class="paper record">
+    <div class="paper record filed">
+      <h2 class="file-tab record-title">${TH('basic.title')}</h2>
+      <span class="clip" aria-hidden="true"></span>
       <div class="stamp">${TH('basic.stamp')}</div>
-      <h2 class="record-title">${TH('basic.title')}</h2>
 
       <section class="record-sec">
         <h3>${TH('basic.personal')}</h3>

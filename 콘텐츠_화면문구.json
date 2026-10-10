@@ -4,7 +4,7 @@
     "skip": "SKIP ≫",
     "case_label": "CASE {n}",
     "epilogue_label": "EPILOGUE",
-    "back_to_evidence": "← 포트폴리오로",
+    "back_to_evidence": "포트폴리오 화면으로 돌아가기",
     "to_interactive": "요약 인터랙티브 페이지 보기 →",
     "open_doc": "문서 열기 ↗",
     "full_pdf": "이력서·자기소개서 PDF ⬇",
@@ -62,7 +62,10 @@
     "hidden_direct": "수첩 바로 열람",
     "hidden_done_kicker": "BONUS FILE · {total}/{total} 수집 완료",
     "hidden_open": "수사 수첩 보기 →",
-    "hidden_with_ending": "엔딩과 함께 열기 →"
+    "hidden_with_ending": "엔딩과 함께 열기 →",
+    "direct_warn_title": "아직 모으지 않은 증거가 있습니다.",
+    "direct_warn_body": "수첩은 증거를 모두 모으면 열리는 마지막 파일입니다. 지금 열면 엔딩보다 수첩을 먼저 보게 됩니다.",
+    "direct_warn_go": "그래도 보기"
   },
   "detail": {
     "stamp_collected": "수집된 증거",
@@ -76,8 +79,9 @@
   "brief": {
     "kicker": "증거 {id} · {type}",
     "original_doc": "원본 문서 ↗",
-    "back": "← 포트폴리오",
-    "restart": "다시 해보기"
+    "back": "포트폴리오 화면으로 돌아가기",
+    "restart": "다시 해보기",
+    "conclusion": "결론"
   },
   "popup": {
     "close": "닫기",

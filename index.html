@@ -18,12 +18,78 @@
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='41' cy='41' r='27' fill='none' stroke='%23b23a2f' stroke-width='12'/><path d='M61 61L86 86' stroke='%23b23a2f' stroke-width='14' stroke-linecap='round'/></svg>">
 <!-- 본문 글꼴 Pretendard — 보이는 글자의 유니코드 범위 조각만 받는다(동적 서브셋, OFL · assets/fonts/pretendard/LICENSE.txt) -->
 <link rel="stylesheet" href="/assets/fonts/pretendard/pretendardvariable-dynamic-subset.css">
+<!-- 첫 화면이 늘 쓰는 Pretendard 조각 여덟(10/11 가8 — 인트로 · 이력서 · 자기소개서 · 보관함 · 인터랙티브 · 수첩 첫 방문에서 모두 받는 것, 208KB).
+     글꼴 CSS와 본문을 다 읽기 전에 받기 시작해, 맑은 고딕으로 먼저 보이는 시간을 줄인다 -->
+<link rel="preload" as="font" type="font/woff2" crossorigin href="/assets/fonts/pretendard/woff2-dynamic-subset/PretendardVariable.subset.82.woff2">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="/assets/fonts/pretendard/woff2-dynamic-subset/PretendardVariable.subset.84.woff2">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="/assets/fonts/pretendard/woff2-dynamic-subset/PretendardVariable.subset.85.woff2">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="/assets/fonts/pretendard/woff2-dynamic-subset/PretendardVariable.subset.86.woff2">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="/assets/fonts/pretendard/woff2-dynamic-subset/PretendardVariable.subset.88.woff2">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="/assets/fonts/pretendard/woff2-dynamic-subset/PretendardVariable.subset.89.woff2">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="/assets/fonts/pretendard/woff2-dynamic-subset/PretendardVariable.subset.90.woff2">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="/assets/fonts/pretendard/woff2-dynamic-subset/PretendardVariable.subset.91.woff2">
 <link rel="stylesheet" href="/assets/css/style.css">
 <link rel="stylesheet" href="/assets/css/cut-play.css">
 <link rel="stylesheet" href="/assets/css/one-card.css">
 <link rel="stylesheet" href="/assets/css/retro.css">
+<!-- 모듈을 한꺼번에 미리 받는다(10/10 가6) — 받은 모듈을 읽어야 다음 모듈을 아는 사슬이 4단계라 느린 망에서 첫 화면이 늦었다. 모듈을 더하면 여기도 더한다 -->
+<link rel="modulepreload" href="/assets/js/analytics.js">
+<link rel="modulepreload" href="/assets/js/data.js">
+<link rel="modulepreload" href="/assets/js/preload.js">
+<link rel="modulepreload" href="/assets/js/router.js">
+<link rel="modulepreload" href="/assets/js/ui.js">
+<link rel="modulepreload" href="/assets/js/motion/transition.js">
+<link rel="modulepreload" href="/assets/js/sprites.js">
+<link rel="modulepreload" href="/assets/js/state.js">
+<link rel="modulepreload" href="/assets/js/text.js">
+<link rel="modulepreload" href="/assets/js/views/basic.js">
+<link rel="modulepreload" href="/assets/js/views/brief.js">
+<link rel="modulepreload" href="/assets/js/views/detail.js">
+<link rel="modulepreload" href="/assets/js/views/dossier.js">
+<link rel="modulepreload" href="/assets/js/views/ending.js">
+<link rel="modulepreload" href="/assets/js/views/evidence.js">
+<link rel="modulepreload" href="/assets/js/views/intro.js">
+<link rel="modulepreload" href="/assets/js/views/making.js">
+<link rel="modulepreload" href="/assets/js/views/notebook.js">
+<link rel="modulepreload" href="/assets/js/views/notfound.js">
+<link rel="modulepreload" href="/assets/js/briefs/character-call.js">
+<link rel="modulepreload" href="/assets/js/briefs/cut-play.js">
+<link rel="modulepreload" href="/assets/js/briefs/flow.js">
+<link rel="modulepreload" href="/assets/js/briefs/one-card.js">
+<link rel="modulepreload" href="/assets/js/briefs/retro.js">
+<link rel="modulepreload" href="/assets/js/collect.js">
+<link rel="modulepreload" href="/assets/js/engine.js">
+<link rel="modulepreload" href="/assets/js/figures.js">
+<link rel="modulepreload" href="/assets/js/landing.js">
+<link rel="modulepreload" href="/assets/js/memo.js">
+<link rel="modulepreload" href="/assets/js/motion/animate.js">
+<link rel="modulepreload" href="/assets/js/motion/evidence-header.js">
+<link rel="modulepreload" href="/assets/js/popup.js">
+<link rel="modulepreload" href="/assets/js/motion/flip.js">
+<link rel="modulepreload" href="/assets/js/motion/flow-paths.js">
+<link rel="modulepreload" href="/assets/js/motion/reveal.js">
+<!-- 첫 진입 표지(10/10 나1) — 첫 진입(/ · /intro)에서만 아래 #boot-cover를 보인다. 스크립트 · 데이터를 받기 전 첫 프레임부터 뜨게 하려고 HTML에 둔다.
+     다른 주소로 바로 들어오면 표지 없이 그 화면이 뜬다. 움직임 줄이기 설정이면 전처럼 표지를 쓰지 않는다 -->
+<script>
+  (function () {
+    var p = location.pathname.replace(/\/+$/, '') || '/';
+    var legacy = /^#\/./.test(location.hash);
+    var still = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if ((p === '/' || p === '/intro') && !legacy && !still) document.documentElement.classList.add('boot-cover');
+    // 밤 사무소(10/11 나4 이스터에그) — 한국 시간 저녁 7시부터 새벽 6시 전까지는 사무소 그림을 밤으로. 한국은 일광 절약 시간이 없어 UTC+9 고정
+    var kst = new Date(Date.now() + 9 * 3600e3).getUTCHours();
+    if (kst >= 19 || kst < 6) document.documentElement.classList.add('night');
+  })();
+</script>
 </head>
 <body>
+<!-- 도장 잉크가 번진 가장자리(10/10) — 큰 도장(.stamp)이 filter: url(#ink-rough)로 쓴다. 잡음으로 테두리 · 글자를 1px 남짓 흔든다 -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <filter id="ink-rough" x="-4%" y="-8%" width="108%" height="116%" color-interpolation-filters="sRGB">
+    <feTurbulence type="fractalNoise" baseFrequency=".85" numOctaves="2" seed="4" result="t"/>
+    <feDisplacementMap in="SourceGraphic" in2="t" scale="1.4" xChannelSelector="R" yChannelSelector="G"/>
+  </filter>
+</svg>
 <header id="site-header">
   <div class="header-inner">
     <a class="brand" href="/intro">CASE FILE<span class="brand-sub">지원자 김경민</span></a>
@@ -34,6 +100,20 @@
     </nav>
   </div>
 </header>
+<!-- 사건 파일 표지(10/10 나1 — 재질은 시안: 종이 결 · 파일철 등 · 클립에 물린 쪽지 · 라벨 탭 · 잉크 도장). intro.js가 받아서 넘긴다.
+     문구는 스크립트 없이 떠야 해서 여기에 있다(Text/strings.csv의 html.cover.* — 전에는 콘텐츠_화면문구.json의 opening.*) -->
+<div id="boot-cover" class="opening">
+  <div class="opening-cover">
+    <span class="cover-spine" aria-hidden="true"></span>
+    <span class="cover-slip" aria-hidden="true"></span><span class="clip cover-clip" aria-hidden="true"></span>
+    <span class="cover-tab" aria-hidden="true"></span>
+    <div class="opening-kicker">CASE FILE</div>
+    <div class="opening-title">지원자 김경민</div>
+    <div class="opening-foot">게임 기획 · 2026</div>
+    <div class="stamp opening-stamp">CONFIDENTIAL</div>
+  </div>
+  <a class="skip-btn cover-skip" href="/basic">SKIP ≫</a>
+</div>
 <main id="view"></main>
 <div id="toast-root"></div>
 <div id="fly-root"></div>

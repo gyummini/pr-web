@@ -9,6 +9,11 @@ function maybePreloadNotebookFonts() {
   if (collectedCount() >= NB_FONT_TRIGGER) preloadNotebookFonts();
 }
 
+// 닫기 단추의 ✕ — 글자 기호 대신 선 두께가 정해진 그림으로 그린다(글꼴마다 굵기 · 위치가 달랐다). 팝업 · 사진 창 · 알림이 같은 그림을 쓴다
+export const CLOSE_ICON =
+  '<svg viewBox="0 0 14 14" width="14" height="14" aria-hidden="true" focusable="false">' +
+  '<path d="M2 2l10 10M12 2L2 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
+
 // ---- 수집 카운트 뱃지 ----
 // pending: 상태에는 수집됐지만 아직 수집 애니메이션이 도착하지 않은 수.
 // 뱃지 표시값 = 세는 증거 수(collectedCount) - pending → 애니메이션 도착 시점에 카운트가 올라가는 연출.
@@ -23,15 +28,23 @@ export function syncBadge() {
   maybePreloadNotebookFonts();
 }
 
-export function addPending(n = 1) {
+// 수집은 됐지만 아직 배지에 내려앉지 않은 증거 — 화면이 '모은 흔적'을 내려앉은 뒤에 그리도록(10/10 다1)
+export const unlanded = new Set();
+
+export function addPending(n = 1, id) {
   pending += n;
+  if (id) unlanded.add(id);
   renderBadge(false);
   maybePreloadNotebookFonts();
 }
 
-export function landOne() {
+// 증거 하나가 배지에 내려앉았다. id를 주면 화면에 '모은 흔적'을 남길 수 있게 알린다 —
+// 자기소개서 화면이 듣고 문장 끝 체크와 목차 칸을 채운다(10/10 다1). 움직임 줄이기면 비행 없이 바로 여기로 온다
+export function landOne(id) {
   pending = Math.max(0, pending - 1);
+  if (id) unlanded.delete(id);
   renderBadge(true);
+  if (id) document.dispatchEvent(new CustomEvent('pr:landed', { detail: { id } }));
 }
 
 function renderBadge(pulse) {
@@ -47,40 +60,54 @@ function renderBadge(pulse) {
   maybeShowHiddenUnlockToast();
 }
 
-// ---- 수집 비행 애니메이션: 카드가 '포트폴리오' 탭(배지)으로 날아가 흡수 ----
-export function flyFromRect(rect, onLand) {
+// ---- 수집 비행: 그 증거의 쪽지(E번호 도장)가 '포트폴리오' 탭의 배지로 날아간다(10/10 다1) ----
+// 전에는 46px 흰 칸이 0.34초에 19px로 줄고 흐려져(불투명도 .4) 무엇이 날았는지 보이지 않았다.
+// 0 ~ .2초: 쪽지가 제자리에 선다(opts.grow면 팝업 크기에서 쪽지로 줄어든다) · .2 ~ .45초: 배지로 날아간다 · 내려앉으면 배지가 도장처럼 눌린다.
+// 상태는 부른 쪽이 이미 바꿨다 — 이 함수는 보이는 것만 맡는다. 움직임 줄이기 · 가려진 탭이면 날지 않고 바로 내려앉힌다
+export const FLY_MS = 450;
+export function flyFromRect(rect, onLand, opts = {}) {
   const target = badgeEl();
   const root = document.getElementById('fly-root');
-  // 움직임 줄이기 설정이면 날아가는 연출 없이 바로 내려앉힌다(DESIGN.md 6절 — 10/06 재점검에서 빠져 있던 것)
   const still = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
-  if (!target || !root || still) {
+  if (!target || !root || still || document.hidden || !document.body.animate) {
     if (onLand) onLand();
     return;
   }
   const t = target.getBoundingClientRect();
-  const g = document.createElement('div');
-  g.className = 'fly-ghost'; // 문서 모양은 CSS가 그린다(10/09 — 전에는 이모지 📄)
+  const slip = document.createElement('div');
+  slip.className = 'fly-slip';
+  if (opts.id) {
+    const id = document.createElement('span');
+    id.className = 'fly-slip-id';
+    id.textContent = opts.id;
+    slip.appendChild(id);
+  }
   const sx = rect.left + rect.width / 2;
   const sy = rect.top + rect.height / 2;
-  g.style.left = `${sx}px`;
-  g.style.top = `${sy}px`;
-  root.appendChild(g);
+  slip.style.left = `${sx}px`;
+  slip.style.top = `${sy}px`;
+  root.appendChild(slip);
   const dx = t.left + t.width / 2 - sx;
   const dy = t.top + t.height / 2 - sy;
-  // rAF는 백그라운드 탭에서 멈추므로 setTimeout으로 비행 트리거
-  setTimeout(() => {
-    g.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px)) scale(0.15)`;
-    g.style.opacity = '0.25';
-  }, 30);
+  const at = (x, y, s, r) => `translate(calc(-50% + ${x}px), calc(-50% + ${y}px)) scale(${s}) rotate(${r}deg)`;
+  slip.animate(
+    [
+      { transform: at(0, 0, opts.grow ? 1.9 : 0.6, 0), opacity: opts.grow ? 0.2 : 0, offset: 0 },
+      { transform: at(0, 0, 1, -5), opacity: 1, offset: 0.44 },
+      { transform: at(dx, dy, 0.38, 9), opacity: 1, offset: 0.92 },
+      { transform: at(dx, dy, 0.3, 9), opacity: 0, offset: 1 },
+    ],
+    { duration: FLY_MS, easing: 'cubic-bezier(.45,0,.25,1)', fill: 'forwards' }
+  );
   let done = false;
   const fin = () => {
     if (done) return;
     done = true;
-    g.remove();
+    slip.remove();
     if (onLand) onLand();
   };
-  g.addEventListener('transitionend', fin, { once: true });
-  setTimeout(fin, 950); // transitionend 유실 대비
+  // 애니메이션 끝 이벤트 대신 타이머로 내려앉힌다 — 가려진 탭에서도 상태와 배지가 어긋나지 않게(DESIGN.md 6절)
+  setTimeout(fin, FLY_MS);
 }
 
 // ---- 도전과제 스타일 토스트: 화면 구석, 자동 소멸, 클릭 요구 없음 ----
@@ -124,6 +151,18 @@ export function dismissUnlockToast() {
 // 기본 증거(BASE_EVIDENCE_IDS)를 모두 모은 순간 표시하는 고정 알림. 직접 닫거나 엔딩·수첩으로 들어가기 전까지 유지한다.
 function maybeShowHiddenUnlockToast() {
   if (pending > 0 || !baseUnlocked() || state.hiddenUnlockToastShown) return;
+  // 보관함에서 해금되고 보너스 칸이 화면에 보이면, 그 칸이 펼쳐지고 도장이 찍히는 것이 알림이다 — 같은 곳으로 가는 알림을 겹쳐 띄우지 않는다
+  // (10/10 재채점: 휴대폰에서는 이 고정 알림이 머리말 아래에 남아 제목을 가렸다). 칸이 화면 밖이거나 다른 화면이면 전처럼 알림 하나
+  const slot = document.querySelector('#view.view-evidence .hidden-slot-wrap');
+  if (slot) {
+    const r = slot.getBoundingClientRect();
+    const head = document.querySelector('body > header');
+    const top = head ? head.getBoundingClientRect().bottom : 0; // 고정 머리말 밑에 숨은 것은 보이지 않는 것으로 친다
+    if (r.bottom > top + 24 && r.top < innerHeight) {
+      state.hiddenUnlockToastShown = true;
+      return;
+    }
+  }
   const root = document.getElementById('toast-root');
   if (!root) return;
 
@@ -144,7 +183,7 @@ function maybeShowHiddenUnlockToast() {
       <div class="toast-title">${TH('toast.unlock_title')}</div>
       <a class="toast-action" href="${dest()}"></a>
     </div>
-    <button type="button" class="toast-close" aria-label="${TH('toast.close')}">×</button>`;
+    <button type="button" class="toast-close" aria-label="${TH('toast.close')}">${CLOSE_ICON}</button>`;
 
   const close = () => el.remove();
   const action = el.querySelector('.toast-action');

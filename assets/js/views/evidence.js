@@ -1,10 +1,10 @@
 import { DB, groupCards } from '../data.js';
-import { BASE_EVIDENCE_IDS, state, baseUnlocked, collectedBaseCount } from '../state.js';
-import { addPending, landOne, flyFromRect, openDoc } from '../ui.js';
+import { BASE_EVIDENCE_IDS, state, baseUnlocked } from '../state.js';
+import { addPending, landOne, flyFromRect, openDoc, unlanded, dismissUnlockToast } from '../ui.js';
 import { checkChapterToasts, fmtCase } from '../collect.js';
 import { hasBrief, briefOpenKey } from './brief.js';
 import { landAt } from '../landing.js';
-import { openEvidencePopup } from '../popup.js';
+import { openEvidencePopup, CLOSE_ICON, keepFocusInside } from '../popup.js';
 import { navigate } from '../router.js';
 import { T, TH } from '../text.js';
 
@@ -39,11 +39,23 @@ export function renderEvidence(view) {
   wireCards(view);
   renderHiddenSlot(view.querySelector('.hidden-slot-wrap'), view, hidden);
 
-  // 예외 규칙: 최종 증거가 등장하는 CASE04의 증거는 이 페이지 진입 시 자동 수집
-  // (CASE04를 열람한 경우만).
-  collectFinalChapter(view);
+  // 장을 떠나며 모은 증거의 쪽지가 아직 날아가는 중이면, 내려앉은 뒤에 그 카드와 보너스 칸을 다시 그린다 —
+  // 신호 순서는 '내려앉기, 펼침, 알림'(DESIGN.md 5절). 10/11에 CASE04 예외(이 화면에서 모으던 것)를 없애며 옮겼다
+  const onLanded = (e) => {
+    const ev = DB.cards.find((c) => c.id === e.detail.id);
+    if (ev && !ev.hidden) refreshCard(view, ev);
+    if (unlanded.size) return;
+    const wrap = view.querySelector('.hidden-slot-wrap');
+    if (wrap) renderHiddenSlot(wrap, view, hidden);
+    checkChapterToasts();
+  };
+  document.addEventListener('pr:landed', onLanded);
 
-  return {};
+  return {
+    onLeave() {
+      document.removeEventListener('pr:landed', onLanded);
+    },
+  };
 }
 
 // 카드 정보 위계: 썸네일 → 문서 유형 → 제목 → 부제 → 증거코드·챕터 → 액션
@@ -71,19 +83,25 @@ function esc(s) {
 // 페이지 안에서 직접 플레이할 수 있는 증거 — 브리프에 플레이 주소(play.href)가 있다(E8). E2의 brief.play는 체험 설정이라 주소가 없다
 const canPlay = (ev) => hasBrief(ev) && !!ev.brief.play?.href;
 
+// 카드는 철해 둔 파일철이다(10/10 라5 시안 — 종류 태그는 파일철 탭 위, 표지는 클립으로 물린 종이 한 장).
+// 표지는 4:3 칸 안에 통째로 놓는다(10/10 라2 가안 — 전에는 칸을 꽉 채우고 위를 기준으로 잘라 양옆 25~37%가 잘렸다).
+// 아직 모으지 않은 카드는 표지 위에 '미확인 증거' 도장을 찍는다 — 모을 때마다 도장이 하나씩 사라진다(덧붙인 생각, 문구는 상세 화면 도장과 같은 확정 문구)
 function cardHtml(ev) {
-  const got = state.collected.has(ev.id);
+  const got = state.collected.has(ev.id) && !unlanded.has(ev.id); // 쪽지가 내려앉은 뒤에 '모음'으로 뒤집는다
   const thumb = ev.thumb
-    ? `<img class="ev-thumb-img" src="${ev.thumb}" alt="" loading="lazy">`
+    ? `<span class="ev-sheet"><span class="ev-photo"><img class="ev-thumb-img" src="${ev.thumb}" alt="" loading="lazy"></span><span class="clip" aria-hidden="true"></span></span>`
     : '';
-  // 자기소개서에 나오지 않는 추가 포트폴리오(E9)는 장 이름 없이 번호만
+  // 자기소개서에 나오지 않는 추가 포트폴리오(E9)는 장 이름 없이 번호만. 모으지 않은 카드는 도장이 상태를 말하므로 번호만
   const chs = (ev.chapters || []).map(fmtCase).join(', ');
-  const code = got ? (chs ? T('evidence.code', { id: ev.id, chapters: chs }) : ev.id) : T('evidence.code_unknown', { id: ev.id });
+  const code = got ? (chs ? T('evidence.code', { id: ev.id, chapters: chs }) : ev.id) : ev.id;
   return `
     <div class="ev-card ${got ? 'collected' : 'unknown'}" data-eid="${ev.id}" tabindex="0" role="button">
-      <div class="ev-thumb">${thumb}<span class="ev-thumb-fallback" aria-hidden="true"></span></div>
+      <span class="ev-tab"><span class="ev-type"></span></span>
+      <div class="ev-thumb">${thumb}<span class="ev-thumb-fallback" aria-hidden="true"></span>${
+        // 모은 카드에는 쪽지 · 메모와 같은 둥근 증거 번호 도장(10/11 재3) — 모으기 전에는 '미확인 증거' 도장
+        got ? `<span class="ev-seal" aria-hidden="true">${esc(ev.id)}</span>` : `<span class="ev-stamp">${TH('detail.stamp_unknown')}</span>`
+      }</div>
       <div class="ev-info">
-        <span class="ev-type"></span>
         <h3 class="ev-title"></h3>
         <p class="ev-sub"></p>
         ${
@@ -153,10 +171,17 @@ function wireCard(el, view) {
   // 부제는 수집 여부와 무관하게 실제 한 줄 설명 (안내는 하단 '요약 확인 →' 액션이 담당)
   const subEl = el.querySelector('.ev-sub');
   if (subEl) subEl.textContent = ev.subtitle || '';
-  // 썸네일 파일이 없으면 아이콘 폴백 (파일이 추가되면 자동으로 표시됨)
+  // 썸네일 파일이 없으면 아이콘 폴백 (파일이 추가되면 자동으로 표시됨).
+  // 종이 한 장의 비율은 그림을 받은 뒤 그림 비율로 맞춘다(세로 그림 E3는 세로 종이, 넓은 E8은 가로로 긴 종이)
   const img = el.querySelector('.ev-thumb-img');
   if (img) {
-    img.addEventListener('error', () => img.remove(), { once: true });
+    const sheet = img.closest('.ev-sheet');
+    const fit = () => {
+      if (img.naturalWidth && img.naturalHeight) sheet.style.setProperty('--ar', (img.naturalWidth / img.naturalHeight).toFixed(4));
+    };
+    if (img.complete) fit();
+    else img.addEventListener('load', fit, { once: true });
+    img.addEventListener('error', () => sheet.remove(), { once: true });
   }
   // 첨부 칩: 라벨은 데이터 그대로, 클릭은 카드 본체로 전파되지 않게 막는다
   el.querySelectorAll('.att-chip.card[data-att]').forEach((chip) => {
@@ -219,44 +244,52 @@ function wireCard(el, view) {
   });
 }
 
+// 보너스 칸(히든 E7 — 클루의 수사 수첩). 위에 두는 것은 일부러다(10/10 사용자 — 해금하자마자 보이게).
+// 대신 상태에 따라 크기를 바꾼다(10/10 라1 다안): 잠겨 있으면 한 줄 띠로 줄여 작업물 카드가 첫 화면에 들어오고,
+// 해금되면 같은 자리에서 짙은 파일철로 펼친다(라4 시안 가 — 금빛 칸 · 자물쇠 대신 파일철과 붉은 도장).
 function renderHiddenSlot(wrap, view, hidden) {
-  const unlocked = baseUnlocked();
-  const n = collectedBaseCount();
+  // 날아가는 쪽지가 있으면 내려앉은 뒤에 펼친다(onLanded가 다시 그린다)
+  const unlocked = baseUnlocked() && !unlanded.size;
+  // 이미 펼쳐 둔 칸은 다시 그리지 않는다 — 내려앉기 알림(pr:landed)과 팝업의 수집 뒤 처리가 함께 부르면 펼침 연출이 끊겼다
+  if (unlocked && wrap.querySelector('.hidden-slot.unlocked')) return;
+  const n = BASE_EVIDENCE_IDS.filter((id) => state.collected.has(id) && !unlanded.has(id)).length;
   const total = BASE_EVIDENCE_IDS.length;
   const e7Target = hidden.url && hidden.url.startsWith('/') ? hidden.url : '/notebook';
 
   if (!unlocked) {
     wrap.innerHTML = `
       <div class="hidden-slot locked">
-        <div class="hidden-icon" aria-hidden="true"></div>
-        <div class="hidden-info">
-          <span class="hidden-kicker">${TH('evidence.hidden_kicker')}</span>
-          <h3 class="hidden-title"></h3>
-          <p class="hidden-cond hidden-sub"></p>
-          <p class="hidden-progress">${TH('evidence.hidden_progress', { n, total })}</p>
-          <div class="hidden-bar" aria-hidden="true"><div class="hidden-bar-fill" style="width:${(n / total) * 100}%"></div></div>
-          <div class="hidden-slot-actions">
-            <button type="button" class="btn hidden-find">${TH('evidence.hidden_find')}</button>
-            <a class="btn ghost hidden-direct" href="${e7Target}">${TH('evidence.hidden_direct')}</a>
-          </div>
+        <span class="hidden-seal" aria-hidden="true"></span>
+        <span class="hidden-kicker">${TH('evidence.hidden_kicker')}</span>
+        <h3 class="hidden-title"></h3>
+        ${meterHtml(n, total, false)}
+        <div class="hidden-slot-actions">
+          <button type="button" class="btn hidden-find">${TH('evidence.hidden_find')}</button>
+          <a class="btn ghost hidden-direct" href="${e7Target}">${TH('evidence.hidden_direct')}</a>
         </div>
       </div>`;
     wrap.querySelector('.hidden-title').textContent = hidden.title;
-    wrap.querySelector('.hidden-sub').textContent = hidden.subtitle || '';
+    wireMeter(wrap, view);
     // 아직 모으지 않은 첫 증거의 요약 팝업 — 그 카드를 누른 것과 같다(10/07: 전에는 증거 상세 화면으로 넘어갔다)
     wrap.querySelector('.hidden-find').addEventListener('click', () => {
       const missing = BASE_EVIDENCE_IDS.find((id) => !state.collected.has(id));
       if (missing) openShelf(view, missing);
     });
+    // 잠긴 채 바로 열면 엔딩보다 수첩을 먼저 보게 된다 — 막지 않고 한 번 알린다(10/10 사용자 결정: 경고와 '그래도 보기')
+    wrap.querySelector('.hidden-direct').addEventListener('click', (e) => {
+      if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return; // 새 탭 열기는 브라우저대로
+      e.preventDefault();
+      confirmDirect(view, e.currentTarget, e7Target);
+    });
     return;
   }
 
-  // 해금 상태. 강조 연출(플래시)은 직접 수사 완주자 전용 보상 — 결과만 보기 경로에서는 생략.
+  // 해금 상태. 펼치는 연출은 처음 한 번만(직접 수사 완주자 전용 보상 — 결과만 보기 경로에서는 생략).
   const flash = !state.hiddenFlashShown;
   if (flash) state.hiddenFlashShown = true;
   wrap.innerHTML = `
     <div class="hidden-slot unlocked ${flash ? 'flash' : ''}" tabindex="0" role="button">
-      <div class="hidden-icon" aria-hidden="true"></div>
+      <span class="hidden-seal open" aria-hidden="true"></span>
       <div class="hidden-info">
         <span class="hidden-kicker">${TH('evidence.hidden_done_kicker', { total })}</span>
         <h3 class="hidden-title"></h3>
@@ -280,36 +313,88 @@ function renderHiddenSlot(wrap, view, hidden) {
       act();
     }
   });
-}
-
-function collectFinalChapter(view) {
-  if (!state.viewedChapters.has('CASE04')) return;
-  const rest = DB.cards.filter(
-    (c) => !c.hidden && (c.chapters || []).includes('CASE04') && !state.collected.has(c.id)
-  );
-  if (!rest.length) return;
-
-  rest.forEach((ev, i) => {
-    state.collected.add(ev.id);
-    addPending(1);
-    const el = view.querySelector(`.ev-card[data-eid="${ev.id}"]`);
-    const rect = el
-      ? el.getBoundingClientRect()
-      : { left: innerWidth / 2 - 22, top: innerHeight / 2, width: 44, height: 44 };
-    setTimeout(() => {
-      flyFromRect(rect, () => {
-        landOne();
-        // 카드가 수집 상태로 뒤집히도록 해당 카드만 갱신 (중복 바인딩 방지)
-        refreshCard(view, ev);
-      });
-    }, i * 200);
-  });
-
+  // 해금 고정 알림은 같은 곳으로 가는 길이다 — 펼친 칸이 화면에 보이면 알림을 거둔다(10/11 재채점: 다른 화면에서 해금된 뒤 보관함에 오면
+  // 알림과 펼친 칸이 같은 단추를 함께 내밀었고, 휴대폰에서는 알림이 제목을 덮었다). 돌아온 자리로 스크롤한 뒤에 잰다
   setTimeout(() => {
-    checkChapterToasts();
-    // 히든 해금 여부가 바뀌었을 수 있으므로 슬롯 갱신 (페이지 이탈 시 생략)
-    const wrap = view.querySelector('.hidden-slot-wrap');
-    if (!wrap) return;
-    renderHiddenSlot(wrap, view, DB.cards.find((c) => c.hidden));
-  }, rest.length * 200 + 850);
+    if (!slot.isConnected) return;
+    const r = slot.getBoundingClientRect();
+    const head = document.querySelector('body > header');
+    const top = head ? head.getBoundingClientRect().bottom : 0; // 고정 머리말 밑에 숨은 것은 보이지 않는 것으로 친다
+    if (r.bottom > top + 24 && r.top < innerHeight) dismissUnlockToast();
+  }, 0);
 }
+
+// 진행 막대를 칸 여덟 개로(10/10 라3): 기본 증거 일곱 칸 + 잠긴 수첩 한 칸 — 머리 배지(n/8)와 같은 것을 센다.
+// 전에는 배지 4/8 옆에 '증거 4 / 7 수집'이 따로 있어 숫자가 둘이었다. 모은 칸은 채우고, 빈 칸은 그 증거의 요약 팝업을 연다(카드를 누른 것과 같다).
+// 칸의 글자는 증거 번호뿐이고, 몇 개를 모았는지는 화면 낭독기에 묶음 이름으로 읽힌다
+// 칸에 마우스를 올리면 그 증거의 제목(카드 제목과 같은 데이터)이 뜬다 — 번호만 보고 어떤 문서인지 떠올리지 않게(10/11 재3)
+const titleOf = (id) => esc((DB.cards.find((c) => c.id === id) || {}).title || id).replace(/"/g, '&quot;');
+function meterHtml(n, total) {
+  const cells = BASE_EVIDENCE_IDS.map((id) =>
+    (state.collected.has(id) && !unlanded.has(id))
+      ? `<span class="hm-cell on" data-eid="${id}" title="${titleOf(id)}">${id}</span>`
+      : `<button type="button" class="hm-cell" data-eid="${id}" title="${titleOf(id)}" aria-label="${TH('evidence.code_unknown', { id })}">${id}</button>`
+  ).join('');
+  return `<div class="hidden-meter" role="group" aria-label="${TH('evidence.hidden_progress', { n, total })}">${cells}<span class="hm-cell lock" aria-hidden="true"></span></div>`;
+}
+
+function wireMeter(wrap, view) {
+  wrap.querySelectorAll('button.hm-cell[data-eid]').forEach((b) => {
+    b.addEventListener('click', () => openShelf(view, b.dataset.eid));
+  });
+}
+
+// 잠긴 수첩을 바로 열 때의 작은 창(10/10 라1 — 사용자 결정 '경고랑 그래도 보기'). 막지는 않는다.
+// 다른 팝업과 같은 종이 · 모서리 · 그림자 · 키보드 규칙(초점이 창 안에서 돌고, Esc · 바깥 누르기 · 뒤로 가기로 닫힘).
+// '그래도 보기'는 지금처럼 수첩으로, '남은 증거 찾기'는 보너스 칸의 단추와 같은 일. 닫으면 '수첩 바로 열람'으로 초점이 돌아온다
+function confirmDirect(view, trigger, target) {
+  const root = document.getElementById('modal-root');
+  if (!root || root.querySelector('.confirm-overlay')) return;
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay confirm-overlay';
+  overlay.innerHTML = `
+    <div class="confirm" role="alertdialog" aria-modal="true" aria-labelledby="confirm-t" aria-describedby="confirm-d" tabindex="-1">
+      <button type="button" class="popup-close" aria-label="${TH('popup.close')}">${CLOSE_ICON}</button>
+      <span class="confirm-kicker">${TH('evidence.hidden_kicker')}</span>
+      <h3 class="confirm-title" id="confirm-t">${TH('evidence.direct_warn_title')}</h3>
+      <p class="confirm-body" id="confirm-d">${TH('evidence.direct_warn_body')}</p>
+      <div class="confirm-actions">
+        <a class="btn confirm-go" href="${target}">${TH('evidence.direct_warn_go')}</a>
+        <button type="button" class="btn ghost confirm-find">${TH('evidence.hidden_find')}</button>
+      </div>
+    </div>`;
+  root.appendChild(overlay);
+  document.documentElement.classList.add('modal-open');
+  const box = overlay.querySelector('.confirm');
+  box.focus({ preventScroll: true });
+
+  let closed = false;
+  const close = (restore = true) => {
+    if (closed) return;
+    closed = true;
+    document.removeEventListener('keydown', onKey);
+    window.removeEventListener('popstate', onBack);
+    overlay.remove();
+    document.documentElement.classList.remove('modal-open');
+    if (restore && trigger.isConnected) trigger.focus({ preventScroll: true });
+  };
+  const onKey = (e) => {
+    if (e.code === 'Escape') close();
+    else if (e.key === 'Tab') keepFocusInside(e, box);
+  };
+  const onBack = () => close(false);
+  document.addEventListener('keydown', onKey);
+  window.addEventListener('popstate', onBack);
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) close();
+  });
+  overlay.querySelector('.popup-close').addEventListener('click', () => close());
+  // 수첩으로 — 창을 먼저 닫고, 이동은 라우터가 이 링크를 그대로 받아 처리한다
+  overlay.querySelector('.confirm-go').addEventListener('click', () => close(false));
+  overlay.querySelector('.confirm-find').addEventListener('click', () => {
+    close(false);
+    const missing = BASE_EVIDENCE_IDS.find((id) => !state.collected.has(id));
+    if (missing) openShelf(view, missing);
+  });
+}
+

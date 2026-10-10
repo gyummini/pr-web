@@ -49,10 +49,16 @@ export function renderMemo(host, ev) {
   shot.loading = 'lazy';
   photo.appendChild(shot);
 
+  // 증거 번호는 오른쪽 아래의 둥근 잉크 도장으로 찍는다(10/10 다3 시안 다 — 전에는 오른쪽 모서리의 빨간 탭).
+  // 왼쪽 위에는 메모를 물어 둔 클립 하나. 둘 다 붙인 것이라 글자가 든 메모 상자는 기울이지 않는다
   const tab = document.createElement('span');
   tab.className = 'memo-tab';
   tab.textContent = ev.id;
   memo.appendChild(tab);
+  const clip = document.createElement('span');
+  clip.className = 'clip';
+  clip.setAttribute('aria-hidden', 'true');
+  memo.appendChild(clip);
 
   // 머리말 줄: 왼쪽에 '클루의 요약', 오른쪽 빈자리에 클루 사진.
   // 사진은 절대 위치가 아니라 머리말 안에서 실제 자리를 차지한다 — 본문 글씨를 가릴 수 없다.

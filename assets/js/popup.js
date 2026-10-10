@@ -2,18 +2,16 @@ import { DB, getCard } from './data.js';
 import { state, counts } from './state.js';
 import { DialogueEngine } from './engine.js';
 import { standingSprite } from './sprites.js';
-import { addPending, landOne, flyFromRect, openDoc } from './ui.js';
+import { addPending, landOne, flyFromRect, openDoc, CLOSE_ICON } from './ui.js';
 import { checkChapterToasts, fmtCase, casePath } from './collect.js';
 import { navigate } from './router.js';
 import { landAt } from './landing.js';
 import { hasMemo, renderMemo } from './memo.js';
 import { hasBrief, briefOpenKey } from './views/brief.js';
-import { T, TH } from './text.js';
+import { T, TH, setLabel } from './text.js';
 
-// 닫기 단추의 ✕ — 글자 기호 대신 선 두께가 정해진 그림으로 그린다(글꼴마다 굵기 · 위치가 달랐다)
-const CLOSE_ICON =
-  '<svg viewBox="0 0 14 14" width="14" height="14" aria-hidden="true" focusable="false">' +
-  '<path d="M2 2l10 10M12 2L2 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
+// 닫기 단추의 ✕ 그림은 ui.js에 있다(알림도 같은 그림을 쓴다 — 10/11). 보관함 · 수첩은 여기서 받아 간다
+export { CLOSE_ICON };
 
 // 한 번에 하나만 연다 — 앵커에서 Enter를 두 번 누르면 같은 팝업이 겹쳐 열리던 것(10/06 점검)
 let openOverlay = null;
@@ -31,7 +29,7 @@ export function openEvidencePopup(eid, opts = {}) {
   const wasNew = !shelf && !state.collected.has(eid);
   if (wasNew) {
     state.collected.add(eid);
-    if (counts(eid)) addPending(1);
+    if (counts(eid)) addPending(1, eid);
   }
   // 닫을 때 배지로 날아갈지 — 진술에서 처음 연 증거, 또는 보관함에서 잠금해제한 증거.
   // 수집 개수에 들지 않는 증거(counts가 거짓 — 지금은 없음)는 배지로 날지 않는다
@@ -114,17 +112,22 @@ export function openEvidencePopup(eid, opts = {}) {
     if (restoreFocus && returnFocus instanceof HTMLElement && returnFocus.isConnected) returnFocus.focus({ preventScroll: true });
     // 팝업 닫기: 페이지 이동 없음, 읽던 위치 유지. 새 수집이면 탭으로 날아가는 애니메이션.
     if (fly) {
+      // 메모가 그 증거의 쪽지로 줄어들어 배지로 날아간다(10/10 다1) — 팝업 한가운데서 시작한다
       const from = {
         left: rect.left + rect.width / 2 - 30,
         top: rect.top + rect.height / 2 - 30,
         width: 60,
         height: 60,
       };
-      flyFromRect(from, () => {
-        landOne();
-        checkChapterToasts();
-        opts.onCollected?.();
-      });
+      flyFromRect(
+        from,
+        () => {
+          landOne(ev.id);
+          checkChapterToasts();
+          opts.onCollected?.();
+        },
+        { id: ev.id, grow: true }
+      );
     }
   };
 
@@ -157,7 +160,7 @@ export function openEvidencePopup(eid, opts = {}) {
         // 세지 않는 증거는 배지로 날지 않고, 카드만 바로 수집 상태로 다시 그린다
         const counted = counts(ev.id);
         if (counted) {
-          addPending(1);
+          addPending(1, ev.id);
           fly = true;
         }
         if (hasBrief(ev)) {
@@ -189,7 +192,7 @@ function shelfActions(actions, ev, go) {
 
 // Tab이 팝업 밖(뒤의 진술 · 머리말)으로 나가지 않게 처음과 끝을 잇는다.
 // 팝업 자체에 초점이 있을 때 Tab은 브라우저에 맡긴다 — 다음 차례가 곧 팝업 안의 첫 단추다.
-function keepFocusInside(e, card) {
+export function keepFocusInside(e, card) {
   const items = [...card.querySelectorAll('button, [href], [tabindex]:not([tabindex="-1"])')].filter(
     (n) => n.getClientRects().length
   );
@@ -207,7 +210,7 @@ function action(label, kind, onClick) {
   const b = document.createElement('button');
   b.type = 'button';
   b.className = `btn ${kind}`;
-  b.textContent = label;
+  setLabel(b, label);
   b.addEventListener('click', (e) => {
     e.stopPropagation();
     onClick();

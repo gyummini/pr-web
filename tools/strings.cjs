@@ -326,6 +326,31 @@ function check() {
     }
   }
 
+  // 6-2) 기본 증거를 번호로 나열한 문구(범위가 든 것 — 'E1–E6, E8')도 실제 기본 증거와 같아야 한다.
+  //      10/10 다4: E4를 빼고 E9를 넣은 뒤에도 수첩 봉인이 'E1–E6, E8'을 말하고 있었다. 숫자 낱말만 찾던 6번이 놓쳤다.
+  //      다시 쓰는 중인 문구(DRAFT)는 GPT 답을 기다리는 동안 건너뛴다
+  const baseIds = (((stateJs.match(/BASE_EVIDENCE_IDS\s*=\s*\[([^\]]*)\]/) || [])[1] || '').match(/E\d+/g) || [])
+    .map((s) => Number(s.slice(1))).sort((a, b) => a - b).join(',');
+  const listSaid = /E(\d+)\s*[–~-]\s*E(\d+)(?:\s*[,·]\s*E\d+(?:\s*[–~-]\s*E\d+)?)*/g;
+  const drafting = new Set(ledger.filter((r) => r.status === 'DRAFT').map((r) => r.key));
+  // 사용자가 지금 조건과 다른 줄 알고도 그대로 확정한 문구는 검사하지 않는다 — 수첩 봉인 맨 아랫줄은 두 번 물어 두 번 '그대로'(10/11 결정 노트)
+  const KEEP_AS_DECIDED = new Set(['notebook.cover.seal.bottom']);
+  if (baseIds) for (const s of all) {
+    if (drafting.has(s.key) || !L.shown(s.key) || KEEP_AS_DECIDED.has(s.key)) continue; // 화면에 나가지 않는 문구(옛 해금 조건 설명 등)는 뺀다
+    for (const m of s.text.matchAll(listSaid)) {
+      const nums = new Set();
+      for (const part of m[0].split(/\s*[,·]\s*/)) {
+        const r = part.match(/E(\d+)(?:\s*[–~-]\s*E(\d+))?/);
+        if (!r) continue;
+        const a = Number(r[1]);
+        const b = r[2] ? Number(r[2]) : a;
+        for (let n = a; n <= b; n++) nums.add(n);
+      }
+      const said = [...nums].sort((x, y) => x - y).join(',');
+      if (said !== baseIds) fail(`${s.key}: 증거 번호를 "${m[0]}"(${said})로 적었는데 기본 증거는 ${baseIds}다 — 문구를 다시 쓸 목록에 올린다(flag)`);
+    }
+  }
+
   const draftCount = ledger.filter((r) => r.status === 'DRAFT').length;
   if (problems.length) {
     console.error(problems.map((p) => `✖ ${p}`).join('\n'));
