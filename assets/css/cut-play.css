@@ -1,9 +1,9 @@
-/* E3 — 직접 해 보는 판단. 팔레트는 E3 그대로(종이 + 파란 강화). 머리말·결론 칸도 이 파일이 맡는다(옛 reduction.css에서 옮김). */
+/* E5 — 직접 해 보는 판단. 팔레트는 E5 그대로(종이 + 파란 강화). 머리말·결론 칸도 이 파일이 맡는다(옛 reduction.css에서 옮김). */
 .view-cut-play { --rd-ink: #242c31; --rd-mute: #646f70; --rd-next: #5d6e92; --rd-paper: #f8f7f3; --rd-line: #d8dcd8; --rd-core: #275ac1; --rd-core-wash: #edf2fc; }
 /* 출시한 게임의 지나가는 줄(줄무늬 두 색)과 덜어낸 칸의 점선 — 10/11 재7: 빨강은 '지금 누를 것'에만. 전에는 줄이 팔레트 밖 빨강(#b8322b · #c43a32)이라
    그 위에 두른 '지금 누를 것' 빨간 테두리가 줄과 구분되지 않았고, 덜어낸 칸의 점선은 붉은 회색(#d8c4bf)이었다 */
 .view-cut-play { --rd-lane: #46566c; --rd-lane-alt: #4e6077; --rd-dash: #b8c0c2; }
-.view-cut-play { --concl-key: var(--rd-core); --concl-ink: var(--rd-ink); } /* 결론 한 줄(공통 부품)의 색 — E3 파랑 */
+.view-cut-play { --concl-key: var(--rd-core); --concl-ink: var(--rd-ink); } /* 결론 한 줄(공통 부품)의 색 — E5 파랑 */
 /* 바탕색은 화면 전체에 칠한다 — 가운데 상자에만 칠하면 1920 화면 양옆 · 아래에 흰 띠가 남았다(10/06) */
 .view-cut-play { background: var(--rd-paper); }
 /* 옆 여백은 다른 인터랙티브 페이지와 같다(20px, 820px 이하 14px) — 10/11 사용자 결정(재9). 전에는 34px라 끝 단추가 다른 페이지보다 14px 안쪽에 놓였다 */
@@ -13,7 +13,7 @@
 .view-cut-play .brief-head { display: grid; grid-template-columns: 96px 1fr; column-gap: 14px; align-items: start; }
 .view-cut-play .brief-head .ev-title { font-size: var(--text-base); margin-top: 4px; }
 .view-cut-play .brief-head .ev-sub { font-size: var(--text-xs); }
-.view-cut-play .brief-head-doc { grid-column: 2; margin-top: 10px; } /* 원본 문서 단추는 다른 페이지와 같은 크기(10/11 재9 — 전에는 E3만 80×31 · 12px) */
+.view-cut-play .brief-head-doc { grid-column: 2; margin-top: 10px; } /* 원본 문서 단추는 다른 페이지와 같은 크기(10/11 재9 — 전에는 E5만 80×31 · 12px) */
 .view-cut-play .brief-lead-title { font: 800 clamp(23px, 3vw, 38px)/1.1 ui-monospace, Consolas, "Noto Sans KR", monospace; letter-spacing: -.06em; color: var(--rd-ink); }
 .view-cut-play .brief-lead-line { font-size: var(--text-md); }
 .view-cut-play .brief-recap { border-color: var(--rd-core); }
@@ -168,7 +168,7 @@
 .cp[data-phase="final"] .cp-zones { grid-template-columns: minmax(0, .5fr) minmax(0, .5fr) minmax(0, 2fr); }
 
 /* 판단 — 처음 게임을 해 본 뒤에 열린다. 칸은 바탕과 여백으로 갈린다 — 굵은 왼쪽 띠는 절 제목 · 알림 전용 표시라 뺐고(10/11 작은 정리 4),
-   모서리는 위의 게임 판 · 다른 페이지의 칸(E2 조작 칸 등)과 같은 카드 단계다 */
+   모서리는 위의 게임 판 · 다른 페이지의 칸(E6 조작 칸 등)과 같은 카드 단계다 */
 .cp-judge { margin-top: 18px; padding: 18px 20px; background: #f0f1ed; border-radius: var(--radius-card); }
 .cp-judge-eyebrow { display: block; font: 600 var(--text-xs) ui-monospace, Consolas, "Noto Sans KR", monospace; letter-spacing: .04em; color: var(--rd-mute); margin-bottom: 10px; }
 .cp-evidence { display: grid; gap: 6px; margin: 0 0 14px; }

@@ -6,8 +6,8 @@ export const DB = {
   ending: null,    // 스크립트_엔딩.json
   chapters: null,  // 콘텐츠_자기소개서.md 파싱 결과 (CASE01~04 + EPILOGUE)
   resume: null,    // data/resume.json
-  making: null,    // 콘텐츠_제작기.md 파싱 결과 (구 E7 제작기 페이지)
-  notebook: null,  // 콘텐츠_수사수첩.json (E7 히든 — 클루의 수사 수첩)
+  making: null,    // 콘텐츠_제작기.md 파싱 결과 (구 E8 제작기 페이지)
+  notebook: null,  // 콘텐츠_수사수첩.json (E8 히든 — 클루의 수사 수첩)
   ui: null,        // 콘텐츠_화면문구.json (버튼·안내 같은 화면 공통 문구 — text.js의 T로 읽는다)
 };
 

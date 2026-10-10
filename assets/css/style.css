@@ -15,7 +15,7 @@
   --scene-panel: rgba(24, 23, 30, 0.92);
   --dialogue-panel: rgba(24, 23, 30, 0.86);
   --header-h: 60px;
-  --reading-max: 640px;   /* 긴 글의 한 줄 폭(10/10 — 자기소개서 글 칸, E8 글 칸과 같은 값) */
+  --reading-max: 640px;   /* 긴 글의 한 줄 폭(10/10 — 자기소개서 글 칸, E3 글 칸과 같은 값) */
   /* 흰색은 뜻이 둘이다 — 종이 위에 올린 흰 면(카드 · 버튼 · 칸의 바탕, 흰 테두리)과
      채운 칸(레드 · 초록 · 검정) 위의 글자. 지금은 값이 같아도 따로 둔다(10/05 정리) */
   --surface: #fff;
@@ -31,9 +31,9 @@
   --text-lg: 1.06rem;  /* 17px — 카드 제목 · 대사 */
   --text-xl: 1.3rem;   /* 20.8px — 팝업 · 페이지 제목, 수첩 손글씨 */
   --text-2xl: 1.6rem;  /* 25.6px — 장 제목 */
-  --text-3xl: 2rem;    /* 32px — 큰 제목(수첩 쪽 제목 · E8 첫 줄) */
+  --text-3xl: 2rem;    /* 32px — 큰 제목(수첩 쪽 제목 · E3 첫 줄) */
   --text-4xl: 3rem;    /* 48px — 수첩 표지 */
-  /* 모서리 5단계(10/09 — 22가지를 정리). 여러 값으로 모양을 만드는 것(탭 끝 · 수첩 종이 · 말풍선 · E2 도표 기호 · E3 돌)은 단계 밖 */
+  /* 모서리 5단계(10/09 — 22가지를 정리). 여러 값으로 모양을 만드는 것(탭 끝 · 수첩 종이 · 말풍선 · E6 도표 기호 · E5 돌)은 단계 밖 */
   --radius-tag: 3px;      /* 태그 · 작은 칸 · 그림 모서리 */
   --radius-button: 6px;   /* 버튼 · 탭 · 목차 줄 · 말풍선 */
   --radius-card: 8px;     /* 카드 · 패널 · 팝업 · 대사창 */
@@ -53,7 +53,7 @@
      수집 비행 · E1 비행)은 단계 밖 — 값을 바꾸면 JS와 어긋난다 */
   --motion-fast: 180ms;   /* 마우스 올림 · 누름 · 페이지 바뀜 */
   --motion-page: 380ms;   /* 칸 · 알림 · 강조가 나타나고 사라짐 */
-  --motion-slow: 560ms;   /* 판 · 칸의 배치가 바뀜(E2 판 펼침과 같은 길이) */
+  --motion-slow: 560ms;   /* 판 · 칸의 배치가 바뀜(E6 판 펼침과 같은 길이) */
   --motion-ease: cubic-bezier(.22,.61,.36,1);
   /* 종이 재질(10/10 나1 · 나2) — 오프닝 표지의 결을 본편 종이에 옅게 잇는다. 그림 파일 없이 SVG 잡음 한 칸(160px)을 깔아 되풀이한다.
      글자 대비에 닿지 않을 만큼 옅다(가장 진한 점도 알파 .09 안팎) */
@@ -89,7 +89,7 @@ body {
 }
 a { color: inherit; }
 button { font-family: inherit; }
-/* 키보드 초점은 한 모양 — 도장 레드 2px(10/11 가4). 전에는 레드 2px · 브라우저 기본 · 페이지 색(E1 먹 · E3 파랑 3px · E5 초록 3px · E8 먹)이 섞여 있었다.
+/* 키보드 초점은 한 모양 — 도장 레드 2px(10/11 가4). 전에는 레드 2px · 브라우저 기본 · 페이지 색(E1 먹 · E5 파랑 3px · E2 초록 3px · E3 먹)이 섞여 있었다.
    요소마다 다른 것은 간격(outline-offset)뿐이다 */
 :focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
 /* 페이지를 옮길 때 라우터가 초점을 두는 제목은 누를 것이 아니라 테두리를 두르지 않는다(전에는 키보드로 옮기면 굵은 검은 상자가 감쌌다) */
@@ -165,7 +165,7 @@ button { font-family: inherit; }
 }
 
 /* 장식(지금 누를 것의 퍼지는 테두리 같은)이 화면 끝을 넘어도 가로 스크롤이 생기지 않게 자른다.
-   clip은 스크롤 상자를 만들지 않아 안쪽의 sticky(E8 옆 목차 · E1 진행 띠 · 자기소개서 목차)는 그대로 붙는다(10/04 점검) */
+   clip은 스크롤 상자를 만들지 않아 안쪽의 sticky(E3 옆 목차 · E1 진행 띠 · 자기소개서 목차)는 그대로 붙는다(10/04 점검) */
 #view { min-height: calc(100vh - var(--header-h)); transition: opacity var(--motion-fast) ease; overflow-x: clip; }
 #view.view-enter { opacity: 1; }
 @media (prefers-reduced-motion: reduce) {
@@ -223,7 +223,7 @@ button { font-family: inherit; }
 .btn.accent { background: var(--accent); border-color: var(--accent); color: var(--on-fill); }
 .btn.accent:hover { background: var(--accent-hover); }
 .btn.ghost { background: transparent; }
-/* 증거 머리 줄('증거 E2 · 시스템 역기획서') — 한글이 섞여 대문자 변환은 소용이 없고 넓은 자간은 글자를 흩어 놓는다(10/06, DESIGN.md 3절).
+/* 증거 머리 줄('증거 E6 · 시스템 역기획서') — 한글이 섞여 대문자 변환은 소용이 없고 넓은 자간은 글자를 흩어 놓는다(10/06, DESIGN.md 3절).
    영문(CASE 01 · EPILOGUE)은 데이터가 이미 대문자다 */
 .ev-kicker {
   font-size: var(--text-sm); font-weight: 700; letter-spacing: .04em;
@@ -597,7 +597,7 @@ html.night .scene { background-image: url('../img/bg_office_night.jpg'); }
 /* ---------- 기본 사항 (조서) ---------- */
 /* 제목 '이력서'는 종이 위에 걸친 탭(10/10 나2 추가 시안 다) — 한글이라 자간은 넓히지 않는다(DESIGN.md 3절) */
 .paper.record.filed { margin-top: 62px; }
-/* 요약 화면(10/11 재2 · 재3) — 머리 줄('증거 E6 · 첫 등장: CASE 04')이 종이 위 탭, 클립, 표지는 카드와 같은 클립에 물린 종이 한 장 */
+/* 요약 화면(10/11 재2 · 재3) — 머리 줄('증거 E7 · 첫 등장: CASE 04')이 종이 위 탭, 클립, 표지는 카드와 같은 클립에 물린 종이 한 장 */
 .paper.detail.filed { margin-top: 62px; }
 .detail .file-tab.detail-tab { font-size: var(--text-sm); letter-spacing: .02em; } /* 한글이 든 탭 — 자간을 넓히지 않는다 */
 .detail-cover { position: relative; width: min(400px, 100%); aspect-ratio: 4 / 3; margin: 4px 0 18px; }
@@ -692,7 +692,7 @@ html.night .scene { background-image: url('../img/bg_office_night.jpg'); }
 @media (prefers-reduced-motion: reduce) { .ev-card.is-back { transform: none; } }
 
 /* 표지 칸 — 4:3 자리 안에 표지 전체를 종이 한 장으로 놓는다. 종이의 비율은 그림 비율(--ar, 그림을 받은 뒤 evidence.js가 넣는다).
-   폭은 칸의 86% · 높이는 칸의 85%(= 폭의 63.75%) 안에서 큰 쪽에 맞춘다 — 세로 그림 E3는 세로 종이, 넓은 E8은 가로로 긴 종이.
+   폭은 칸의 86% · 높이는 칸의 85%(= 폭의 63.75%) 안에서 큰 쪽에 맞춘다 — 세로 그림 E5는 세로 종이, 넓은 E3은 가로로 긴 종이.
    그림 속 글자가 흐려지지 않게 종이는 기울이지 않는다(DESIGN.md 4절) — 기울기는 클립에만 */
 .ev-thumb { position: relative; aspect-ratio: 4 / 3; width: 100%; display: grid; place-items: center; }
 .ev-sheet {
@@ -750,7 +750,7 @@ html.night .scene { background-image: url('../img/bg_office_night.jpg'); }
     linear-gradient(currentColor, currentColor) 50% 25% / 4px 1px no-repeat,
     linear-gradient(currentColor, currentColor) 50% 75% / 4px 1px no-repeat;
 }
-/* 직접 플레이 칩(E8 — 10/07): 첨부 칩과 같은 모양, 앞에 문서 표시 대신 재생 모양(CSS 삼각형) */
+/* 직접 플레이 칩(E3 — 10/07): 첨부 칩과 같은 모양, 앞에 문서 표시 대신 재생 모양(CSS 삼각형) */
 .att-chip.card.play-chip::before { content: ""; display: inline-block; margin-right: 6px; border-left: 7px solid currentColor; border-top: 4.5px solid transparent; border-bottom: 4.5px solid transparent; vertical-align: -1px; }
 
 .ev-foot {
@@ -954,7 +954,7 @@ button.hm-cell:hover { border-style: solid; border-color: var(--ink-soft); color
 /* 주 행동 하나 + 보조들. 좁은 화면에서 줄바꿈되며 primary가 항상 첫 줄에 온다. */
 /* 버튼 줄은 팝업 아래에 붙어 있다 — 메모가 길어 스크롤이 생기는 화면(노트북 높이 · 휴대폰)에서도 '증거 수집'이 늘 보인다.
    스크롤이 없으면 제자리 그대로라 달라 보이는 것이 없다(위 여백 4+12 = 전 16, 아래 16+8 = 전 24).
-   위쪽 띠는 그 뒤로 지나가는 메모를 흐리게 덮는다(10/06 — 메모를 키운 뒤 1366×768에서 E8 버튼이 63px 가려졌다) */
+   위쪽 띠는 그 뒤로 지나가는 메모를 흐리게 덮는다(10/06 — 메모를 키운 뒤 1366×768에서 E3 버튼이 63px 가려졌다) */
 .popup-actions {
   position: sticky; bottom: 0; z-index: 3;
   display: flex; flex-wrap: wrap; gap: 9px; margin: 4px calc(var(--body-x) * -1) 0; padding: 12px var(--body-x) 16px;
@@ -992,7 +992,7 @@ button.hm-cell:hover { border-style: solid; border-color: var(--ink-soft); color
 .view-detail .ev-sub, .view-making .ev-sub { margin: 0; color: var(--ink-soft); }
 .making-divider { border: none; border-top: 1px dashed var(--line); margin: 34px 0 6px; }
 
-/* ---------- E7 제작기 문서 ---------- */
+/* ---------- E8 제작기 문서 ---------- */
 .making-doc { max-width: 780px; }
 .mk-doc-title { margin: 8px 0 2px; font-size: var(--text-2xl); }
 .mk-chapters { margin-top: 30px; }
@@ -1352,7 +1352,7 @@ body.plain-mode #view { min-height: 100vh; }
   .docs-actions .btn { width: 100%; justify-content: center; }
 }
 
-/* ==================== E7 클루의 수사 수첩 (/notebook) ==================== */
+/* ==================== E8 클루의 수사 수첩 (/notebook) ==================== */
 /* 클루의 손글씨 — 교보 손글씨 2025 lyb (자체 호스팅, 상용 한글 서브셋 WOFF2) */
 @font-face {
   font-family: 'Kyobo Handwriting 2025 lyb';
@@ -1595,7 +1595,7 @@ body.plain-mode #view { min-height: 100vh; }
 }
 .nb-seal-top { font-size: .6rem; letter-spacing: 2px; opacity: .95; } /* 10/05 대비 정리: .85면 붉은 도장 위 4.3:1 */
 .nb-seal-main { font-family: var(--nb-font-hand); font-weight: 700; font-size: var(--text-lg); line-height: 1.2; text-align: center; }
-/* 아랫줄은 자간 0 — 10/04 해금 조건에 맞춰 E8을 더하자 자간 1px로는 지름 110px 원 밖으로 5px 넘쳤다 */
+/* 아랫줄은 자간 0 — 10/04 해금 조건에 맞춰 E3을 더하자 자간 1px로는 지름 110px 원 밖으로 5px 넘쳤다 */
 .nb-seal-bottom { font-size: .55rem; letter-spacing: 0; opacity: .95; }
 
 /* ---- 내지 공통 ---- */
@@ -2077,7 +2077,7 @@ body.plain-mode #view { min-height: 100vh; }
 }
 
 /* ---------- 증거 요약 메모 (팝업) ----------
-   수사 수첩(E7)의 시각 언어를 축소해 가져온다: 괘선 종이 / 좌측 붉은 마진선 /
+   수사 수첩(E8)의 시각 언어를 축소해 가져온다: 괘선 종이 / 좌측 붉은 마진선 /
    인덱스 탭 / 포스트잇. 다만 손글씨 폰트는 수첩 전용으로 남기고 본문 서체를 쓴다. */
 .ev-memo:empty { display: none; }
 .memo {
@@ -2290,7 +2290,7 @@ body.plain-mode #view { min-height: 100vh; }
   margin-top: 10px; padding-top: 8px; border-top: 1px solid var(--nb-rule); text-align: center;
 }
 
-/* E3 reduce — 단계마다 덜어내며 좁혀진다. 다음 줄에서 덜어낼 것에 미리 붉은 줄을 긋는다 */
+/* E5 reduce — 단계마다 덜어내며 좁혀진다. 다음 줄에서 덜어낼 것에 미리 붉은 줄을 긋는다 */
 .memo-red-line { display: grid; grid-template-columns: 3.7rem minmax(0, 1fr); column-gap: 8px; align-items: center; }
 .memo-red-label { font-size: var(--text-xs); color: var(--nb-muted); }
 .memo-red-line.keep .memo-red-label { color: var(--nb-red-deep); font-weight: 700; }
@@ -2320,7 +2320,7 @@ body.plain-mode #view { min-height: 100vh; }
   margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--nb-rule); text-align: center;
 }
 
-/* E8 compass — E8 페이지 첫 화면의 지도(retro.css '.lg-map')와 같은 그림(10/07 사용자 요청 — 전에는 알약에서 내려오는 등뼈).
+/* E3 compass — E3 페이지 첫 화면의 지도(retro.css '.lg-map')와 같은 그림(10/07 사용자 요청 — 전에는 알약에서 내려오는 등뼈).
    가운데 실제 게임의 팩, 양쪽에 갈림길이 반씩. 갈림길마다 가지가 세로줄로 모이고 그 가운데 화살촉이 팩을 가리킨다 —
    결정할 때마다 이 재미로 돌아왔다. 기준 문구는 팩 아래. 갈림길 수(한쪽)는 memo.js가 --rows로 넣는다 */
 .memo-cmp {
@@ -2347,7 +2347,7 @@ body.plain-mode #view { min-height: 100vh; }
 .memo-cmp-join::after { content: ''; position: absolute; top: 50%; margin-top: -4.5px; border: 4.5px solid transparent; }
 .memo-cmp-join.is-left::after { right: 0; border-right: 0; border-left: 6px solid var(--nb-red); }
 .memo-cmp-join.is-right::after { left: 0; border-left: 0; border-right: 6px solid var(--nb-red); }
-/* 팩 — 그림 · 자르기 값은 memo.js가 데이터(E8 cover.pack)에서 넣는다. 데이터가 없으면 붉은 점 하나 */
+/* 팩 — 그림 · 자르기 값은 memo.js가 데이터(E3 cover.pack)에서 넣는다. 데이터가 없으면 붉은 점 하나 */
 .memo-cmp-pack {
   grid-row: 1; grid-column: 3; align-self: center; display: block; width: 100%; aspect-ratio: 200 / 378;
   border-radius: var(--radius-tag); background-repeat: no-repeat;
@@ -2357,7 +2357,7 @@ body.plain-mode #view { min-height: 100vh; }
 .memo-cmp-core { grid-row: 2; grid-column: 1 / -1; justify-self: center; max-width: 16em; margin-top: 10px; text-align: center; }
 .memo-cmp-core::before { content: ''; display: block; width: 22px; height: 2px; margin: 0 auto 6px; background: var(--nb-red); }
 
-/* E2 mapping — 요소마다 요구되는 것으로 화살표, 세 줄을 아래에서 묶는 괄호가 결론으로 모인다 */
+/* E6 mapping — 요소마다 요구되는 것으로 화살표, 세 줄을 아래에서 묶는 괄호가 결론으로 모인다 */
 .memo-map-head, .memo-map-row {
   display: grid; grid-template-columns: 5.6em 20px minmax(0, 1fr); column-gap: 8px; align-items: center;
 }
@@ -2417,7 +2417,7 @@ body.plain-mode #view { min-height: 100vh; }
 .memo-bri-link.from::before { right: 100%; }
 .memo-bri-link.to::after { left: 100%; }
 
-/* E5 graft — 아래는 손대지 않고(점선 · 흐린 칸) 위에만 얹는다(붉은 칸) */
+/* E2 graft — 아래는 손대지 않고(점선 · 흐린 칸) 위에만 얹는다(붉은 칸) */
 .memo-gra { text-align: center; }
 .memo-gra-add {
   display: inline-flex; flex-direction: column; gap: 2px; max-width: 100%;
@@ -2445,7 +2445,7 @@ body.plain-mode #view { min-height: 100vh; }
 }
 .memo-gra-label { font-size: var(--text-xs); color: var(--nb-muted); margin-top: 5px; }
 
-/* E6 split — 한 줄의 막대(같은 일)를 두 칸으로. 칸 사이 꺾쇠가 진행 방향, 무게를 옮긴 칸이 더 넓다 */
+/* E7 split — 한 줄의 막대(같은 일)를 두 칸으로. 칸 사이 꺾쇠가 진행 방향, 무게를 옮긴 칸이 더 넓다 */
 .memo-spl-title {
   font-size: var(--text-sm); font-weight: 700; text-align: center; margin-bottom: 6px; color: var(--nb-ink-soft);
 }
@@ -2487,7 +2487,7 @@ body.plain-mode #view { min-height: 100vh; }
   .memo-bri-link.from::before { top: auto; bottom: 100%; }
   .memo-bri-link.to::after { top: 100%; }
   .memo-map-head, .memo-map-row { grid-template-columns: 5.2em 16px minmax(0, 1fr); column-gap: 6px; }
-  /* 나침반: 팩 → 기준 → 줄기가 두 갈래로 갈라져 갈림길을 반씩 매단다(┌─┴─┐). 줄기 끝 화살촉은 위(기준 쪽) — E8 페이지 지도의 좁은 칸과 같다 */
+  /* 나침반: 팩 → 기준 → 줄기가 두 갈래로 갈라져 갈림길을 반씩 매단다(┌─┴─┐). 줄기 끝 화살촉은 위(기준 쪽) — E3 페이지 지도의 좁은 칸과 같다 */
   .memo-cmp { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
   .memo-cmp-pack { grid-row: 1; grid-column: 1 / -1; justify-self: center; width: 46px; }
   .memo-cmp-core { grid-row: 2; position: relative; margin-top: 8px; padding-bottom: 19px; }
@@ -2770,7 +2770,7 @@ body.plain-mode #view { min-height: 100vh; }
   color: var(--fx-accent);
 }
 .brief-recap-line { max-width: 40em; margin: 0 0 12px; font-size: var(--text-lg); font-weight: 700; line-height: 1.6; text-wrap: balance; }
-/* 맺음 줄 — 결론 줄 아래의 작은 보조 글(E1 · E3). 굵은 왼쪽 띠는 절 제목 · 알림 전용 표시라 뺐다(10/11 작은 정리 4) —
+/* 맺음 줄 — 결론 줄 아래의 작은 보조 글(E1 · E5). 굵은 왼쪽 띠는 절 제목 · 알림 전용 표시라 뺐다(10/11 작은 정리 4) —
    위 결론 줄과는 글자 크기 · 색 · 여백으로 갈린다 */
 .brief-closing {
   max-width: 40em;
@@ -2779,11 +2779,11 @@ body.plain-mode #view { min-height: 100vh; }
 .brief-docs { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 20px; }
 
 /* ---------- 결론 한 줄 — 다섯 페이지 공통 부품(10/10 사용자 동의 마6) ----------
-   조작 바로 뒤에 오는 한 줄 결론(DESIGN.md 13절 원칙 3). 같은 역할의 줄이 E1 34.5px 큰 제목 · E2 붉은 왼쪽 띠 13.8px ·
-   E3 굵은 16px · E5 초록 네모 14.7px로 달랐다 → 작은 이름표 아래 17px(--text-lg) 굵은(800) 한 줄. 크기 · 표시는 같고 색만 페이지 색을 따른다
+   조작 바로 뒤에 오는 한 줄 결론(DESIGN.md 13절 원칙 3). 같은 역할의 줄이 E1 34.5px 큰 제목 · E6 붉은 왼쪽 띠 13.8px ·
+   E5 굵은 16px · E2 초록 네모 14.7px로 달랐다 → 작은 이름표 아래 17px(--text-lg) 굵은(800) 한 줄. 크기 · 표시는 같고 색만 페이지 색을 따른다
    (--concl-key 이름표 · --concl-ink 글 — 페이지 팔레트가 정한다). 붉은 왼쪽 띠는 절 제목 · 알림 전용이라 쓰지 않는다.
    줄이 비어 있는 동안(조작 전)은 이름표까지 통째로 숨는다.
-   기본(E2 팔레트)의 이름표는 보조 글자색 — 10/11 작은 정리 2(전에는 도장 레드라 E2 구역 이름표와 함께 붉은 이름표가 다섯이었다). E1 · E3 · E5는 각자 정한다 */
+   기본(E6 팔레트)의 이름표는 보조 글자색 — 10/11 작은 정리 2(전에는 도장 레드라 E6 구역 이름표와 함께 붉은 이름표가 다섯이었다). E1 · E5 · E2는 각자 정한다 */
 .view-brief { --concl-key: var(--fx-soft); --concl-ink: var(--fx-ink); }
 .brief-concl:has(> .brief-concl-line:empty) { display: none; }
 .brief-concl-key {
@@ -2932,7 +2932,7 @@ body.plain-mode #view { min-height: 100vh; }
 .view-brief .brief-lead-line { flex: 1 1 100%; margin-bottom: 0; }
 .view-brief .brief-lead-line { margin-bottom: 4px; }
 /* 머리말 한 줄이 넓은 화면에서 972px · 14.4px(한 줄 약 68자)까지 늘어났다 — 2단 배치가 위의 max-width를 풀기 때문.
-   진술 본문(720px · 한 줄 약 45자)처럼 읽히게 줄만 묶고 글씨를 조금 키운다(10/05, DESIGN.md 13절 원칙 6). E3 · E8은 각자 파일에서 따로 정한다 */
+   진술 본문(720px · 한 줄 약 45자)처럼 읽히게 줄만 묶고 글씨를 조금 키운다(10/05, DESIGN.md 13절 원칙 6). E5 · E3은 각자 파일에서 따로 정한다 */
 .view-brief .brief-lead-line { max-width: 40em; font-size: var(--text-ui); }
 
 .fx-grid { padding-top: 14px; gap: 20px; }
@@ -2985,12 +2985,12 @@ body.plain-mode #view { min-height: 100vh; }
   .view-brief .brief { display: block; }
 }
 
-/* 머리말 — 작은 표지를 제목 왼쪽에 둔다(E3에서 쓰던 배치를 다섯 페이지 공통으로).
+/* 머리말 — 작은 표지를 제목 왼쪽에 둔다(E5에서 쓰던 배치를 다섯 페이지 공통으로).
    표지가 머리말 칸 폭(400px) 띠로 놓여 왼쪽 칸이 264px까지 길어지고, 그만큼 첫 조작이 아래로 밀렸다(10/06 점검 — 1440 첫 화면의 약 3할).
    표지의 '훑어보기' 연출(evidence-header.js)은 그대로다 */
 /* 표지는 그림 비율 그대로(10/07 사용자 지적 — 가로 그림을 세로 틀 66×88에 넣어 위아래가 빈 띠로 남았다).
    칸은 96px로 고정한다 — 다섯 페이지의 제목이 같은 자리에서 시작하고, 그림이 늦게 와도 글이 밀리지 않는다.
-   틀은 그림에 맞춰 줄어든다(가로 그림 96×54 · E8 96×45 · E3 세로 그림 74×96) */
+   틀은 그림에 맞춰 줄어든다(가로 그림 96×54 · E3 96×45 · E5 세로 그림 74×96) */
 .view-brief .brief-head {
   display: grid; grid-template-columns: 96px minmax(0, 1fr); column-gap: 14px; align-items: start;
 }
@@ -3301,7 +3301,7 @@ body.plain-mode #view { min-height: 100vh; }
 .cc-cards .cc-plate { cursor: grab; touch-action: none; user-select: none; }
 /* 좁은 화면은 손가락으로 끌지 않는다 — 세로 손짓은 화면을 내린다(10/11 재채점). 누르기는 그대로 */
 @media (max-width: 600px) { .cc-cards .cc-plate { touch-action: manipulation; } }
-/* 숨김은 언제나 숨김 — 사이트 단추(.btn)의 display가 hidden 속성을 덮어 '건너뛰기'가 남았다(E3 · E5와 같은 보호 규칙) */
+/* 숨김은 언제나 숨김 — 사이트 단추(.btn)의 display가 hidden 속성을 덮어 '건너뛰기'가 남았다(E5 · E2와 같은 보호 규칙) */
 .cc [hidden] { display: none !important; }
 .cc-cards .cc-plate.cc-used { visibility: hidden; }
 /* 지금 누를 것 표시(.cue)가 카드 묶음만 감싸고, 바로 아래 사용법 줄을 덮지 않게 */
@@ -3579,7 +3579,7 @@ body.plain-mode #view { min-height: 100vh; }
 ::view-transition-old(evidence-title), ::view-transition-new(evidence-title) { height: 100%; }
 ::view-transition { pointer-events: none; }
 @media (prefers-reduced-motion: reduce) {
-  /* body에 바로 붙는 연출(E1 되감기 막 · 날아가는 명찰, E2 날아가는 카드, 수집 비행)은 #view 밖이라 빠져 있었다(10/06 점검) */
+  /* body에 바로 붙는 연출(E1 되감기 막 · 날아가는 명찰, E6 날아가는 카드, 수집 비행)은 #view 밖이라 빠져 있었다(10/06 점검) */
   #view, #view *, #view *::before, #view *::after,
   #fly-root *, #toast-root *, .cc-flyer, .cc-token, .cc-rewinding, .fx-ghost { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
   ::view-transition-group(*) { animation-duration: 0s !important; }
@@ -3636,7 +3636,7 @@ body.plain-mode #view { min-height: 100vh; }
 .cc-match-help { width: fit-content; max-width: 100%; }
 .cc .cc-match-help[hidden] { display: block !important; visibility: hidden; }
 .cc-quiz:has(.cc-match-done:not([hidden])) .cc-match-help { display: none !important; }
-/* 건너뛰기 — E3와 같은 사이트 보조 단추(.btn.ghost, 10/11 재9). 전에는 다음 장 단추(.cc-next)와 같은 검은 테두리 단추 200×49 */
+/* 건너뛰기 — E5와 같은 사이트 보조 단추(.btn.ghost, 10/11 재9). 전에는 다음 장 단추(.cc-next)와 같은 검은 테두리 단추 200×49 */
 .cc-skip { margin-top: 12px; line-height: 1.6; } /* 단추(button)는 줄 높이를 물려받지 않는다 — 링크로 된 다른 .btn(원본 문서 · 돌아가기)과 같은 높이 46px */
 .cc-skip:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
 .cc-pass { grid-column: 1 / -1; font: 600 12px var(--cc-mono); color: var(--cc-mute); letter-spacing: .04em; }
@@ -3681,7 +3681,7 @@ body.plain-mode #view { min-height: 100vh; }
 }
 .fx-node[data-k='state'] .fx-node-n { color: var(--fx-state-ink); }
 
-/* ---------- E2 · 처음에는 조작 칸만(10/06 사용자 결정) ----------
+/* ---------- E6 · 처음에는 조작 칸만(10/06 사용자 결정) ----------
    플레이어가 보는 화면(Cost · 손패 · 덱)을 판 가운데에 먼저 세운다. 스킬을 처음 누르면 .fx-closed가 빠지며
    칸은 왼쪽 첫 열로 옮겨 가고, 그 오른쪽으로 플로우 차트와 두 표 무리가 펼쳐진다(flow.js open()).
    닫힌 동안의 칸은 넓으니 글자를 하한(12px) 위로 올려 둔다 — 펼쳐지면 원래 배치 그대로
@@ -3728,7 +3728,7 @@ body.plain-mode #view { min-height: 100vh; }
 .cc-quiz { margin-top: 20px; gap: 48px; }
 .cc-quiz-side .cc-cards { flex-direction: column; align-items: stretch; width: auto; gap: 10px; margin-top: 18px; }
 .cc-quiz-side .cc-plate { text-align: left; }
-.cc-quiz-side .cc-cards + .cc-match-help { margin-top: 16px; } /* 꼬리 끝이 '지금 누를 것' 테두리(카드 묶음 바깥 7px)에 닿지 않게 — E2 손패 위 말풍선과 같은 간격 */
+.cc-quiz-side .cc-cards + .cc-match-help { margin-top: 16px; } /* 꼬리 끝이 '지금 누를 것' 테두리(카드 묶음 바깥 7px)에 닿지 않게 — E6 손패 위 말풍선과 같은 간격 */
 .cc-quiz-side .cc-quiz-count { margin-top: 14px; padding-top: 10px; font-size: var(--text-xl); }
 .cc-quiz-side .cc-skip { margin-top: 10px; }
 .cc-match .cc-slot-face { aspect-ratio: 4 / 3; object-position: 50% 22%; }

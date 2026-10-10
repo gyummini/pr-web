@@ -74,7 +74,7 @@ function send(name, data) {
   window.va('event', { name, data });
 }
 
-// 버튼 하나의 커스텀 이벤트(E8의 play_click 등). 값은 다른 이벤트처럼 전부 문자열로, 각 255자까지.
+// 버튼 하나의 커스텀 이벤트(E3의 play_click 등). 값은 다른 이벤트처럼 전부 문자열로, 각 255자까지.
 export function track(name, data = {}) {
   const clean = {};
   for (const [k, v] of Object.entries(data)) clean[String(k).slice(0, 255)] = String(v).slice(0, 255);

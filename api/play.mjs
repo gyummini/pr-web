@@ -1,4 +1,4 @@
-// GET /api/play — E8(PokeCollect)의 '직접 플레이하기' 버튼.
+// GET /api/play — E3(PokeCollect)의 '직접 플레이하기' 버튼.
 //
 // 입장권 {exp: 지금+10분, nonce}에 HMAC-SHA256 서명을 붙여 게임의 /claim으로 보낸다. 게임 쪽 게이트
 // (pokecollect-unity 저장소 Web/cloudflare/game/gate)가 서명과 만료를 보고 nonce를 한 번만 받은 뒤,

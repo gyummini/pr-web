@@ -1,6 +1,6 @@
 // 화면 문구를 GPT와 주고받는 도구 — Text/strings.csv(확정본이 아닌 문구의 목록)를 다룬다.
 //
-//   node tools/strings.cjs request [화면]   DRAFT 문구를 화면별로 묶은 GPT 요청문 → Text/GPT_요청문.md (화면 이름 일부로 좁힐 수 있다: request E8)
+//   node tools/strings.cjs request [화면]   DRAFT 문구를 화면별로 묶은 GPT 요청문 → Text/GPT_요청문.md (화면 이름 일부로 좁힐 수 있다: request E3)
 //   node tools/strings.cjs apply <답.txt>    GPT 답(키 = 문구)을 데이터에 그대로 넣고 FINAL로 바꾼다
 //   node tools/strings.cjs flag <키> <맥락>   확정 문구를 다시 쓸 목록에 올린다(문구는 그대로 둔다)
 //   node tools/strings.cjs check            목록·데이터·코드가 서로 맞는지 검사(npm test에 포함)
@@ -54,7 +54,7 @@ function request(only) {
   for (const [screen, rows] of screens) {
     out.push(`## ${screen}`, '', '### 다시 쓸 문구', '');
     // 여러 문구에 똑같이 붙은 맥락은 한 번만 적는다. 모두가 같으면 '모든 문구에 공통', 절반 넘게 같으면 '따로 적지 않으면 공통' —
-    // 화면 하나를 통째로 다시 검수할 때(10/07 E8) 같은 '전할 것 · 변경 사유'가 문구마다 되풀이되어 요청문이 1,400줄이 됐다.
+    // 화면 하나를 통째로 다시 검수할 때(10/07 E3) 같은 '전할 것 · 변경 사유'가 문구마다 되풀이되어 요청문이 1,400줄이 됐다.
     // 문구마다 다른 맥락(같은 이름표 — 예: 새 자리의 '전할 것')은 그 문구 아래에 그대로 적혀 공통을 대신한다.
     const parts = (r) => r.context.split(' | ');
     const seen = new Map();
@@ -312,7 +312,7 @@ function check() {
   }
 
   // 6) 증거 개수를 말하는 문구는 실제 기본 증거 수(state.js BASE_EVIDENCE_IDS)와 같아야 한다 —
-  //    포트폴리오가 늘거나 줄면 숫자만 맞춘다(10/10 사용자 지시 — 엔딩 대사 '일곱 개의 증거'가 E9를 세면서 틀어졌던 일)
+  //    포트폴리오가 늘거나 줄면 숫자만 맞춘다(10/10 사용자 지시 — 엔딩 대사 '일곱 개의 증거'가 E4를 세면서 틀어졌던 일)
   const stateJs = fs.readFileSync(path.join(L.ROOT, 'assets', 'js', 'state.js'), 'utf8');
   const baseCount = ((stateJs.match(/BASE_EVIDENCE_IDS\s*=\s*\[([^\]]*)\]/) || [])[1] || '').match(/'E\d+'/g)?.length || 0;
   const NATIVE = { 한: 1, 두: 2, 세: 3, 네: 4, 다섯: 5, 여섯: 6, 일곱: 7, 여덟: 8, 아홉: 9, 열한: 11, 열두: 12, 열: 10 };
@@ -326,8 +326,8 @@ function check() {
     }
   }
 
-  // 6-2) 기본 증거를 번호로 나열한 문구(범위가 든 것 — 'E1–E6, E8')도 실제 기본 증거와 같아야 한다.
-  //      10/10 다4: E4를 빼고 E9를 넣은 뒤에도 수첩 봉인이 'E1–E6, E8'을 말하고 있었다. 숫자 낱말만 찾던 6번이 놓쳤다.
+  // 6-2) 기본 증거를 번호로 나열한 문구(범위가 든 것 — 'E1–E7, E3')도 실제 기본 증거와 같아야 한다.
+  //      10/10 다4: E4를 빼고 E4를 넣은 뒤에도 수첩 봉인이 'E1–E7, E3'을 말하고 있었다. 숫자 낱말만 찾던 6번이 놓쳤다.
   //      다시 쓰는 중인 문구(DRAFT)는 GPT 답을 기다리는 동안 건너뛴다
   const baseIds = (((stateJs.match(/BASE_EVIDENCE_IDS\s*=\s*\[([^\]]*)\]/) || [])[1] || '').match(/E\d+/g) || [])
     .map((s) => Number(s.slice(1))).sort((a, b) => a - b).join(',');

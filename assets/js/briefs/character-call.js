@@ -187,7 +187,7 @@ export function playCharacterCall(host, cfg, onComplete, _ev, kit = {}) {
   /* ---------- 첫인상 — 맞히기 ---------- */
 
   function buildMatch() {
-    // 머리말 오른쪽의 안내 알약은 10/10 사용자 결정(마3)으로 뺐다 — 데이터 lead.prompt_at: 'action'(E2 · E3 · E5와 같은 방식).
+    // 머리말 오른쪽의 안내 알약은 10/10 사용자 결정(마3)으로 뺐다 — 데이터 lead.prompt_at: 'action'(E6 · E5 · E2와 같은 방식).
     // 첫 행동(맞히기) 곁에는 이미 사용법 말풍선(match_help)과 '지금 누를 것' 표시가 있어 문구를 따로 옮겨 붙이지 않는다
     const m = cfg.match || {};
     // 왼쪽 칸에 '무엇을 하는 칸인지'와 카드 묶음을 세우고, 오른쪽에 초상 셋을 둔다 —
@@ -241,8 +241,8 @@ export function playCharacterCall(host, cfg, onComplete, _ev, kit = {}) {
     const count = txt('div', `0 / ${order.length}`, 'cc-quiz-count');
     count.setAttribute('aria-live', 'polite');
     side.appendChild(count);
-    // 건너뛰기는 E3와 같은 모양 — 사이트의 보조 단추(.btn.ghost, 머리의 원본 문서 · 끝의 돌아가기와 같다). 10/11 재9 — 전에는 E1은 다음 장 단추와 같은
-    // 검은 테두리 단추, E3는 밑줄 글자였다
+    // 건너뛰기는 E5와 같은 모양 — 사이트의 보조 단추(.btn.ghost, 머리의 원본 문서 · 끝의 돌아가기와 같다). 10/11 재9 — 전에는 E1은 다음 장 단추와 같은
+    // 검은 테두리 단추, E5는 밑줄 글자였다
     const skip = next(t.skip_match, 2, 'btn ghost cc-skip');
     side.appendChild(skip);
 
