@@ -5,7 +5,9 @@ const fs = require('node:fs');
 const path = require('node:path');
 // 화면 문구는 GPT가 바꿀 수 있다 — 버튼 이름은 데이터에서 읽는다
 const UI = JSON.parse(fs.readFileSync(path.join(__dirname, '..', '콘텐츠_화면문구.json'), 'utf8'));
-const E2card = JSON.parse(fs.readFileSync(path.join(__dirname, '..', '콘텐츠_증거카드.json'), 'utf8')).evidences.find((e) => e.id === 'E2');
+const EVS = JSON.parse(fs.readFileSync(path.join(__dirname, '..', '콘텐츠_증거카드.json'), 'utf8')).evidences;
+const E2card = EVS.find((e) => e.id === 'E2');
+const E1card = EVS.find((e) => e.id === 'E1');
 const origin = process.env.TEST_ORIGIN || 'http://127.0.0.1:4173';
 // 보관함의 아직 모으지 않은 카드는 요약 팝업을 연다 — '잠금해제하고 요약 인터랙티브 페이지 보기'로 넘어간다(10/07)
 const UNLOCK = UI.popup.unlock.replace('{action}', UI.common.to_interactive);
@@ -51,6 +53,14 @@ const UNLOCK = UI.popup.unlock.replace('{action}', UI.common.to_interactive);
     assert.equal(await page.locator('.fx-side .fx-concl .fx-caption').innerText(), E2card.brief.captions.complete, 'the conclusion line sits under the deck');
     assert.equal(await page.locator('.fx-concl .brief-concl-key').innerText(), UI.brief.conclusion);
     assert.ok(await page.evaluate(() => { const r = document.querySelector('.fx-concl').getBoundingClientRect(); return r.top >= 0 && r.bottom <= innerHeight; }), 'the conclusion line is on screen when the flow ends');
+    // 구역 이름표 다섯(조작 · 결론 · 구조 ① ② ③)은 보조 글자색 — 붉은색은 누를 것 · 상태 · 도장에만(10/11 작은 정리 2, 재1과 같은 판단).
+    // 전에는 첫 흐름 뒤 한 화면의 붉은 요소 19곳 중 다섯이 이름표였다. 지금 단계 · 값 · Cost 계기의 붉은색은 그대로다
+    const labelInk = await page.evaluate(() => {
+      const ink = (v) => { const p = document.createElement('i'); p.style.color = `var(${v})`; document.querySelector('.view-brief').append(p); const c = getComputedStyle(p).color; p.remove(); return c; };
+      return { soft: ink('--fx-soft'), accent: ink('--accent'), rate: getComputedStyle(document.querySelector('#view .fx-rate')).color, labels: [...document.querySelectorAll('#view .fx-sec, #view .fx-concl .brief-concl-key')].map((n) => getComputedStyle(n).color) };
+    });
+    assert.deepEqual(labelInk.labels, Array(5).fill(labelInk.soft), `the five E2 section labels are the soft ink ${JSON.stringify(labelInk)}`);
+    assert.equal(labelInk.rate, labelInk.accent, 'the Cost gauge stays red');
     // 노트북 높이(1366×768 · 1280×720)에서도 — 첫 시전 때 화면을 맞추는 양을 결론 줄까지 넓힌다(10/11 사용자 결정 재5. 전에는 결론 줄의 아래 절반 · 전체가 화면 밖)
     for (const [w, h] of [[1366, 768], [1280, 720]]) {
       const lap = await browser.newPage({ viewport: { width: w, height: h }, reducedMotion: 'reduce' });
@@ -168,6 +178,22 @@ const UNLOCK = UI.popup.unlock.replace('{action}', UI.common.to_interactive);
     await page.locator('.cc').waitFor();
     assert.deepEqual(await page.locator('.cc-ch:not([hidden])').evaluateAll(es => es.map(e => e.dataset.n)), ['0', '1'], 'The paradox band and the quiz are open at first');
     assert.ok(await page.evaluate(() => document.querySelector('.cc-cards .cc-plate').getBoundingClientRect().bottom <= innerHeight), 'The first action is on the first screen');
+    // 맞히기 사용법은 다른 페이지처럼 '지금 누를 것' 옆 붉은 말풍선(.cue-note) — 카드 묶음 바로 아래에서 꼬리가 위(카드 묶음 쪽)를 가리키고
+    // 카드를 덮지 않는다. 문구는 그대로다(10/11 작은 정리 3 — 전에는 카드 아래 12.8px 흐린 줄). 한 장을 맞히면 표시와 함께 거둔다(아래)
+    const helpBubble = await page.evaluate(() => {
+      const h = document.querySelector('.cc-match-help');
+      const cards = document.querySelector('.cc-cards');
+      const r = h.getBoundingClientRect();
+      const tail = getComputedStyle(h, '::before');
+      return {
+        bubble: h.classList.contains('cue-note') && !h.hidden && r.height > 0, cue: cards.classList.contains('cue'),
+        under: r.top >= cards.getBoundingClientRect().bottom,
+        covers: [...cards.querySelectorAll('.cc-plate')].some((p) => { const q = p.getBoundingClientRect(); return r.left < q.right && r.right > q.left && r.top < q.bottom && r.bottom > q.top; }),
+        tailUp: parseFloat(tail.top) < 0 && tail.borderBottomColor === getComputedStyle(h).backgroundColor,
+      };
+    });
+    assert.deepEqual(helpBubble, { bubble: true, cue: true, under: true, covers: false, tailUp: true }, 'the match help is the cue bubble under the cards, pointing up at them');
+    assert.equal(await page.locator('.cc-match-help').innerText(), E1card.brief.labels.match_help);
     // 다음 장으로 데려가는 스크롤(setInterval)이 멈출 때까지 기다린다 — 고정 시간은 화면이 바쁘면 모자라서
     // 카드 자리를 스크롤 도중에 읽고 엉뚱한 곳을 누르게 된다(지금 누를 것 표시가 퍼지는 동안 특히)
     const settle = () => page.waitForFunction(async () => { const y = window.scrollY; await new Promise((r) => setTimeout(r, 150)); return window.scrollY === y; });
@@ -191,7 +217,13 @@ const UNLOCK = UI.popup.unlock.replace('{action}', UI.common.to_interactive);
       await page.mouse.move(b.x + b.width / 2, b.y + b.height / 2, { steps: 8 }); await page.mouse.up();
     }
     await dragTo(ids[0], ids[1]); assert.equal(await page.locator('.cc-done').count(), 0);
+    assert.equal(await page.locator('.cc-match-help').isVisible(), true, 'a wrong drop keeps the cue and its bubble');
+    const countAt = () => page.evaluate(() => Math.round(document.querySelector('.cc-quiz-count').getBoundingClientRect().top + scrollY));
+    const countBefore = await countAt();
     await dragTo(ids[0], ids[0]); assert.equal(await page.locator('.cc-done').count(), 1);
+    assert.deepEqual([await page.locator('.cc-cards.cue').count(), await page.locator('.cc-match-help').isHidden()], [0, true], 'one match takes the cue — the bubble goes with it');
+    // 거둔 말풍선의 자리는 남는다 — 맞힌 카드처럼, 남은 맞히기 동안 아래 칸이 밀려 올라오지 않는다(다 맞히면 함께 거둔다)
+    assert.equal(await countAt(), countBefore, 'the withdrawn bubble keeps its room while the quiz goes on');
     for (const id of ids.slice(1)) {
       await page.locator('.cc-cards [data-id="' + id + '"]').focus(); await page.keyboard.press('Enter');
       await page.locator('.cc-slot[data-id="' + id + '"]').focus(); await page.keyboard.press('Enter');
@@ -207,18 +239,58 @@ const UNLOCK = UI.popup.unlock.replace('{action}', UI.common.to_interactive);
     assert.equal(await page.locator('.cc-ep.cc-filled').count(), 6);
     assert.equal(await page.locator('.cc-rl-slot.is-called').count(), 6, 'Pass 1 records every call on the sheets');
     assert.equal(await page.locator('.cc-rl .cc-layers i').count(), 0, 'Pass 1 does not thicken the sheets');
+    // 회차의 문장(그 장면이 맡긴 역할)은 컷 이름표 한 줄만 말한다 — 같은 문장이던 '✓ 역할' 줄은 뺐다(10/11 기회 8).
+    // 회차마다 그 문장이 한 번, 줄은 머리 · 컷 · 칸 셋뿐이다(다시 보기의 한 줄은 칸 옆에 놓인다)
+    const epLines = await page.evaluate((roles) => [...document.querySelectorAll('.cc-ep')].map((ep, i) => ({
+      role: [...ep.querySelectorAll('*')].filter((n) => !n.children.length && n.textContent.includes(roles[i])).length,
+      rows: [...ep.children].map((c) => c.className.split(' ')[0]).join(' '),
+    })), E1card.brief.episodes.map((e) => e.role));
+    assert.deepEqual(epLines, E1card.brief.episodes.map(() => ({ role: 1, rows: 'cc-ep-top cc-cuts cc-lanes' })), 'each episode says its sentence once (no ✓ line)');
+    // 되감기는 첫 회차의 '등장 대기' 칸이 막 트리거 줄(화면 78%)을 넘는 곳에 내려앉고, 내려앉자마자 첫 캐릭터가 다시 내려온다(10/11 재채점 P2).
+    // 전에는 다 끝난 맞히기 칸에 멈춰 아무것도 움직이지 않았다. 캐릭터가 내려오는 순간의 칸 자리와 때를 잰다 — 둘째 회차는 아직이다
+    // 때는 되감기 단추가 눌린 순간부터 잰다(기계가 바쁘면 click() 자체가 늦다)
+    const watchFirstCall = (p) => p.evaluate(() => {
+      const row = document.querySelector('.cc-ep[data-n="0"]');
+      let pressedAt = null;
+      document.querySelector('.cc-worry .cc-next').addEventListener('click', () => { pressedAt = performance.now(); }, { capture: true, once: true });
+      window.__firstCall = null;
+      new MutationObserver((_, o) => {
+        if (!row.classList.contains('cc-filled') || !document.querySelector('.cc-second-pass')) return;
+        o.disconnect();
+        const slot = row.querySelector('.cc-ep-slot').getBoundingClientRect();
+        const cut = row.querySelector('.cc-call').getBoundingClientRect();
+        const rail = document.querySelector('.cc-rail').getBoundingClientRect();
+        window.__firstCall = { ms: pressedAt == null ? null : Math.round(performance.now() - pressedAt), aboveLineBy: Math.round(innerHeight * 0.78 - slot.top), cutUnderSheets: Math.round(rail.bottom - cut.top), second: document.querySelector('.cc-ep[data-n="1"]').classList.contains('cc-filled') };
+      }).observe(row, { attributes: true, attributeFilter: ['class'] });
+    });
+    await watchFirstCall(page);
     await page.locator('.cc-worry .cc-next').click();
     assert.equal(await page.locator('.cc-second-pass').count(), 1);
+    // 88cb83f에서는 첫 캐릭터가 내려오지 않아 여기서 시간이 다 된다
+    await page.waitForFunction(() => !!window.__firstCall, null, { timeout: 3000 });
+    const firstCall = await page.evaluate(() => window.__firstCall);
+    // 되감는 데 0.65초 — 그 뒤 0.6초 안에. 칸은 줄 위 0 ~ 12px, 컷은 위에 붙은 시트 줄 아래(테두리 2px까지)
+    assert.ok(firstCall.ms != null && firstCall.ms <= 650 + 600 && firstCall.aboveLineBy >= 0 && firstCall.aboveLineBy <= 12 && firstCall.cutUnderSheets <= 2 && !firstCall.second, `the rewind lands where the first character comes down again ${JSON.stringify(firstCall)}`);
     await settle();
     await toEnd('.cc-ch[data-n="3"]:not([hidden])');
     assert.equal(await page.locator('.cc-rl-slot.is-on').count(), await page.locator('.cc-ep').count());
     assert.equal(await page.locator('.cc-rl .cc-layers i').count(), await page.locator('.cc-ep').count(), 'Every facet adds one sheet of paper');
     // 먼저 붙은 종이가 시트 바로 뒤(위)에 — 그리는 순서가 가장 나중(형제 중 마지막)이고 어긋남이 가장 작다
     assert.deepEqual(await page.locator('.cc-rl').first().locator('.cc-layers i').evaluateAll(es => es.map(e => e.style.getPropertyValue('--o'))), ['12px', '6px']);
+    // 다시 보기의 한 줄(새로 드러난 면모)은 캐릭터가 내려앉은 칸의 옆 칸 — '새로 드러난 면모' 컷 바로 아래(10/11 기회 8: 줄이 따로 생기지 않는다)
+    const gainBeside = await page.evaluate(() => [...document.querySelectorAll('.cc-ep')].every((ep) => {
+      const s = ep.querySelector('.cc-ep-slot').getBoundingClientRect();
+      const g = ep.querySelector('.cc-lanes > .cc-ep-gain')?.getBoundingClientRect();
+      const fig = ep.querySelector('.cc-fig.cc-gain').getBoundingClientRect();
+      return !!g && g.height > 0 && g.top >= s.top - 1 && g.bottom <= s.bottom + 1 && g.left >= s.right && Math.abs(g.left - fig.left) < 30;
+    }));
+    assert.equal(gainBeside, true, 'the revealed line sits beside the slot, under the new facet cut');
     await page.locator('.cc-ch[data-n="3"] .cc-next').click();
     // 끝 단추는 둘 — 원본 문서(결론 칸)와 '포트폴리오 화면으로 돌아가기'(10/10 사용자 결정 바3). '다시 해보기'는 뺐다
     await page.locator('.brief-recap:not([hidden]) .brief-docs a').first().waitFor();
     assert.deepEqual(await page.locator('.brief-docs a, .brief-docs button, .brief-foot a').allInnerTexts(), [UI.brief.original_doc, UI.brief.back], 'E1 end buttons');
+    // 결론 칸의 맺음 줄에는 굵은 왼쪽 띠가 없다 — 왼쪽 띠는 절 제목 · 알림 전용(10/11 작은 정리 4. E3의 맺음 줄과 같은 부품)
+    assert.equal(await page.locator('.brief-closing').evaluate((n) => getComputedStyle(n).borderLeftWidth), '0px', 'the closing line has no thick left band');
     assert.equal(await page.getByRole('button', { name: UI.brief.restart, exact: true }).count(), 0, 'no restart button');
     // 머리말의 안내 알약은 뺐다(마3) · 맞힌 직후의 결론 한 줄은 공통 부품(이름표 + 17px 굵게, 마6)
     assert.equal(await page.locator('.brief-prompt').count(), 0, 'E1 header pill removed');
@@ -267,8 +339,26 @@ const UNLOCK = UI.popup.unlock.replace('{action}', UI.common.to_interactive);
       assert.deepEqual(await midWordBreaks(), [], `sheet lines keep their words at ${width}px`);
     }
     await page.setViewportSize({ width: 390, height: 844 });
+    // 휴대폰 · 움직임 줄이기에서도 되감기는 첫 회차로 바로 내려앉고 첫 캐릭터가 거기 내려온다(10/11 재채점 P2).
+    // 한 단 배치에서는 드러나기 전의 한 줄(새로 드러난 면모)이 자리를 차지하지 않는다(10/11 기회 8)
+    await page.waitForFunction(() => { window.scrollTo(0, document.documentElement.scrollHeight); return !!document.querySelector('.cc-worry:not([hidden])'); }, null, { polling: 300 });
+    assert.equal(await page.locator('.cc-ep[data-n="0"] .cc-ep-gain').isHidden(), true, 'phones keep no room for the line before it is revealed');
+    await watchFirstCall(page);
+    await page.locator('.cc-worry .cc-next').click();
+    await page.waitForFunction(() => !!window.__firstCall, null, { timeout: 2000 });
+    const phoneCall = await page.evaluate(() => window.__firstCall);
+    assert.ok(phoneCall.ms <= 600 && phoneCall.aboveLineBy >= 0 && phoneCall.aboveLineBy <= 12 && phoneCall.cutUnderSheets <= 2 && !phoneCall.second, `phone: the rewind lands on the first episode at once ${JSON.stringify(phoneCall)}`);
     await page.evaluate(() => { document.startViewTransition = undefined; });
     await page.locator('.brief-foot a').click(); await page.locator('.ev-grid').waitFor();
+    // '포트폴리오 화면으로 돌아가기'는 보관함 맨 위가 아니라 이 증거의 카드 자리로 — 카드가 화면 가운데쯤, 잠깐 들린다(10/11 기회 5).
+    // 누르기(마우스 · 손가락)로 눌렀으면 카드에 초점을 옮기지 않는다 — 초점 테두리가 그려지지 않게
+    const backAt = await page.evaluate(() => {
+      const card = document.querySelector('.ev-card[data-eid="E1"]');
+      const r = card.getBoundingClientRect();
+      const head = document.getElementById('site-header').getBoundingClientRect().bottom;
+      return { inView: r.top >= head && r.bottom <= innerHeight, centered: Math.abs((r.top + r.bottom) / 2 - (head + innerHeight) / 2) <= 24, marked: card.classList.contains('is-back'), focused: document.activeElement === card };
+    });
+    assert.deepEqual(backAt, { inView: true, centered: true, marked: true, focused: false }, `back to the portfolio lands on the E1 card ${JSON.stringify(backAt)}`);
     await page.locator('.ev-card[data-eid="E2"]').click();
     await page.getByRole('button', { name: UNLOCK, exact: true }).click(); await page.locator('.fx').waitFor();
     assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);
@@ -276,6 +366,6 @@ const UNLOCK = UI.popup.unlock.replace('{action}', UI.common.to_interactive);
     await page.waitForTimeout(600);
     assert.equal(await page.evaluate(() => document.getAnimations().filter(a => a.playState === 'running').length), 0);
     assert.deepEqual(errors, []);
-    console.log('PASS: navigation, interruption, cost/queue/reduction/boost, hidden-tab recovery, E2 conclusion after the first cast (under the deck, used cell shown in its box), drag/keyboard, rewind/facets, end buttons without restart, phone sheets, reduced motion, fallback.');
+    console.log('PASS: navigation, interruption, cost/queue/reduction/boost, hidden-tab recovery, E2 conclusion after the first cast (under the deck, used cell shown in its box), E2 section labels in soft ink, E1 help bubble that leaves with the cue, one sentence per episode, drag/keyboard, rewind lands on the first call (desktop and phone)/facets, closing line without a left band, end buttons without restart, phone sheets, back to the portfolio lands on the card, reduced motion, fallback.');
   } finally { await browser.close(); }
 })().catch(e => { console.error(e); process.exitCode = 1; });

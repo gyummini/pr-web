@@ -3,7 +3,7 @@ import { BASE_EVIDENCE_IDS, state, baseUnlocked } from '../state.js';
 import { addPending, landOne, flyFromRect, openDoc, unlanded, dismissUnlockToast } from '../ui.js';
 import { checkChapterToasts, fmtCase } from '../collect.js';
 import { hasBrief, briefOpenKey } from './brief.js';
-import { landAt } from '../landing.js';
+import { landAt, takeLanding } from '../landing.js';
 import { openEvidencePopup, CLOSE_ICON, keepFocusInside } from '../popup.js';
 import { navigate } from '../router.js';
 import { T, TH } from '../text.js';
@@ -38,6 +38,8 @@ export function renderEvidence(view) {
 
   wireCards(view);
   renderHiddenSlot(view.querySelector('.hidden-slot-wrap'), view, hidden);
+  // 인터랙티브 페이지의 '포트폴리오 화면으로 돌아가기'로 왔으면 그 카드 자리로 내려앉는다(10/11 기회 5)
+  landOnCard(view, takeLanding('evidence'));
 
   // 장을 떠나며 모은 증거의 쪽지가 아직 날아가는 중이면, 내려앉은 뒤에 그 카드와 보너스 칸을 다시 그린다 —
   // 신호 순서는 '내려앉기, 펼침, 알림'(DESIGN.md 5절). 10/11에 CASE04 예외(이 화면에서 모으던 것)를 없애며 옮겼다
@@ -121,7 +123,8 @@ function cardHtml(ev) {
             // 원본 문서로 바로 가는 길은 카드 안에 남겨둔다.
             // 행동 문구와 한 묶음(.ev-acts) — 자리가 모자라면 묶음째 다음 줄로 내려간다(10/07: 긴 문구에 밀려 카드 밖으로 잘렸다).
             // 수집 여부와 상관없이 원본이 있으면 붙인다(10/07 사용자 요청 — 전에는 수집한 카드에만)
-            ev.url ? `<button type="button" class="ev-direct" title="${TH('evidence.direct_title')}">${TH('evidence.direct')}</button>` : ''
+            // 다만 모은 뒤 주 단추가 이미 원본 문서를 열면(브리프 없는 문서 — E6 · E9) 같은 곳으로 가는 칩은 뺀다(10/11 사용자 결정, 작은 정리 1)
+            ev.url && !(got && !hasBrief(ev)) ? `<button type="button" class="ev-direct" title="${TH('evidence.direct_title')}">${TH('evidence.direct')}</button>` : ''
           }</span>
         </div>
       </div>
@@ -395,6 +398,29 @@ function confirmDirect(view, trigger, target) {
     close(false);
     const missing = BASE_EVIDENCE_IDS.find((id) => !state.collected.has(id));
     if (missing) openShelf(view, missing);
+  });
+}
+
+// '포트폴리오 화면으로 돌아가기'로 왔을 때(views/brief.js가 landing.js에 맡긴 { id, focus }) — 그 증거의 카드를 화면 가운데쯤에 두고
+// 잠깐 들어 올린다(10/11 기회 5). 라우터는 그린 뒤 보관함을 저장된 자리로 되돌리고 제목에 초점을 두므로, 그 일이 다 끝난 직후
+// (마이크로태스크 — 화면이 그려지기 전)에 옮긴다. 그래야 저장된 자리가 잠깐 보이지 않고, 카드로 이어지는 화면 전환도 옮긴 자리를 잡는다.
+// 키보드로 눌렀으면 그 카드에 초점을 둔다. 표시는 카드에 마우스를 올렸을 때와 같은 모양이고, 거두는 것은 타이머다(움직임 완료에 걸지 않는다).
+// 머리말 탭 · 뒤로 가기 등 다른 길로 오면 지금처럼 저장된 자리다
+const BACK_MS = 1000;
+function landOnCard(view, want) {
+  if (!want || !want.id) return;
+  queueMicrotask(() => {
+    const card = view.querySelector(`.ev-card[data-eid="${want.id}"]`);
+    if (!card || !card.isConnected) return;
+    const head = document.getElementById('site-header');
+    const top0 = head ? Math.max(0, head.getBoundingClientRect().bottom) : 0;
+    const room = window.innerHeight - top0;
+    const r = card.getBoundingClientRect();
+    const dy = r.height < room ? r.top - top0 - (room - r.height) / 2 : r.top - top0 - 16; // 화면보다 크면 머리말 바로 아래부터
+    window.scrollTo({ top: Math.max(0, window.scrollY + dy), behavior: 'instant' });
+    if (want.focus) card.focus({ preventScroll: true });
+    card.classList.add('is-back');
+    setTimeout(() => card.classList.remove('is-back'), BACK_MS);
   });
 }
 

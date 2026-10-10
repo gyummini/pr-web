@@ -87,8 +87,11 @@
 /* 재료 부족 안내는 2초쯤 뒤 서서히 사라진다(10/10 사용자 결정 마2 — cut-play.js showShort). 자리(min-height)는 남아 아래가 밀리지 않는다 */
 .cp-msg { transition: opacity var(--motion-page) ease; }
 .cp-msg.is-fading { opacity: 0; }
-.cp-presses { margin: 0; font-size: var(--text-sm); color: var(--rd-ink); }
+.cp-presses { margin: 0; font-size: var(--text-sm); line-height: 1.45; color: var(--rd-ink); } /* 줄 높이는 덜어낸 칸의 처음 게임 줄(.cp-was-line)과 같게 — 두 숫자가 같은 높이 */
 .cp-presses:empty { display: none; }
+/* 그 줄의 숫자만 결론 줄의 무게(17px · 800, --text-lg) — 확정 문구는 그대로이고 {n} 자리의 값만 감싼다(10/11 기회 6, cut-play.js paintPresses).
+   줄 높이 1 — 숫자가 커져도 줄이 거의 늘지 않아 두 칸의 아래 끝이 그대로 맞는다 */
+.cp-n { font-size: var(--text-lg); font-weight: 800; line-height: 1; }
 /* 건너뛰기 — E1과 같은 사이트 보조 단추(.btn.ghost, 10/11 재9). 전에는 밑줄 글자 137×26 */
 .cp-skip { margin-top: 12px; line-height: 1.6; } /* 단추(button)는 줄 높이를 물려받지 않는다 — 링크로 된 다른 .btn과 같은 높이 46px */
 .cp .cp-skip:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
@@ -164,8 +167,9 @@
 .cp-was-line { font-size: var(--text-sm); line-height: 1.45; color: var(--rd-ink); word-break: keep-all; } /* 출시한 게임 쪽 줄(.cp-presses)과 같은 모양 */
 .cp[data-phase="final"] .cp-zones { grid-template-columns: minmax(0, .5fr) minmax(0, .5fr) minmax(0, 2fr); }
 
-/* 판단 — 처음 게임을 해 본 뒤에 열린다 */
-.cp-judge { margin-top: 18px; padding: 18px 20px; border-left: 3px solid var(--rd-ink); background: #f0f1ed; }
+/* 판단 — 처음 게임을 해 본 뒤에 열린다. 칸은 바탕과 여백으로 갈린다 — 굵은 왼쪽 띠는 절 제목 · 알림 전용 표시라 뺐고(10/11 작은 정리 4),
+   모서리는 위의 게임 판 · 다른 페이지의 칸(E2 조작 칸 등)과 같은 카드 단계다 */
+.cp-judge { margin-top: 18px; padding: 18px 20px; background: #f0f1ed; border-radius: var(--radius-card); }
 .cp-judge-eyebrow { display: block; font: 600 var(--text-xs) ui-monospace, Consolas, "Noto Sans KR", monospace; letter-spacing: .04em; color: var(--rd-mute); margin-bottom: 10px; }
 .cp-evidence { display: grid; gap: 6px; margin: 0 0 14px; }
 .cp-evidence div { display: flex; flex-wrap: wrap; gap: 2px 12px; align-items: baseline; }

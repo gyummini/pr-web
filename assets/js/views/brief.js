@@ -1,6 +1,7 @@
 import { getCard } from '../data.js';
 import { openDoc } from '../ui.js';
 import { navigate } from '../router.js';
+import { landAt } from '../landing.js';
 import { playFlow } from '../briefs/flow.js';
 import { playCharacterCall } from '../briefs/character-call.js';
 import { playCutPlay } from '../briefs/cut-play.js';
@@ -156,7 +157,15 @@ export function renderBrief(view, eid) {
   mounted = true;
   // 페이지 끝 단추는 둘 — 원본 문서(결론 칸)와 '포트폴리오 화면으로 돌아가기'(10/10 사용자 결정 바3, 문구는 사용자 확정).
   // '다시 해보기'는 뺐다. 진술(자기소개서)로 가는 단추는 두지 않는다(같은 결정)
-  view.querySelector('.brief-foot').appendChild(link(T('brief.back'), '/evidence'));
+  // 돌아가기는 보관함 맨 위가 아니라 방금 본 증거의 카드 자리로 내려앉는다(10/11 기회 5 — 다음 증거로 이어 보기 쉽게).
+  // 라우터가 이 링크를 받아 넘어갈 때만(새 탭 열기 등은 브라우저대로) landing.js에 맡긴다. 키보드로 눌렀으면(click의 detail 0)
+  // 보관함이 그 카드에 초점을 둔다 — 마우스로 눌렀으면 초점 테두리가 그려지지 않게 초점은 옮기지 않는다
+  const back = link(T('brief.back'), '/evidence');
+  back.addEventListener('click', (e) => {
+    if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+    landAt('evidence', { id: ev.id, focus: e.detail === 0 });
+  });
+  view.querySelector('.brief-foot').appendChild(back);
 
   // opts.scroll === false — 결론을 열어도 화면을 결론으로 끌어내리지 않는다(본체가 결론 한 줄을 조작 곁에 따로 보여 줄 때)
   function showRecap(opts) {

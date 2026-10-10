@@ -129,6 +129,17 @@ const pickName = (id) => E5.cards[id].name;
         }), `'one card' badge stays inside the picture at ${width}px (${s.name})`);
       }
     }
+    // '포트폴리오 화면으로 돌아가기'는 보관함 맨 위가 아니라 이 증거의 카드 자리로 — 휴대폰 보관함 맨 위에서 E5 카드는 화면 아래(y 1256 ~)였다(10/11 기회 5)
+    await phone.setViewportSize({ width: 390, height: 844 });
+    await phone.locator('.brief-foot a').click();
+    await phone.locator('.ev-grid').waitFor();
+    const backAt = await phone.evaluate(() => {
+      const card = document.querySelector('.ev-card[data-eid="E5"]');
+      const r = card.getBoundingClientRect();
+      const head = document.getElementById('site-header').getBoundingClientRect().bottom;
+      return { inView: r.top >= head && r.bottom <= innerHeight, centered: Math.abs((r.top + r.bottom) / 2 - (head + innerHeight) / 2) <= 24, marked: card.classList.contains('is-back'), focused: document.activeElement === card };
+    });
+    assert.deepEqual(backAt, { inView: true, centered: true, marked: true, focused: false }, `back to the portfolio lands on the E5 card ${JSON.stringify(backAt)}`);
     await phone.close();
 
     // 노트북 높이(1366×768 · 1280×720) — 고른 직후 결과(빈 시간 칸)와 결론 한 줄이 화면 안. 전에는 ≤1180px에서만 화면을 옮겨
@@ -166,6 +177,6 @@ const pickName = (id) => E5.cards[id].name;
     await timed.evaluate(() => { delete document.hidden; });
 
     assert.deepEqual(errors, []);
-    console.log('PASS E5 one card: board as the control, candidates, thread and knot, drop into the empty time, additions in one cell, ghost lane, three relations and back, keyboard, conclusion line, end buttons without restart, phone brings the result into view, badge inside the picture, hidden-tab settle, 320–1440px.');
+    console.log('PASS E5 one card: board as the control, candidates, thread and knot, drop into the empty time, additions in one cell, ghost lane, three relations and back, keyboard, conclusion line, end buttons without restart, phone brings the result into view, badge inside the picture, back to the portfolio lands on the card, hidden-tab settle, 320–1440px.');
   } finally { await browser.close(); }
 })().catch(e => { console.error(e); process.exitCode = 1; });

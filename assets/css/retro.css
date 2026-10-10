@@ -37,7 +37,7 @@
 :where(.lg) button { font: inherit; color: inherit; }
 
 /* ---------- 머리말: 작은 표지는 여백 칸, 제목은 글 칸 ---------- */
-.view-retro .brief-head .ev-kicker { color: var(--rt-red); }
+.view-retro .brief-head .ev-kicker { color: var(--rt-ink2); } /* 증거 머리 줄은 이름표 — 흐린 글자(10/11 — 전에는 레드) */
 .view-retro .brief-head .ev-sub { color: var(--rt-ink2); }
 .view-retro .brief-lead { display: block; max-width: none; margin: 18px 0 0; }
 .view-retro .brief-lead-title { margin: 0; font-size: var(--text-3xl); line-height: 1.28; letter-spacing: -.025em; text-wrap: balance; }

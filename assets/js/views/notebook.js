@@ -10,9 +10,11 @@ const NL = () => DB.notebook.labels;
 
 // E7 히든 — 클루의 수사 수첩 (/notebook). 작업지시_수첩디자인이식.md 기준 구현,
 // 10/11 사용자 결정(수첩 가 · 수첩 끝 · 수첩 나)으로 한 권으로 다듬었다.
-// 쪽 구성(한 쪽씩): 표지 / 1부 / 2부(메모 셋) / 2부 계속(메모 둘 · 종합 소견 · 플레이 기록) / 3부 / 마지막 쪽 = 6쪽, 넘김 다섯 번.
-// 펼친 수첩(넓고 높은 화면): 표지 | 1부 · 2부(메모 둘) | 2부 계속(메모 둘) · 2부 계속(메모 하나 · 종합 소견 · 플레이 기록) | 3부 · 마지막 쪽
-//   = 7쪽을 네 면으로, 넘김 세 번. 표지는 오른쪽 자리에 홀로 놓인다(덮인 수첩).
+// 쪽 구성(한 쪽씩): 표지 / 1부 / 2부(메모 둘) / 2부 계속(메모 둘) / 2부 계속(메모 하나 · 종합 소견 · 플레이 기록) / 3부 / 마지막 쪽
+//   = 7쪽, 넘김 여섯 번(10/11(2) — 전에는 2부가 메모 셋 · 메모 둘+종합 소견이라 1366×768에서 종합 소견이 화면 밖이었다).
+// 펼친 수첩(넓고 높은 화면): 표지 | 1부 · 2부 | 2부 계속 · 2부 계속 | 3부(사진 ①) · 3부 계속(사진 ②) | 마지막 쪽 · 뒤표지
+//   = 다섯 면, 넘김 네 번. 표지는 오른쪽 자리에 홀로 놓이고(덮인 수첩), 마지막 면의 오른쪽은 글자 없는 뒤표지라 첫 면과 짝을 이룬다(10/11(2)).
+//   쪽 번호는 두 화면이 같은 일곱 쪽을 센다 — 펼침의 3부 두 쪽은 한 쪽(6), 뒤표지는 세지 않는다.
 // 모든 쪽은 한 크기 · 같은 묶음 자리다(10/11 가 — 전에는 쪽마다 종이 크기가 달라 제목 줄이 최대 199px 위아래로 옮겨 다녔다).
 // 크기는 화면 높이에 맞춘 하나이고, 짧은 쪽은 위에서부터 놓여 아래가 빈 공책 줄로 남는다. 긴 쪽은 종이 안에서 스크롤한다.
 // 넘김: 버튼 · 키보드 · 색인 탭. 애니메이션은 순수 CSS로, reduced-motion 여부와 무관하게 모든 사용자가 경험한다(사용자 결정).
@@ -27,8 +29,8 @@ const LOCK_EXTRA_MS = 100; // 애니메이션 종료 후 추가 입력 잠금
 // 폭이 좁으면 쪽이 좁아져 더 높아야 한다(1536 폭은 940px, 1440 · 1366 폭은 1000px 넘게) — 1440×900 · 1536×864 · 1366×768 노트북은 한 쪽씩
 const SPREAD_MEDIA = '(min-width: 1600px) and (min-height: 890px)';
 
-// 2부 메모를 쪽으로 나누는 자리(메모 번호) — 한 쪽씩이면 3에서, 펼침이면 2 · 4에서 나눈다
-const P2_SPLIT = { single: [3], spread: [2, 4] };
+// 2부 메모를 쪽으로 나누는 자리(메모 번호) — 두 화면 모두 2 · 4에서 나눈다(10/11(2) — 한 쪽씩은 전에 3에서 나눴다)
+const P2_SPLIT = [2, 4];
 
 // 색인 탭(10/11 가) — 장마다 하나, 지금 보이는 장은 더 튀어나온다. 누르면 그 장의 첫 쪽으로 간다
 const TABS = [
@@ -89,11 +91,24 @@ export function renderNotebook(view) {
 }
 
 // ---- 쪽 · 면 구성 ----
+// 쪽마다 no(알약에 적는 쪽 번호)를 붙인다 — 펼침에서만 나뉘는 3부 둘째 쪽은 첫 쪽과 같은 번호, 뒤표지는 번호 없음
 function pagePlan(nb, spread) {
   const n = nb.part2.items.length;
-  const cuts = [0, ...P2_SPLIT[spread ? 'spread' : 'single'].filter((c) => c > 0 && c < n), n];
+  const cuts = [0, ...P2_SPLIT.filter((c) => c > 0 && c < n), n];
   const p2 = cuts.slice(0, -1).map((from, i) => ({ ch: 'p2', from, to: cuts[i + 1], first: i === 0, last: i === cuts.length - 2 }));
-  return [{ ch: 'cover' }, { ch: 'p1' }, ...p2, { ch: 'p3' }, { ch: 'end' }];
+  // 3부: 한 쪽씩이면 사진 둘이 한 쪽에, 펼침이면 두 쪽(왼쪽: 제목 · 말풍선 · 사진 ① / 오른쪽: 사진 ②)
+  const shots = nb.part3.photos.length;
+  const p3 = spread && shots > 1
+    ? [{ ch: 'p3', from: 0, to: 1, first: true }, { ch: 'p3', from: 1, to: shots, first: false }]
+    : [{ ch: 'p3', from: 0, to: shots, first: true }];
+  const plan = [{ ch: 'cover' }, { ch: 'p1' }, ...p2, ...p3, { ch: 'end' }];
+  // 뒤표지는 마지막 쪽이 펼침의 왼쪽에 올 때만 그 오른쪽에 둔다(표지 뒤의 쪽 수가 홀수)
+  if (spread && (plan.length - 1) % 2 === 1) plan.push({ ch: 'back' });
+  let no = 0;
+  plan.forEach((p) => {
+    p.no = p.ch === 'back' ? null : p.ch === 'p3' && !p.first ? no : ++no;
+  });
+  return plan;
 }
 
 // 면 = 한 번에 보이는 쪽. 한 쪽씩이면 [쪽], 펼침이면 [왼쪽, 오른쪽](빈 자리는 null) — 표지는 오른쪽에 홀로
@@ -108,7 +123,8 @@ function renderPage(nb, p) {
   if (p.ch === 'cover') return pageCover(nb.cover);
   if (p.ch === 'p1') return pagePart1(nb.part1);
   if (p.ch === 'p2') return pagePart2(nb.part2, p);
-  if (p.ch === 'p3') return pagePart3(nb.part3);
+  if (p.ch === 'p3') return pagePart3(nb.part3, p);
+  if (p.ch === 'back') return pageBackCover();
   return pageFolded(nb.folded);
 }
 
@@ -169,9 +185,12 @@ function setupNotebook(view) {
 
   const syncNav = () => {
     const shown = views[cur].filter((i) => i !== null);
-    const first = shown[0] + 1;
-    const last = shown[shown.length - 1] + 1;
-    indicator.textContent = `${first === last ? first : `${first}–${last}`} / ${pages.length}`;
+    // 두 화면이 같은 일곱 쪽을 센다(쪽 번호는 pagePlan의 no — 뒤표지는 세지 않는다)
+    const nos = shown.map((i) => plan[i].no).filter((x) => x !== null);
+    const first = Math.min(...nos);
+    const last = Math.max(...nos);
+    const total = Math.max(...plan.map((p) => p.no || 0));
+    indicator.textContent = `${first === last ? first : `${first}–${last}`} / ${total}`;
     prevBtn.disabled = cur === 0;
     nextBtn.disabled = cur === views.length - 1;
     const here = new Set(shown.map((i) => plan[i].ch));
@@ -559,18 +578,26 @@ function pagePart2(p, slice) {
   ${sheetClose()}`;
 }
 
-function pagePart3(p) {
-  // 사진은 단추 — 누르면 크게 보는 창이 뜬다(10/11 가). 단추 이름은 사진 이름과 설명(이미 있는 문구)이 맡는다
+function pagePart3(p, slice) {
+  // 사진은 단추 — 누르면 크게 보는 창이 뜬다(10/11 가). 단추 이름은 사진 이름과 설명(이미 있는 문구)이 맡는다.
+  // 펼침에서는 사진마다 한 쪽(10/11(2)) — 이어지는 쪽은 2부처럼 같은 제목 줄에 '(계속)'(확정 문구 labels.continued)
+  const isCont = !slice.first;
   return `${sheetOpen('p3')}
-    <h2 class="nb-h2"><span>${esc(p.title)}</span></h2>
-    <div class="nb-quote">
+    <h2 class="nb-h2"><span>${esc(p.title)}</span>${isCont ? `<span class="nb-cont">${esc(NL().continued)}</span>` : ''}</h2>
+    ${
+      isCont
+        ? ''
+        : `<div class="nb-quote">
       <img src="${SPRITES.sd.normal}" alt="" class="nb-quote-sd">
       <div class="nb-quote-bubble">${esc(p.quote)}</div>
-    </div>
+    </div>`
+    }
     <div class="nb-photos">
       ${p.photos
-        .map(
-          (ph, i) => `
+        .slice(slice.from, slice.to)
+        .map((ph, k) => {
+          const i = slice.from + k; // 사진 번호는 3부 전체에서 센다 — 사진 창 · 기울기 · 테이프 자리가 사진을 따라간다
+          return `
         <div class="nb-polaroid photo p${i + 1}">
           <button type="button" class="nb-photo-btn" data-i="${i}" aria-haspopup="dialog">
             <span class="nb-polaroid-inner">
@@ -579,11 +606,22 @@ function pagePart3(p) {
             </span>
           </button>
           <span class="nb-tape small t${i + 1}" aria-hidden="true"></span>
-        </div>`
-        )
+        </div>`;
+        })
         .join('')}
     </div>
   ${sheetClose()}`;
+}
+
+// 뒤표지 — 펼친 수첩 마지막 면의 오른쪽 쪽(10/11(2)). 표지와 같은 크라프트 · 같은 크기이고 글자가 없다.
+// 움직이지 않는 그림이다(7/30 결정 — 닫히는 연출 없음). 첫 면(표지)과 짝을 이룬다
+function pageBackCover() {
+  return `
+  <section class="nb-page" data-ch="back" aria-hidden="true">
+    <div class="nb-paper nb-cover">
+      <div class="nb-spiral"></div>
+    </div>
+  </section>`;
 }
 
 // 마지막 쪽 — 사건 종결(10/11 수첩 끝): 편지 끝의 서명과 작은 얼굴 도장, 클립에 물린 명함(연락처 · PDF), 돌아가기,

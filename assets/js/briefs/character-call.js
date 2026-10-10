@@ -188,7 +188,7 @@ export function playCharacterCall(host, cfg, onComplete, _ev, kit = {}) {
 
   function buildMatch() {
     // 머리말 오른쪽의 안내 알약은 10/10 사용자 결정(마3)으로 뺐다 — 데이터 lead.prompt_at: 'action'(E2 · E3 · E5와 같은 방식).
-    // 첫 행동(맞히기) 곁에는 이미 사용법 줄(match_help)과 '지금 누를 것' 표시가 있어 문구를 따로 옮겨 붙이지 않는다
+    // 첫 행동(맞히기) 곁에는 이미 사용법 말풍선(match_help)과 '지금 누를 것' 표시가 있어 문구를 따로 옮겨 붙이지 않는다
     const m = cfg.match || {};
     // 왼쪽 칸에 '무엇을 하는 칸인지'와 카드 묶음을 세우고, 오른쪽에 초상 셋을 둔다 —
     // 첫 화면에서 카드와 얼굴이 나란히 보여야 설명 없이 바로 맞힌다(10/06, 맞히기가 첫 장이 되면서)
@@ -235,7 +235,9 @@ export function playCharacterCall(host, cfg, onComplete, _ev, kit = {}) {
     });
     cards.addEventListener('pointerdown', onDown);
     side.appendChild(cards);
-    side.appendChild(txt('p', t.match_help, 'cc-match-help'));
+    // 사용법은 다른 페이지처럼 '지금 누를 것' 옆 붉은 말풍선(.cue-note) — 자리는 카드 묶음 바로 아래 그대로, 꼬리는 카드 묶음 쪽(위)이다(10/11 작은 정리 3).
+    // 전에는 12.8px 흐린 줄이라 안내로 읽히지 않았다. 문구는 그대로이고, 말풍선은 표시(cueOn)와 함께 보이고 함께 거둔다(한 장을 맞히면 거둔다)
+    side.appendChild(txt('p', t.match_help, 'cue-note points-up cc-match-help'));
     const count = txt('div', `0 / ${order.length}`, 'cc-quiz-count');
     count.setAttribute('aria-live', 'polite');
     side.appendChild(count);
@@ -425,16 +427,14 @@ export function playCharacterCall(host, cfg, onComplete, _ev, kit = {}) {
       cuts.appendChild(cut('cc-gain', t.remained, ep.gain_label, ep.gain_img));
       a.appendChild(cuts);
 
+      // 회차의 문장(그 장면이 맡긴 역할)은 컷 이름표 한 줄이 말한다. 그 아래 '✓ 역할' 줄은 같은 문장이라 뺐다(10/11 기회 8 —
+      // 회차마다 한 줄이 통째로 빠지고, 본문 글꼴에 없는 ✓ 글자도 함께 사라진다. 데이터의 done_mark는 남겨 둔다).
+      // 다시 보기에서 드러나는 한 줄(gain)은 비어 있던 옆 칸 — '새로 드러난 면모' 컷 바로 아래, 캐릭터가 내려앉은 칸 옆 — 에 놓는다
       const lanes = el('div', 'cc-lanes');
       const slot = el('div', 'cc-ep-slot');
       slot.textContent = t.awaiting || '';
-      lanes.appendChild(slot);
+      lanes.append(slot, txt('p', ep.gain, 'cc-ep-gain'));
       a.appendChild(lanes);
-
-      const out = el('div', 'cc-ep-out');
-      out.appendChild(txt('span', `${t.done_mark || ''}${ep.role}`, 'cc-ep-role'));
-      out.appendChild(txt('span', ep.gain, 'cc-ep-gain'));
-      a.appendChild(out);
       stream.appendChild(a);
     });
   }
@@ -627,10 +627,18 @@ export function playCharacterCall(host, cfg, onComplete, _ev, kit = {}) {
       row.querySelector('.cc-ep-slot').textContent = t.awaiting || '';
     });
     clearFlying();
+    // 내려앉는 자리 — 첫 회차의 '등장 대기' 칸이 막 트리거 줄(화면 78%)을 넘는 곳(10/11 사용자 결정, 재채점 P2).
+    // 내려앉으면 scrollToY가 부르는 sweep이 그 회차를 펼쳐 첫 캐릭터가 바로 다시 내려온다 — 설명 없이 '이어서 내려가면 된다'가 보인다.
+    // 전에는 연재 첫 행이 트리거 줄 아래에 남도록 넉넉히 올라가 다 끝난 맞히기 칸에 멈췄고, '처음으로 돌아갔다'로 읽혔다.
+    // 줄을 넘는 최소한만 내린다 — 둘째 회차의 칸은 한참 아래라 함께 걸리지 않고, 컷은 위에 붙은 시트 줄 아래에 남는다.
+    // 자리는 아래의 되감기 연출(행이 6px 내려갔다 돌아온다)을 걸기 전에 잰다. 줄보다 2px 더 내려 두어, 배율이 걸린 화면에서 스크롤이
+    // 기기 픽셀로 맞춰지며 1px 모자라 줄에 못 미치는 일이 없게 한다. 움직임 줄이기 · 가려진 탭이면 scrollToY가 바로 이 자리로 옮긴다
+    const firstSlot = rows()[0]?.querySelector('.cc-ep-slot');
+    const top = firstSlot
+      ? Math.max(0, Math.ceil(firstSlot.getBoundingClientRect().top + window.scrollY - window.innerHeight * TRIGGER) + 2)
+      : Math.max(0, streamEl.getBoundingClientRect().top + window.scrollY - window.innerHeight * TRIGGER);
     sequence(rows().reverse().map((el, i) => ({ el, frames: [{ backgroundColor: 'rgba(85,120,150,.13)', transform: 'translateY(6px)' }, { backgroundColor: 'transparent', transform: 'none' }], at: i * 45, duration: 260 })));
     veil.classList.add('cc-on');
-    // 연재 첫 행이 아직 트리거 줄 아래에 있도록 넉넉히 올라간다 — 덜 올라가면 착지하자마자 첫 행들이 한꺼번에 걸린다
-    const top = Math.max(0, streamEl.getBoundingClientRect().top + window.scrollY - window.innerHeight * TRIGGER);
     scrollToY(top, 650, () => after(200, () => veil.classList.remove('cc-on')));
   }
 
@@ -799,7 +807,7 @@ export function playCharacterCall(host, cfg, onComplete, _ev, kit = {}) {
 
   // 지금 누를 것 — 한 번에 하나만 붙인다(style.css .cue). 할 일을 마치면 다음 할 일로 옮겨 간다.
   // 이 페이지는 표시가 여러 번 옮겨 가서, 화면에 들어온 뒤 세 번만 퍼지고 고정 테두리로 남는다(.cue-step).
-  // 누를 것 바로 앞에 놓인 말풍선(.cue-note)은 표시와 함께 보이고 함께 사라진다.
+  // 누를 것 바로 앞이나 바로 뒤에 놓인 말풍선(.cue-note — 맞히기 사용법은 카드 묶음 바로 뒤)은 표시와 함께 보이고 함께 사라진다.
   function cueOn(target) {
     stopCue?.();
     stopCue = null;
@@ -807,8 +815,9 @@ export function playCharacterCall(host, cfg, onComplete, _ev, kit = {}) {
     root.querySelectorAll('.cue-note').forEach((n) => { n.hidden = true; });
     if (!target) return;
     target.classList.add('cue', 'cue-step');
-    const hint = target.previousElementSibling;
-    if (hint && hint.classList.contains('cue-note')) hint.hidden = false;
+    [target.previousElementSibling, target.nextElementSibling].forEach((hint) => {
+      if (hint && hint.classList.contains('cue-note')) hint.hidden = false;
+    });
     const io = new IntersectionObserver((entries) => {
       if (!entries.some((e) => e.isIntersecting)) return;
       io.disconnect();

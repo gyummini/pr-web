@@ -71,6 +71,8 @@ const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 
     // ② 판단 — 근거·질문이 열리고, 지금 누를 것은 덜어내기
     assert.equal(await page.locator('.cp-question').innerText(), E3.chapters[2].title.replace(/\n/g, '\n'));
+    // 판단 칸은 바탕과 여백으로 갈린다 — 굵은 왼쪽 띠는 절 제목 · 알림 전용이라 뺐다(10/11 작은 정리 4)
+    assert.equal(await page.locator('.cp-judge').evaluate((n) => getComputedStyle(n).borderLeftWidth), '0px', 'the judgment box has no thick left band');
     assert.deepEqual(await cueClass(page), ['cp-cut']);
     assert.equal(await page.locator('.cp-guide').innerText(), t.guide_cut);
     await page.locator('.cp-cut').click();
@@ -112,6 +114,13 @@ const wait = (ms) => new Promise((r) => setTimeout(r, ms));
     // 두 수가 한 화면에 나란히 — 처음 게임 칸과 강화 칸의 아래 끝이 같은 높이(10/11 재7)
     const side = await page.evaluate(() => { const a = document.querySelector('.cp-was').getBoundingClientRect(); const b = document.querySelector('.cp-presses').getBoundingClientRect(); return { dy: Math.abs(a.bottom - b.bottom), left: a.right <= b.left }; });
     assert.ok(side.dy <= 2 && side.left, `the two counts sit side by side ${JSON.stringify(side)}`);
+    // 그 두 줄의 숫자만 결론 줄의 무게(17px · 800) — 확정 문구는 그대로이고 {n} 자리의 값만 감싼다(10/11 기회 6). 두 숫자는 같은 높이
+    const nums = await page.evaluate(() => [...document.querySelectorAll('.cp-was-line .cp-n, .cp-presses .cp-n')].map((n) => {
+      const c = getComputedStyle(n); const r = n.getBoundingClientRect();
+      return { text: n.textContent, size: c.fontSize, weight: c.fontWeight, top: Math.round(r.top), bottom: Math.round(r.bottom) };
+    }));
+    assert.deepEqual(nums.map((n) => [n.text, n.size, n.weight]), [[String(presses), '16.96px', '800'], ['1', '16.96px', '800']], 'only the numbers take the conclusion weight');
+    assert.ok(Math.abs(nums[0].top - nums[1].top) <= 1 && Math.abs(nums[0].bottom - nums[1].bottom) <= 1, `the two numbers sit at the same height ${JSON.stringify(nums)}`);
     // 빨강은 '지금 누를 것'에만(10/11 재7) — 지나가는 줄 · 덜어낸 칸 · 부족 · 오름 표시는 E3 팔레트
     const red = await page.evaluate(() => {
       const accent = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim();
@@ -126,6 +135,7 @@ const wait = (ms) => new Promise((r) => setTimeout(r, ms));
     assert.equal(await page.locator('.cp-caption').evaluate((n) => getComputedStyle(n).fontSize), '16.96px');
     assert.equal(await page.locator('.cp-kept').isVisible(), true);
     assert.equal(await page.locator('.brief-recap').isVisible(), true, 'the conclusion opens');
+    assert.equal(await page.locator('.brief-closing').evaluate((n) => getComputedStyle(n).borderLeftWidth), '0px', 'the closing line has no thick left band (10/11)');
     // 끝난 뒤에도 계속 강화할 수 있다 — 골드가 다시 모이면 버튼이 돌아온다
     await page.waitForFunction(() => !document.querySelector('.cp-enhance').disabled, null, { timeout: 15000 });
     assert.equal(await page.evaluate(() => (document.querySelector('.cp').innerText.match(/\p{Extended_Pictographic}/gu) || []).length), 0, 'no emoji stand-ins');
@@ -187,6 +197,18 @@ const wait = (ms) => new Promise((r) => setTimeout(r, ms));
     // 머리의 원본 문서는 다른 페이지와 같은 크기, 건너뛰기는 E1과 같은 사이트 보조 단추(10/11 재9)
     assert.deepEqual(await laptop.evaluate(() => { const r = document.querySelector('.brief-head-doc .btn').getBoundingClientRect(); return [Math.round(r.height), getComputedStyle(document.querySelector('.brief-head-doc .btn')).fontSize]; }), [46, '14.72px'], 'the original document button is the common size');
     assert.equal(await laptop.locator('.cp-skip').evaluate((b) => b.classList.contains('btn') && b.classList.contains('ghost')), true, 'the skip is the site ghost button');
+    // 키보드로 '포트폴리오 화면으로 돌아가기'를 누르면 보관함 맨 위가 아니라 이 증거의 카드 자리로 내려앉고, 그 카드에 초점이 간다(10/11 기회 5).
+    // 1366×768 보관함 맨 위에서 E3 카드는 화면 밖(y 814 ~)이었다
+    await laptop.locator('.brief-foot a').focus();
+    await laptop.keyboard.press('Enter');
+    await laptop.locator('.ev-grid').waitFor();
+    const kb = await laptop.evaluate(() => {
+      const card = document.querySelector('.ev-card[data-eid="E3"]');
+      const r = card.getBoundingClientRect();
+      const head = document.getElementById('site-header').getBoundingClientRect().bottom;
+      return { focused: document.activeElement === card, ring: card.matches(':focus-visible'), inView: r.top >= head && r.bottom <= innerHeight, marked: card.classList.contains('is-back') };
+    });
+    assert.deepEqual(kb, { focused: true, ring: true, inView: true, marked: true }, `keyboard back lands on the E3 card with focus ${JSON.stringify(kb)}`);
     await laptop.close();
 
     // 좁은 화면
@@ -203,6 +225,6 @@ const wait = (ms) => new Promise((r) => setTimeout(r, ms));
     }
 
     assert.deepEqual(errors, []);
-    console.log('PASS E3 cut play: first game cue path and presses, judgment, cut, lane drag/click into 8 slots, pictures and credit, evolution, conclusion line, end buttons without restart, shortage notice fades, timed cut, PC notice and 320–1440px.');
+    console.log('PASS E3 cut play: first game cue path and presses, judgment (no left band), cut, lane drag/click into 8 slots, pictures and credit, evolution, the two counts with the numbers at conclusion weight, conclusion line, closing line without a left band, end buttons without restart, keyboard back lands on the card, shortage notice fades, timed cut, PC notice and 320–1440px.');
   } finally { await browser.close(); }
 })().catch((e) => { console.error(e); process.exitCode = 1; });

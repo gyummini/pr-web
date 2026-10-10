@@ -251,8 +251,9 @@ export function playCutPlay(host, cfg, onComplete, _ev, kit = {}) {
     rollA = rng(seed);
     rollB = rng(seed + 1);
     rollC = rng(seed + 2);
+    // pressN · wasN — '강화 한 번까지 N번'의 N(출시한 게임 · 덜어낸 칸에 남긴 처음 게임). 아직 없으면 null
     state = {
-      phase: 'first', tried: false, judge: false, done: false, busy: false, presses: 0, pressLine: '', wasLine: '', msg: '', tone: '',
+      phase: 'first', tried: false, judge: false, done: false, busy: false, presses: 0, pressN: null, wasN: null, msg: '', tone: '',
       iron: 0, coal: 0, gold: 0, level: 0, hp: durability, broken: false, pi: 0, trend: 0,
       history: Array.from({ length: 12 }, (_, i) => prices[i % prices.length]),
       lane: [], room: Array(slots).fill(null), sel: -1, took: false, fgold: Number(B.start_gold) || 0, lastSpawn: 0, finalCount: 0, motion: '', popSlot: -1,
@@ -475,7 +476,7 @@ export function playCutPlay(host, cfg, onComplete, _ev, kit = {}) {
   function settled(outcome) {
     state.tone = outcome;
     state.motion = outcome;
-    state.pressLine = fill(t.presses, { n: state.presses });
+    state.pressN = state.presses;
     state.presses = 0;
   }
 
@@ -529,8 +530,8 @@ export function playCutPlay(host, cfg, onComplete, _ev, kit = {}) {
     state.phase = 'cutting';
     state.judge = true;
     // 처음 게임의 '강화 한 번까지 N번'은 지우지 않고 덜어낸 칸에 남긴다 — 출시한 게임의 '1번'과 한 화면에 나란히(10/11 재7)
-    state.wasLine = state.pressLine;
-    state.msg = ''; state.tone = ''; state.pressLine = ''; state.presses = 0;
+    state.wasN = state.pressN;
+    state.msg = ''; state.tone = ''; state.pressN = null; state.presses = 0;
     paint();
     const land = () => {
       cutTimer = null;
@@ -582,8 +583,8 @@ export function playCutPlay(host, cfg, onComplete, _ev, kit = {}) {
       zone(id).classList.toggle('is-gone', final);
     });
     // 덜어낸 경제 칸(강화 칸 바로 옆)에 처음 게임의 횟수 — 처음 게임을 건너뛰었으면 남길 것이 없다
-    if ($('.cp-was-line').textContent !== state.wasLine) $('.cp-was-line').textContent = state.wasLine;
-    $('.cp-was').hidden = !(final && state.wasLine);
+    paintPresses($('.cp-was-line'), state.wasN);
+    $('.cp-was').hidden = !(final && state.wasN != null);
 
     // 강화대 — 처음 게임은 곡괭이, 출시한 게임은 방에서 고른 브레인롯
     $('.cp-first').hidden = final;
@@ -605,7 +606,7 @@ export function playCutPlay(host, cfg, onComplete, _ev, kit = {}) {
     // 알림 칸(role=status)은 문장이 바뀔 때만 쓴다 — 같은 문장을 다시 쓰면 화면 낭독기가 되풀이해 읽었다(10/06 점검: 5초에 20번)
     if ($('.cp-msg').textContent !== state.msg) $('.cp-msg').textContent = state.msg;
     $('.cp-msg').dataset.tone = state.tone;
-    $('.cp-presses').textContent = state.pressLine;
+    paintPresses($('.cp-presses'), state.pressN);
     if (state.motion) { flourish(state.motion, final); state.motion = ''; }
 
     skipBtn.hidden = !first || state.judge;
@@ -671,6 +672,20 @@ export function playCutPlay(host, cfg, onComplete, _ev, kit = {}) {
     $('.cp-rate-b').textContent = rot ? fill(t.rate_final, { s: rot.success, k: rot.keep, d: rot.drop }) : '';
     $('.cp-fcost').textContent = rot ? fill(t.final_cost, { n: rot.cost }) : '';
     $('.cp-fcost').classList.toggle('is-short', !!rot && state.fgold < rot.cost);
+  }
+
+  // '강화 한 번까지 N번 눌렀습니다' — 확정 문구는 그대로 두고 {n} 자리에 든 숫자만 결론 줄의 무게(17px · 800)로 감싼다(10/11 기회 6).
+  // 처음 게임의 8번과 출시한 게임의 1번이 12.8px 보조 글씨라 덜어내기의 효과가 숫자로 읽히지 않았다. 같은 수면 다시 그리지 않는다
+  function paintPresses(node, n) {
+    const key = n == null ? '' : String(n);
+    if (node.dataset.n === key) return;
+    node.dataset.n = key;
+    node.replaceChildren();
+    if (n == null) return;
+    String(t.presses || '').split(/(\{n\})/).forEach((part) => {
+      if (part === '{n}') node.append(el('b', 'cp-n', key));
+      else if (part) node.append(document.createTextNode(part));
+    });
   }
 
   // 지나가는 줄 — 있는 것은 그대로 두고(움직임이 끊기지 않게) 새로 나온 것만 더하고, 사라진 것만 뺀다

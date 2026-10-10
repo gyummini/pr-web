@@ -120,12 +120,13 @@ export function renderDossier(view, routePart) {
   };
 }
 
-// 목차 칸의 수집 표시 — 그 장에서 세는 증거마다 네모 하나. 모은 것은 채운다(10/10 다1). 글자 없이 모양만이라 화면 낭독기에는 감춘다
+// 목차 칸의 수집 표시 — 그 장에서 세는 증거마다 둥근 칸 하나(10/10 다1). 모은 것은 그 증거 번호가 찍힌 작은 도장이 된다(10/11 기회 1 —
+// 번호는 칸에 미리 들어 있고 모은 뒤에만 보인다). 모양으로 말하는 표시라 화면 낭독기에는 감춘다
 function marksHtml(chId) {
   const ids = chapterEvidence(chId).filter((e) => counts(e.id)).map((e) => e.id);
   if (!ids.length) return '';
   return `<span class="idx-marks" aria-hidden="true">${ids
-    .map((id) => `<i class="idx-mark${state.collected.has(id) && !unlanded.has(id) ? ' on' : ''}" data-eid="${id}"></i>`)
+    .map((id) => `<i class="idx-mark${state.collected.has(id) && !unlanded.has(id) ? ' on' : ''}" data-eid="${id}">${id}</i>`)
     .join('')}</span>`;
 }
 
