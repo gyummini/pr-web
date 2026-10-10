@@ -63,7 +63,10 @@ const pickName = (id) => E5.cards[id].name;
     assert.equal(await page.locator('.ocx-stage-ghost .ocx-empty').innerText(), t.stays_empty, 'the old journey stays empty in the same column');
     assert.equal(await page.locator('.ocx-cell.is-main.dot-lit').count(), 4, 'the fixed stops pass');
     assert.equal(await page.locator('.oc-caption').innerText(), t.caption);
-    assert.equal(await page.locator('.cue').count(), 0, 'the cue is spent after the first pick');
+    // 처음 표시(.cue — 첫 선택까지 계속 퍼짐)와 말풍선은 첫 선택에 거두고, 첫 결과가 나온 뒤에는 '한 번 더' — 후보 패에 세 번만 퍼지는
+    // 표시(.cue-step) 하나(10/11 사용자 결정 재9, DESIGN.md 13절 원칙 7). 전에는 첫 선택 뒤 표시가 하나도 없었다(이 줄이 0을 보았다)
+    assert.equal(await page.locator('.cue').count(), 1, 'after the first result, one cue calls once more');
+    assert.equal(await page.locator('.ocx-bench.cue.cue-step').count(), 1, 'the once-more cue is the three-ring step on the candidates');
     assert.equal(await page.locator('.ocx-five .cue-note').isHidden(), true);
     assert.equal(await page.locator('.ocx-bench-label').innerText(), t.choose, 'the candidates become "try another relation"');
     assert.equal(await page.locator('.brief-recap').isVisible(), true);
@@ -71,6 +74,7 @@ const pickName = (id) => E5.cards[id].name;
     // 후보 패가 곧 '다른 관계로 바꿔 보기' — 내려온 카드는 후보 자리로, 처음 카드로 돌리면 실이 사라진다
     for (const s of [E5.sets[1], E5.sets[2], E5.sets[0]]) {
       await page.locator(`.ocx-pick[data-id="${s.swap}"]`).click();
+      assert.equal(await page.locator('.cue').count(), 0, 'picking again spends the once-more cue');
       assert.equal(await page.locator('.ocx-card.is-five figcaption').innerText(), pickName(s.swap));
       assert.equal(await page.locator('.ocx-knot').innerText(), s.name);
       assert.equal((await page.locator('.ocx-stage-main .oc-insert').innerText()).includes(s.event ? quote(s.event) : t.tbd), true, s.name);
@@ -94,14 +98,57 @@ const pickName = (id) => E5.cards[id].name;
     }
     await page.setViewportSize({ width: 1440, height: 1000 });
 
-    await page.getByRole('button', { name: UI.brief.restart, exact: true }).click();
-    assert.equal(await page.locator('.ocx').getAttribute('data-state'), 'a');
-    assert.equal(await page.locator('.brief-recap').isHidden(), true);
-    assert.equal(await page.locator('.ocx-journey').isHidden(), true, 'restart closes the journeys again');
-    assert.equal(await page.locator('.oc-caption').innerText(), '');
-    assert.equal(await page.locator('.ocx-bench').evaluate(b => b.classList.contains('cue')), true, 'a fresh start cues the bench again');
-    assert.equal(await page.locator('.ocx-five .cue-note').isVisible(), true);
-    assert.equal(await page.locator('.ocx-card.is-five figcaption').innerText(), pickName(E5.swap_out));
+    // 결론 한 줄은 공통 부품(이름표 + 17px 굵게, 10/10 마6). 끝 단추는 원본 문서와 '포트폴리오 화면으로 돌아가기' —
+    // '다시 해보기'는 뺐다(바3). 처음 카드로 돌리면 처음 모습으로 돌아가는 것은 위에서 본다
+    assert.equal(await page.locator('.oc-concl .brief-concl-key').innerText(), UI.brief.conclusion);
+    assert.equal(await page.locator('.oc-caption').evaluate((n) => getComputedStyle(n).fontSize), '16.96px');
+    assert.deepEqual(await page.locator('.brief-docs a, .brief-docs button, .brief-foot a').allInnerTexts(), [UI.brief.original_doc, UI.brief.back], 'E5 end buttons');
+    assert.equal(await page.getByRole('button', { name: UI.brief.restart, exact: true }).count(), 0, 'no restart button');
+
+    // 휴대폰(≤1180) — 첫 선택 뒤 결과(빈 시간 칸과 결론 한 줄)까지 데려간다(10/10 마7).
+    // '한 장 차이'는 그림 안쪽 아래 — 이름이 두 줄이 되는 좁은 폭에서도 이름을 덮지 않는다
+    const phone = await browser.newPage({ viewport: { width: 390, height: 844 }, reducedMotion: 'reduce' });
+    phone.on('pageerror', e => errors.push(e.message));
+    await phone.goto(origin + '/evidence/E5/interactive');
+    await phone.locator('.ocx').waitFor();
+    await phone.locator('.ocx-pick').first().click();
+    assert.ok(await phone.evaluate(() => {
+      const stage = document.querySelector('.ocx-stage-main').getBoundingClientRect();
+      const line = document.querySelector('.oc-caption').getBoundingClientRect();
+      return stage.top >= 0 && stage.bottom <= innerHeight && line.bottom <= innerHeight;
+    }), 'the first pick brings the result into view on a phone');
+    for (const width of [320, 375]) {
+      await phone.setViewportSize({ width, height: 700 });
+      for (const s of [E5.sets[1], E5.sets[2], E5.sets[0]]) {
+        await phone.locator(`.ocx-pick[data-id="${s.swap}"]`).click();
+        assert.ok(await phone.evaluate(() => {
+          const one = document.querySelector('.oc-one').getBoundingClientRect();
+          const img = document.querySelector('.ocx-card.is-five img').getBoundingClientRect();
+          const name = document.querySelector('.ocx-card.is-five figcaption').getBoundingClientRect();
+          return one.top >= img.top && one.bottom <= img.bottom + 0.5 && one.bottom <= name.top + 0.5;
+        }), `'one card' badge stays inside the picture at ${width}px (${s.name})`);
+      }
+    }
+    await phone.close();
+
+    // 노트북 높이(1366×768 · 1280×720) — 고른 직후 결과(빈 시간 칸)와 결론 한 줄이 화면 안. 전에는 ≤1180px에서만 화면을 옮겨
+    // 결론 줄이 화면 아래(1366에서 y 844~891)였다(10/11 사용자 결정 재5 — 화면 폭 조건을 풀었다). 처음부터 다 보이면 움직이지 않는다
+    for (const [width, height] of [[1366, 768], [1280, 720], [1920, 1080]]) {
+      const laptop = await browser.newPage({ viewport: { width, height }, reducedMotion: 'reduce' });
+      laptop.on('pageerror', e => errors.push(e.message));
+      await laptop.goto(origin + '/evidence/E5/interactive');
+      await laptop.locator('.ocx').waitFor();
+      await laptop.locator('.ocx-pick').first().click();
+      const seen = await laptop.evaluate(() => {
+        const head = document.getElementById('site-header').getBoundingClientRect().bottom;
+        const stage = document.querySelector('.ocx-stage-main').getBoundingClientRect();
+        const line = document.querySelector('.oc-concl').getBoundingClientRect();
+        return { stage: stage.top >= head && stage.bottom <= innerHeight, line: line.top >= head && line.bottom <= innerHeight, y: Math.round(scrollY) };
+      });
+      assert.deepEqual({ stage: seen.stage, line: seen.line }, { stage: true, line: true }, `the result and the conclusion line are on screen at ${width}x${height} (scrollY ${seen.y})`);
+      if (width === 1920) assert.equal(seen.y, 0, 'nothing moves when the result is already on screen');
+      await laptop.close();
+    }
 
     // 시간에 따라 걷는 진행 — 걸음은 지난 시간에서 나오고, 가려진 탭은 멈추지 않고 끝까지 마친다
     const timed = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
@@ -119,6 +166,6 @@ const pickName = (id) => E5.cards[id].name;
     await timed.evaluate(() => { delete document.hidden; });
 
     assert.deepEqual(errors, []);
-    console.log('PASS E5 one card: board as the control, candidates, thread and knot, drop into the empty time, additions in one cell, ghost lane, three relations and back, keyboard, restart, hidden-tab settle, 320–1440px.');
+    console.log('PASS E5 one card: board as the control, candidates, thread and knot, drop into the empty time, additions in one cell, ghost lane, three relations and back, keyboard, conclusion line, end buttons without restart, phone brings the result into view, badge inside the picture, hidden-tab settle, 320–1440px.');
   } finally { await browser.close(); }
 })().catch(e => { console.error(e); process.exitCode = 1; });

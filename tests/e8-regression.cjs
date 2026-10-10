@@ -114,6 +114,21 @@ const ch = (no) => `.lg-ch[data-chapter="${no}"]`;
     // 참고 | 결과는 같은 크기 칸
     const pair = await page.locator(`${c2} .lg-pair:not([hidden]) .lg-pocket`).evaluateAll(ns => ns.map(n => [Math.round(n.getBoundingClientRect().width), Math.round(n.getBoundingClientRect().height)]));
     assert.deepEqual(pair[0], pair[1], 'reference and result pockets are the same size');
+    // 결과 그래프 넷은 패널 폭에 맞춰 다시 그린 그림(10/11 사용자 결정 재8 — 2.5배로 찍은 1225px). 1440에서 그림 칸 폭(약 490px)을 다 쓰고,
+    // 02장 시세 그래프는 참고 아래로 옮겨 나란히 놓였을 때(237px)보다 크다. 3-1 · 5-1의 원래 크기 링크는 그대로
+    for (const name of ['chart_price', 'chart_boards', 'chart_pass', 'chart_commits']) {
+      const shown = await page.evaluate((n) => {
+        const img = [...document.querySelectorAll('.lg-ev img')].find((i) => i.src.endsWith(`/${n}.webp`) && !i.closest('.lg-tab'));
+        const panel = img.closest('[role="tabpanel"]');
+        if (panel && panel.hidden) document.getElementById(panel.getAttribute('aria-labelledby')).click();
+        const r = img.getBoundingClientRect();
+        return { w: Math.round(r.width), natural: img.naturalWidth || Number(img.getAttribute('width')), stacked: !!img.closest('.lg-stack'), zoom: !!img.closest('a.lg-zoom') };
+      }, name);
+      assert.ok(shown.w >= 480 && shown.natural >= 1200, `${name} fills the panel at 1440 ${JSON.stringify(shown)}`);
+      if (name === 'chart_price') assert.equal(shown.stacked, true, 'the price chart sits under its reference');
+      assert.equal(shown.zoom, true, `${name} opens at full size`); // 10/11 재8: 네 그래프 모두(02-3 · 03-1 · 05-1 · 07-2)
+    }
+    await tabs.nth(0).click();
 
     // 움직임 줄이기: 모든 영상이 멈춘 채 '재생', 누르면 그 영상만 돈다
     const res = page.locator(`${c2} [role="tabpanel"]`).nth(0).locator('.lg-side.result');
@@ -143,6 +158,8 @@ const ch = (no) => `.lg-ch[data-chapter="${no}"]`;
     await page.locator('.lg-rail-item', { hasText: B.credits.title }).click();
     assert.equal(await credits.evaluate(d => d.open && document.activeElement === d.querySelector('summary')), true);
     assert.equal(await page.locator('.brief-foot a[href="/evidence"]').count(), 1);
+    // 끝 단추 줄은 다른 인터랙티브 페이지처럼 페이지 내용의 왼쪽 끝(머리말 표지와 같은 세로선)에서 시작한다(10/11 재9 — 전에는 글 칸 x=180)
+    assert.equal(await page.evaluate(() => Math.round(document.querySelector('.brief-foot .btn').getBoundingClientRect().left - document.querySelector('.brief-head .evidence-cover').getBoundingClientRect().left)), 0, 'the end button starts on the cover line');
 
     // 본문 블록: 표 · 출처 링크(새 탭)
     const c8 = ch(B.chapters[7].no);
@@ -231,7 +248,12 @@ const ch = (no) => `.lg-ch[data-chapter="${no}"]`;
     await shelf.locator('.ev-card.collected[data-eid="E6"]').waitFor();
     assert.deepEqual(await shelf.evaluate(() => window.__opened), [EVS.find((e) => e.id === 'E6').url]);
     assert.equal(await shelf.locator('.ev-card[data-eid="E6"] .ev-open').innerText(), UI.common.open_doc);
-    assert.equal(await shelf.locator('.hidden-progress').innerText(), UI.evidence.hidden_progress.replace('{n}', '2').replace('{total}', '7'));
+    // 숨은 증거 칸의 8칸 눈금(10/10 라3) — 모은 증거 칸이 채워지고, 묶음 이름이 '증거 n / 7 수집'을 읽는다
+    const meterIs = async (n) => {
+      assert.equal(await shelf.locator('.hidden-meter').getAttribute('aria-label'), UI.evidence.hidden_progress.replace('{n}', String(n)).replace('{total}', '7'));
+      assert.equal(await shelf.locator('.hidden-meter .hm-cell.on').count(), n, `${n} cells filled`);
+    };
+    await meterIs(2);
     // E9(추가 포트폴리오, 10/08) — 10/09부터 에필로그 끝 '참고' 줄에 나오고 센다(사용자 결정): 보관함 요약에서 그 줄로 갈 수 있고 머리글은 EPILOGUE,
     // 잠금해제하면 배지로 날아 수집 개수(배지 · 수첩 진행)에 든다
     const bump = (b) => b.replace(/^\d+/, (n) => String(Number(n) + 1));
@@ -246,7 +268,7 @@ const ch = (no) => `.lg-ch[data-chapter="${no}"]`;
     await shelf.locator('.ev-card.collected[data-eid="E9"]').waitFor();
     assert.equal(await shelf.locator('.ev-card[data-eid="E9"] .ev-code').innerText(), UI.evidence.code.replace('{id}', 'E9').replace('{chapters}', UI.common.epilogue_label), 'card code names the epilogue');
     await shelf.waitForFunction((want) => document.querySelector('#badge').innerText === want, bump(badgeBeforeE9));
-    assert.equal(await shelf.locator('.hidden-progress').innerText(), UI.evidence.hidden_progress.replace('{n}', '3').replace('{total}', '7'));
+    await meterIs(3);
     if (E9.url) assert.equal((await shelf.evaluate(() => window.__opened)).at(-1), E9.url);
     // 에필로그의 E9 참고 줄 — 눌러도, 누르지 않고 장을 떠나 자동으로 모여도 배지가 하나 오르고 에필로그 완료 알림이 뜬다
     for (const press of [true, false]) {

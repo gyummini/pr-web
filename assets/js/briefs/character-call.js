@@ -1,6 +1,7 @@
 import { animate, sequence, effects, reducedMotion } from '../motion/animate.js';
 import { fromRect, moveFrom } from '../motion/flip.js';
 import { revealOnce } from '../motion/reveal.js';
+import { T } from '../text.js';
 // E1 · 캐릭터 호출 — 각인된 한 줄이 어떻게 입체감이 되는가.
 //
 // 다섯 장을 위에서 아래로 지난다. 첫 화면에 01 · 02장이 함께 있다(10/07 사용자 결정 — 맞히기는 첫 화면에서 바로 하되,
@@ -32,7 +33,8 @@ const RISE_AT = 620; // (다시 보기) 면모가 컷에서 시트로 올라가�
 const RISE_MS = 460; // 컷 → 시트
 const LAYER_STEP = 6; // 시트 뒤 종이 한 장의 어긋남(px)
 
-export function playCharacterCall(host, cfg, onComplete) {
+// kit.reach — 누른 뒤 볼 것을 화면에 들이는 껍데기의 도구(views/brief.js, 10/11 재5). 본체만 띄우는 테스트에는 없다
+export function playCharacterCall(host, cfg, onComplete, _ev, kit = {}) {
   const cast = new Map((cfg.cast || []).map((c) => [c.id, c]));
   const order = (cfg.order || []).filter((id) => cast.has(id));
   const eps = (cfg.episodes || []).filter((e) => cast.has(e.c));
@@ -185,6 +187,8 @@ export function playCharacterCall(host, cfg, onComplete) {
   /* ---------- 첫인상 — 맞히기 ---------- */
 
   function buildMatch() {
+    // 머리말 오른쪽의 안내 알약은 10/10 사용자 결정(마3)으로 뺐다 — 데이터 lead.prompt_at: 'action'(E2 · E3 · E5와 같은 방식).
+    // 첫 행동(맞히기) 곁에는 이미 사용법 줄(match_help)과 '지금 누를 것' 표시가 있어 문구를 따로 옮겨 붙이지 않는다
     const m = cfg.match || {};
     // 왼쪽 칸에 '무엇을 하는 칸인지'와 카드 묶음을 세우고, 오른쪽에 초상 셋을 둔다 —
     // 첫 화면에서 카드와 얼굴이 나란히 보여야 설명 없이 바로 맞힌다(10/06, 맞히기가 첫 장이 되면서)
@@ -235,13 +239,17 @@ export function playCharacterCall(host, cfg, onComplete) {
     const count = txt('div', `0 / ${order.length}`, 'cc-quiz-count');
     count.setAttribute('aria-live', 'polite');
     side.appendChild(count);
-    const skip = next(t.skip_match, 2);
-    skip.classList.add('cc-skip');
+    // 건너뛰기는 E3와 같은 모양 — 사이트의 보조 단추(.btn.ghost, 머리의 원본 문서 · 끝의 돌아가기와 같다). 10/11 재9 — 전에는 E1은 다음 장 단추와 같은
+    // 검은 테두리 단추, E3는 밑줄 글자였다
+    const skip = next(t.skip_match, 2, 'btn ghost cc-skip');
     side.appendChild(skip);
 
     const done = el('div', 'cc-match-done');
     done.hidden = true;
-    done.appendChild(lines('p', 'cc-match-1', m.done_title));
+    // 맞힌 직후의 결론 한 줄 — 다섯 페이지 공통 부품(이름표 + 17px 굵은 한 줄, 10/10 사용자 동의 마6). 전에는 34.5px 큰 제목이었다
+    const concl = el('div', 'brief-concl');
+    concl.append(txt('span', T('brief.conclusion'), 'brief-concl-key'), lines('p', 'cc-match-1 brief-concl-line', m.done_title));
+    done.appendChild(concl);
     done.appendChild(lines('p', 'cc-match-2', m.done_line));
     done.appendChild(next(t.to_stream, 2));
     main.appendChild(done);
@@ -250,6 +258,9 @@ export function playCharacterCall(host, cfg, onComplete) {
   function onDown(e) {
     const p = e.target.closest('.cc-plate');
     if (!p || p.classList.contains('cc-used') || drag || e.button !== 0) return;
+    // 좁은 화면의 손가락은 끌지 않는다 — 카드가 화면 폭을 거의 다 덮어, 쓸어 올리면 화면 대신 카드가 집혔다(10/11 재채점).
+    // 그때는 이미 있는 '고르고 누르기'로 맞힌다(안내 줄이 두 방법을 다 말한다)
+    if (e.pointerType === 'touch' && window.matchMedia && matchMedia('(max-width: 600px)').matches) return;
     e.preventDefault();
     const r = p.getBoundingClientRect();
     const ghost = p.cloneNode(true);
@@ -305,11 +316,13 @@ export function playCharacterCall(host, cfg, onComplete) {
     const from = ghost.getBoundingClientRect();
     const slot = slotAt(e.clientX, e.clientY);
     cancelDrag();
-    if (slot) matchPlate(src, slot, from);
+    if (slot) matchPlate(src, slot, from, false);
     else fromRect(src, from, { duration: 260 });
   }
 
-  function matchPlate(src, slot, from) {
+  // moveFocus — 누르기(마우스 · 키보드)로 맞히면 맞힌 칸에 초점을 둔다. 끌어서 맞히면 옮기지 않는다: 마우스로 끌었는데
+  // 키보드 초점 테두리가 맞힌 칸에 그려졌다(10/11 재채점). 끈 카드에 초점이 있었으면 그 카드가 꺼지므로 칸으로 옮긴다
+  function matchPlate(src, slot, from, moveFocus = true) {
     const zone = slot.querySelector('.cc-zone');
     if (src.classList.contains('cc-used') || zone.classList.contains('cc-done')) return;
     if (slot.dataset.id !== src.dataset.id) {
@@ -329,17 +342,21 @@ export function playCharacterCall(host, cfg, onComplete) {
     root.querySelector('.cc-quiz-count').textContent = matched + ' / ' + order.length;
     fromRect(p, from, { duration: 360 });
     if (matched === order.length) finishQuiz();
-    slot.focus({ preventScroll: true });
+    if (moveFocus || document.activeElement === src) slot.focus({ preventScroll: true });
   }
 
   // 셋을 다 맞히면 소감과 함께 '이후 이야기 살펴보기'가 열린다 — 누르면 호출 장으로(배포본 그대로)
   function finishQuiz() {
     const done = root.querySelector('.cc-match-done');
-    root.querySelector('.cc-skip').hidden = true; // 다 맞힌 뒤에 '건너뛰기'는 할 말이 없다
+    // 다 맞힌 뒤에는 할 일을 마친 칸을 숨긴다 — '건너뛰기'는 할 말이 없고, 빈 카드 묶음과 안내 줄도 남아 있었다(10/11 재채점).
+    // 숫자(3 / 3)는 남긴다. 결론을 화면에 들이기 전에 숨겨야 휴대폰에서 들일 거리가 맞는다
+    ['.cc-skip', '.cc-cards', '.cc-match-help'].forEach((s) => { const n = root.querySelector(s); if (n) n.hidden = true; });
     done.hidden = false;
     done.classList.add('cc-on');
     animate(done, effects.fade);
     cueOn(done.querySelector('.cc-next'));
+    // 셋째를 맞힌 그 손으로 — 결론 한 줄과 다음 단추가 화면 밖이면 보일 만큼만 내린다(10/11 재5. 1366×768에서 둘 다 화면 아래였다)
+    kit.reach?.([done.querySelector('.brief-concl'), done.querySelector('.cc-next')]);
   }
 
   /* ---------- 호출 — 위에 붙은 시트, 아래로 흐르는 연재 ---------- */
@@ -475,7 +492,7 @@ export function playCharacterCall(host, cfg, onComplete) {
     });
   }
 
-  // 회차 한 장의 걸음을 건다. 되감기 · 다시 해보기 · 탭 가려짐이 오면 settle()이 남은 걸음을 움직임 없이 한 번에 마친다
+  // 회차 한 장의 걸음을 건다. 되감기 · 탭 가려짐이 오면 settle()이 남은 걸음을 움직임 없이 한 번에 마친다
   function stepAt(ms, fn) {
     const job = { done: false };
     job.run = () => {
@@ -801,8 +818,8 @@ export function playCharacterCall(host, cfg, onComplete) {
     stopCue = () => io.disconnect();
   }
 
-  function next(label, chapterIndex) {
-    const b = button(label);
+  function next(label, chapterIndex, cls) {
+    const b = button(label, cls);
     b.addEventListener('click', () => {
       cueOn(null);
       const s = chapterEl(chapterIndex);
@@ -890,34 +907,8 @@ export function playCharacterCall(host, cfg, onComplete) {
     settle(); // 가려진 동안 남은 걸음은 움직임 없이 마친다
   }
 
+  // 끝의 '다시 해보기'(처음부터 다시 그리고 첫 카드로 초점을 옮기던 길)는 10/10 사용자 결정(바3)으로 뺐다
   return {
-    restart(before) {
-      stopResult?.();
-      stopApply?.();
-      if (before) before();
-      jobs.forEach((j) => clearTimeout(j.id)); // 처음부터 다시 그리므로 남은 걸음은 마치지 않고 버린다
-      jobs = [];
-      timers.forEach(clearTimeout);
-      timers = [];
-      clearInterval(scrollIv);
-      clearFlying();
-      stopScroll?.();
-      root.classList.remove('cc-second-pass');
-      veil.classList.remove('cc-on');
-      selected = null;
-      pass = 1;
-      played = 0;
-      suspend = false;
-      called = new Set();
-      revealed = new Set();
-      matched = 0;
-      worryShown = false;
-      drag = null;
-      build();
-      window.scrollTo(0, root.getBoundingClientRect().top + window.scrollY - 60);
-      // 결론 칸(다시 해보기 버튼)이 사라지므로 초점을 처음 누를 것으로 옮긴다(10/06 점검)
-      root.querySelector('.cc-cards .cc-plate')?.focus({ preventScroll: true });
-    },
     destroy() {
       stopResult?.();
       stopApply?.();

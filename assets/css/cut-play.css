@@ -1,23 +1,28 @@
 /* E3 — 직접 해 보는 판단. 팔레트는 E3 그대로(종이 + 파란 강화). 머리말·결론 칸도 이 파일이 맡는다(옛 reduction.css에서 옮김). */
 .view-cut-play { --rd-ink: #242c31; --rd-mute: #646f70; --rd-next: #5d6e92; --rd-paper: #f8f7f3; --rd-line: #d8dcd8; --rd-core: #275ac1; --rd-core-wash: #edf2fc; }
+/* 출시한 게임의 지나가는 줄(줄무늬 두 색)과 덜어낸 칸의 점선 — 10/11 재7: 빨강은 '지금 누를 것'에만. 전에는 줄이 팔레트 밖 빨강(#b8322b · #c43a32)이라
+   그 위에 두른 '지금 누를 것' 빨간 테두리가 줄과 구분되지 않았고, 덜어낸 칸의 점선은 붉은 회색(#d8c4bf)이었다 */
+.view-cut-play { --rd-lane: #46566c; --rd-lane-alt: #4e6077; --rd-dash: #b8c0c2; }
+.view-cut-play { --concl-key: var(--rd-core); --concl-ink: var(--rd-ink); } /* 결론 한 줄(공통 부품)의 색 — E3 파랑 */
 /* 바탕색은 화면 전체에 칠한다 — 가운데 상자에만 칠하면 1920 화면 양옆 · 아래에 흰 띠가 남았다(10/06) */
 .view-cut-play { background: var(--rd-paper); }
-.view-cut-play .brief { background: var(--rd-paper); color: var(--rd-ink); max-width: 1480px; padding: 26px 34px 50px; }
+/* 옆 여백은 다른 인터랙티브 페이지와 같다(20px, 820px 이하 14px) — 10/11 사용자 결정(재9). 전에는 34px라 끝 단추가 다른 페이지보다 14px 안쪽에 놓였다 */
+.view-cut-play .brief { background: var(--rd-paper); color: var(--rd-ink); max-width: 1480px; padding: 26px 20px 50px; }
+@media (max-width: 820px) { .view-cut-play .brief { padding-inline: 14px; } }
 /* 표지 칸 · 크기는 다섯 페이지 공통(style.css '.view-brief .brief-head' — 그림 비율 그대로, 칸 96px) */
 .view-cut-play .brief-head { display: grid; grid-template-columns: 96px 1fr; column-gap: 14px; align-items: start; }
 .view-cut-play .brief-head .ev-title { font-size: var(--text-base); margin-top: 4px; }
 .view-cut-play .brief-head .ev-sub { font-size: var(--text-xs); }
-.view-cut-play .brief-head-doc { grid-column: 2; margin-top: 10px; }
-.view-cut-play .brief-head-doc .btn { padding: 5px 10px; font-size: var(--text-xs); }
-.view-cut-play .brief-lead-title { font: 800 clamp(23px, 3vw, 38px)/1.1 ui-monospace, Consolas, monospace; letter-spacing: -.06em; color: var(--rd-ink); }
+.view-cut-play .brief-head-doc { grid-column: 2; margin-top: 10px; } /* 원본 문서 단추는 다른 페이지와 같은 크기(10/11 재9 — 전에는 E3만 80×31 · 12px) */
+.view-cut-play .brief-lead-title { font: 800 clamp(23px, 3vw, 38px)/1.1 ui-monospace, Consolas, "Noto Sans KR", monospace; letter-spacing: -.06em; color: var(--rd-ink); }
 .view-cut-play .brief-lead-line { font-size: var(--text-md); }
 .view-cut-play .brief-recap { border-color: var(--rd-core); }
 .view-cut-play .brief-recap-title { color: var(--rd-core); }
 .cp { color: var(--rd-ink); margin-top: 22px; }
 .cp *, .cp *::before, .cp *::after { box-sizing: border-box; }
 .cp [hidden] { display: none !important; }
-.cp button { font: inherit; cursor: pointer; }
-.cp button:focus-visible { outline: 3px solid var(--rd-core); outline-offset: 4px; }
+.cp button:not(.btn) { font: inherit; cursor: pointer; } /* 사이트 단추(.btn — 건너뛰기)는 자기 글자 크기를 쓴다 */
+.cp button:focus-visible { outline: 2px solid var(--focus); outline-offset: 4px; }
 
 /* 게임 판 — 처음 게임은 세 칸(채굴 · 경제 · 강화), 덜어낸 뒤에는 두 칸이 빈자리로 남고 강화 칸이 넓어진다 */
 .cp-game { background: var(--surface); border: 1px solid var(--rd-line); border-radius: var(--radius-card); padding: 18px 20px 16px; }
@@ -56,8 +61,8 @@
 /* 경제 — 시세가 오르내리는 작은 그래프 */
 .cp-chart { width: 100%; height: 38px; background: var(--surface); border: 1px solid #e3dbec; border-radius: var(--radius-tag); }
 .cp-chart polyline { fill: none; stroke: #7a5ca8; stroke-width: 2; vector-effect: non-scaling-stroke; }
-.cp-price[data-trend="1"] { color: var(--accent); }
-.cp-price[data-trend="-1"] { color: var(--rd-core); }
+.cp-price[data-trend="1"] { color: var(--rd-ink); font-weight: 800; } /* 오름 ▲ — 10/11 재7: 빨강 대신 먹색 굵게 */
+.cp-price[data-trend="-1"] { color: var(--rd-ink); font-weight: 800; } /* 내림 ▼도 먹색 굵게 — 오름과 같은 모양(10/11 사용자 결정 재7) */
 
 /* 강화 칸 — 이 게임의 핵심. 끝까지 남는 칸이다 */
 .cp-core { background: var(--rd-core-wash); border: 1.5px solid var(--rd-core); }
@@ -68,7 +73,7 @@
 .cp-art svg { width: 64px; height: 48px; }
 .cp-level { font-size: var(--text-xl); font-variant-numeric: tabular-nums; }
 .cp-need, .cp-rate, .cp-income, .cp-fcost { margin: 0; font-size: var(--text-sm); color: var(--rd-mute); font-variant-numeric: tabular-nums; }
-.cp-need.is-short, .cp-fcost.is-short { color: var(--accent); }
+.cp-need.is-short, .cp-fcost.is-short { color: var(--rd-ink); font-weight: 800; } /* 재료 · 골드 부족 — 먹색 굵게(10/11 재7) */
 .cp-income { color: #2f7d3a; font-weight: 700; }
 .cp-go { display: flex; flex-direction: column; align-items: flex-start; gap: 12px; margin-top: 4px; }
 .cp-enhance { padding: 11px 28px; border-radius: var(--radius-button); border: 1px solid #1c428f; background: var(--rd-core); color: var(--on-fill); font-weight: 800; box-shadow: 0 3px 0 #1c428f; }
@@ -77,11 +82,16 @@
 .cp-msg { min-height: 1.4em; margin: 0; font-size: var(--text-ui); font-weight: 800; word-break: keep-all; }
 .cp-msg[data-tone="up"] { color: var(--rd-core); }
 .cp-msg[data-tone="stay"] { color: #6c7378; }
-.cp-msg[data-tone="down"] { color: var(--accent); }
-.cp-msg[data-tone="short"] { color: var(--accent); font-weight: 600; font-size: var(--text-sm); }
+.cp-msg[data-tone="down"] { color: var(--rd-ink); }
+.cp-msg[data-tone="short"] { color: var(--rd-ink); font-weight: 800; font-size: var(--text-sm); } /* 하락 · 재료 부족 — 먹색 굵게(10/11 재7) */
+/* 재료 부족 안내는 2초쯤 뒤 서서히 사라진다(10/10 사용자 결정 마2 — cut-play.js showShort). 자리(min-height)는 남아 아래가 밀리지 않는다 */
+.cp-msg { transition: opacity var(--motion-page) ease; }
+.cp-msg.is-fading { opacity: 0; }
 .cp-presses { margin: 0; font-size: var(--text-sm); color: var(--rd-ink); }
 .cp-presses:empty { display: none; }
-.cp-skip { margin-top: 12px; padding: 0; border: 0; background: none; color: var(--rd-mute); font-size: var(--text-xs); text-decoration: underline; text-underline-offset: 4px; }
+/* 건너뛰기 — E1과 같은 사이트 보조 단추(.btn.ghost, 10/11 재9). 전에는 밑줄 글자 137×26 */
+.cp-skip { margin-top: 12px; line-height: 1.6; } /* 단추(button)는 줄 높이를 물려받지 않는다 — 링크로 된 다른 .btn과 같은 높이 46px */
+.cp .cp-skip:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
 
 /* 결과를 기다리는 짧은 긴장 — 대상이 떨린다 */
 .cp-core.is-charging .cp-art, .cp-core.is-charging .cp-rot-icon { animation: cp-shake .11s linear infinite; }
@@ -90,26 +100,29 @@
 
 /* 출시한 게임 — 지나가는 줄 → 내 방 8칸 → 강화대 */
 .cp-final { gap: 10px; }
-.cp-label { font: 600 var(--text-xs) ui-monospace, Consolas, monospace; letter-spacing: .04em; color: var(--rd-mute); }
+/* 등폭 라벨의 한글은 Noto Sans KR(10/10 — 전에는 Windows가 굴림체를 꺼냈다. 글꼴은 views/brief.js가 인터랙티브 페이지에서만 싣는다) */
+/* 등폭 라벨의 띄어쓰기는 본문 폭으로(10/10 재채점 — 한글은 Noto, 띄어쓰기는 Consolas라 낱말 사이가 벌어졌다) */
+.cp-label, .cp-walker-level, .cp-slot-level, .cp-rot-level, .cp-judge-eyebrow, .cp-kept-tag { word-spacing: -.3em; }
+.cp-label { font: 600 var(--text-xs) ui-monospace, Consolas, "Noto Sans KR", monospace; letter-spacing: .04em; color: var(--rd-mute); }
 .cp-lanebox { display: flex; flex-direction: column; gap: 6px; }
 .cp-lane { position: relative; border-radius: var(--radius-card); }
-.cp-track { position: relative; height: 108px; overflow: hidden; border-radius: var(--radius-card); background: repeating-linear-gradient(90deg, #b8322b 0 22px, #c43a32 22px 44px); box-shadow: inset 0 -4px 0 rgba(0,0,0,.12); }
+.cp-track { position: relative; height: 108px; overflow: hidden; border-radius: var(--radius-card); background: repeating-linear-gradient(90deg, var(--rd-lane) 0 22px, var(--rd-lane-alt) 22px 44px); box-shadow: inset 0 -4px 0 rgba(0,0,0,.12); }
 /* 줄이 overflow:hidden이라 바깥으로 그리는 초점 테두리가 위아래로 잘렸다(10/06 점검) — 안쪽으로 그린다 */
-.cp-walker:focus-visible { outline: 2px solid var(--rd-core); outline-offset: -4px; }
+.cp-walker:focus-visible { outline: 2px solid var(--focus); outline-offset: -4px; }
 /* 브레인롯은 오른쪽에서 나와 왼쪽으로 지나간다 — 움직임은 그림일 뿐, 언제 사라지는지는 시계가 정한다 */
 .cp-walker { position: absolute; top: 6px; left: 100%; width: 98px; height: 96px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; padding: 4px; border: 1.5px solid var(--surface); border-radius: var(--radius-card); background: rgba(255,255,255,.92); color: var(--rd-ink); animation: cp-walk var(--life) linear var(--delay) forwards; }
 .cp-walker:hover { background: var(--surface); transform: translateY(-2px); }
 /* 끌어다 놓기 — 집어 든 브레인롯은 손을 따라오고, 놓을 수 있는 방과 칸이 밝아진다 */
 .cp-walker { touch-action: none; user-select: none; cursor: grab; }
 .cp-walker img, .cp-slot img, .cp-rot img { -webkit-user-drag: none; user-select: none; }
-.cp-walker.cp-held { position: fixed; z-index: 1000; animation: none; pointer-events: none; cursor: grabbing; transform: rotate(-4deg) scale(1.06); box-shadow: 0 12px 26px rgba(0, 0, 0, .28); }
+.cp-walker.cp-held { position: fixed; z-index: 1000; animation: none; pointer-events: none; cursor: grabbing; transform: rotate(-4deg) scale(1.06); box-shadow: var(--shadow-lift); }
 .cp-room.is-target { outline: 2px dashed var(--rd-core); outline-offset: 4px; border-radius: var(--radius-card); }
 .cp-slot.is-target { border-color: var(--rd-core); border-style: solid; background: var(--rd-core-wash); }
 @keyframes cp-walk { from { left: 100%; } to { left: -100px; } }
 .cp-walker-face { font-size: 36px; line-height: 1; width: 58px; height: 54px; object-fit: contain; display: grid; place-items: center; }
 /* 이름 · 단계는 12px — 9.6px였다(10/06). 한 줄에 다 안 들어가는 이름은 두 줄까지 */
 .cp-walker-name { max-width: 100%; font-size: var(--text-xs); line-height: 1.15; font-weight: 700; text-align: center; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
-.cp-walker-level { font: 700 var(--text-xs) ui-monospace, Consolas, monospace; color: var(--rd-core); }
+.cp-walker-level { font: 700 var(--text-xs) ui-monospace, Consolas, "Noto Sans KR", monospace; color: var(--rd-core); }
 .cp-roomhead { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 14px; margin-top: 4px; }
 .cp-fgold { font-size: var(--text-sm); font-weight: 800; font-variant-numeric: tabular-nums; }
 .cp-room { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
@@ -119,7 +132,7 @@
 .cp-slot:disabled { cursor: default; }
 .cp-slot-face { font-size: 28px; line-height: 1; width: 48px; height: 46px; object-fit: contain; display: grid; place-items: center; }
 .cp-slot-name { max-width: 100%; font-size: var(--text-xs); line-height: 1.15; text-align: center; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
-.cp-slot-level { font: 700 var(--text-xs) ui-monospace, Consolas, monospace; color: var(--rd-core); }
+.cp-slot-level { font: 700 var(--text-xs) ui-monospace, Consolas, "Noto Sans KR", monospace; color: var(--rd-core); }
 .cp-stand { display: flex; flex-direction: column; gap: 6px; margin-top: 4px; }
 /* 강화대 — 성공하면 다음 브레인롯으로 바뀐다 */
 .cp-rot { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 14px; padding: 12px 14px; background: var(--surface); border: 1px solid #c9d6f2; border-radius: var(--radius-card); }
@@ -128,28 +141,32 @@
 .cp-rot-icon { font-size: 46px; line-height: 1; width: 80px; height: 80px; object-fit: contain; display: grid; place-items: center; }
 .cp-rot-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .cp-rot-name { font-size: var(--text-lg); line-height: 1.3; overflow-wrap: break-word; }
-.cp-rot-level { font: 700 var(--text-sm) ui-monospace, Consolas, monospace; color: var(--rd-core); }
+.cp-rot-level { font: 700 var(--text-sm) ui-monospace, Consolas, "Noto Sans KR", monospace; color: var(--rd-core); }
 .cp-next { display: flex; flex-direction: column; align-items: center; gap: 2px; font-size: var(--text-xs); color: var(--rd-mute); }
-.cp-next-icon { display: grid; place-items: center; width: 30px; height: 30px; border: 2px dashed #b9c3d8; border-radius: var(--radius-circle); font: 800 var(--text-base)/1 ui-monospace, Consolas, monospace; color: var(--rd-next); }
+.cp-next-icon { display: grid; place-items: center; width: 30px; height: 30px; border: 2px dashed #b9c3d8; border-radius: var(--radius-circle); font: 800 var(--text-base)/1 ui-monospace, Consolas, "Noto Sans KR", monospace; color: var(--rd-next); }
 /* 그림이 없을 때의 빈 자리 — 이모지로 대신하지 않는다 */
 .is-blank { display: block; border: 2px dashed #c9d2e6; border-radius: var(--radius-card); background: rgba(255,255,255,.6); }
 
-/* 덜어내는 순간 — 두 칸의 내용이 흐려지고 빨간 줄이 그어진다(줄은 흐려지지 않게 칸이 아니라 내용을 흐린다) */
+/* 덜어내는 순간 — 두 칸의 내용이 흐려지고 먹색 줄이 그어진다(줄은 흐려지지 않게 칸이 아니라 내용을 흐린다. 10/11 재7 — 전에는 빨간 줄) */
 .cp-zone > * { transition: opacity var(--motion-slow); }
 .cp-zone.is-cut { background: #f4f4f1; border-color: #dcdcd6; }
 .cp-zone.is-cut > * { opacity: .3; }
-.cp-zone.is-cut::after { content: ''; position: absolute; left: 10px; right: 10px; top: 50%; border-top: 3px solid var(--accent); transform: rotate(-8deg); animation: cp-strike var(--motion-page) ease-out both; }
+.cp-zone.is-cut::after { content: ''; position: absolute; left: 10px; right: 10px; top: 50%; border-top: 3px solid var(--rd-ink); transform: rotate(-8deg); animation: cp-strike var(--motion-page) ease-out both; }
 @keyframes cp-strike { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0 0 0 0); } }
-/* 덜어낸 뒤 — 같은 판에 빈자리로 남아, 무엇을 뺐는지가 계속 보인다 */
-.cp-gone { display: none; }
-.cp-zone.is-gone { justify-content: center; align-items: center; min-height: 56px; background: transparent; border: 1.5px dashed #d8c4bf; }
-.cp-zone.is-gone > :not(.cp-gone) { display: none; }
-.cp-zone.is-gone .cp-gone { display: block; margin: 0; font-size: var(--text-sm); font-weight: 700; color: var(--accent); text-align: center; word-break: keep-all; }
+/* 덜어낸 뒤 — 같은 판에 빈자리로 남아, 무엇을 뺐는지가 계속 보인다. 이름표는 흐린 글자(지나간 것), 점선은 팔레트 색(10/11 재7 — 전에는 빨강) */
+.cp-gone, .cp-was { display: none; }
+.cp-zone.is-gone { justify-content: center; align-items: center; min-height: 56px; background: transparent; border: 1.5px dashed var(--rd-dash); }
+.cp-zone.is-gone > :not(.cp-gone):not(.cp-was) { display: none; }
+.cp-zone.is-gone .cp-gone { display: block; margin: 0; font-size: var(--text-sm); font-weight: 700; color: var(--rd-mute); text-align: center; word-break: keep-all; }
+/* 처음 게임의 '강화 한 번까지 N번' — 덜어낸 경제 칸의 아래 끝에 남아, 강화 칸 아래 끝의 출시한 게임 횟수와 같은 높이에 나란히 선다(10/11 재7).
+   이름표(처음 만든 게임)와 횟수 줄은 확정 문구를 그대로 다시 쓴다. 칸 이름표의 높이는 옆 칸과 같게 두려고 흐름 밖(아래 끝)에 놓는다 */
+.cp-zone.is-gone > .cp-was { position: absolute; left: 14px; right: 14px; bottom: 14px; display: flex; flex-direction: column; align-items: center; gap: 2px; margin: 0; text-align: center; }
+.cp-was-line { font-size: var(--text-sm); line-height: 1.45; color: var(--rd-ink); word-break: keep-all; } /* 출시한 게임 쪽 줄(.cp-presses)과 같은 모양 */
 .cp[data-phase="final"] .cp-zones { grid-template-columns: minmax(0, .5fr) minmax(0, .5fr) minmax(0, 2fr); }
 
 /* 판단 — 처음 게임을 해 본 뒤에 열린다 */
 .cp-judge { margin-top: 18px; padding: 18px 20px; border-left: 3px solid var(--rd-ink); background: #f0f1ed; }
-.cp-judge-eyebrow { display: block; font: 600 var(--text-xs) ui-monospace, Consolas, monospace; letter-spacing: .04em; color: var(--rd-mute); margin-bottom: 10px; }
+.cp-judge-eyebrow { display: block; font: 600 var(--text-xs) ui-monospace, Consolas, "Noto Sans KR", monospace; letter-spacing: .04em; color: var(--rd-mute); margin-bottom: 10px; }
 .cp-evidence { display: grid; gap: 6px; margin: 0 0 14px; }
 .cp-evidence div { display: flex; flex-wrap: wrap; gap: 2px 12px; align-items: baseline; }
 .cp-evidence dt { font-size: var(--text-xs); color: var(--rd-mute); min-width: 128px; }
@@ -158,14 +175,15 @@
 .cp-observe { margin: 6px 0 14px; font-size: var(--text-ui); color: #4b565b; }
 .cp-cut { padding: 11px 18px; border: 1px solid var(--rd-ink); background: var(--rd-ink); color: var(--rd-paper); font-weight: 700; border-radius: var(--radius-tag); }
 .cp-cut::before { content: ''; display: inline-block; width: 12px; border-top: 1px solid currentColor; margin-right: 10px; vertical-align: middle; }
-/* 내린 결정 — 칠을 빼고 체크로 남는다 */
+/* 내린 결정 — 칠을 빼고 체크로 남는다. 체크는 선으로 그린다(10/11 가2 — ✓는 Pretendard에 없는 글자, DESIGN.md 8절. 진술 문장의 모은 체크와 같은 모양) ·
+   색은 먹색(10/11 재7 — 전에는 빨강) */
 .cp-cut.is-done { background: transparent; color: var(--rd-ink); border-color: #9aa3a0; cursor: default; }
-.cp-cut.is-done::before { content: '✓'; width: auto; border: 0; margin-right: 8px; color: var(--accent); font-weight: 800; }
+.cp-cut.is-done::before { width: .34em; height: .66em; margin: 0 12px 0 2px; vertical-align: .05em; border: solid currentColor; border-width: 0 .13em .13em 0; transform: rotate(40deg); }
 
-.cp-caption { margin: 18px 0 0; font-size: var(--text-base); font-weight: 700; line-height: 1.6; word-break: keep-all; }
-.cp-caption:empty { display: none; }
+/* 결론 한 줄 — 다섯 페이지 공통 부품(style.css .brief-concl, 10/10 사용자 동의 마6). 전에는 굵은 16px 한 줄. 비어 있는 동안은 숨는다 */
+.cp-concl { margin: 18px 0 0; }
 .cp-kept { margin: 12px 0 0; max-width: 560px; }
-.cp-kept-tag { display: block; margin-bottom: 6px; font: 600 var(--text-xs) ui-monospace, Consolas, monospace; letter-spacing: .06em; color: var(--rd-core); }
+.cp-kept-tag { display: block; margin-bottom: 6px; font: 600 var(--text-xs) ui-monospace, Consolas, "Noto Sans KR", monospace; letter-spacing: .06em; color: var(--rd-core); }
 .cp-kept img { display: block; width: 100%; height: auto; border: 1px solid var(--rd-line); border-radius: var(--radius-tag); }
 .cp-kept figcaption { margin-top: 6px; font-size: var(--text-xs); color: var(--rd-mute); }
 .cp-note { margin: 16px 0 0; font-size: var(--text-xs); color: var(--rd-mute); }
@@ -175,6 +193,9 @@
 @media (max-width: 820px) {
   .cp-zones, .cp[data-phase="final"] .cp-zones { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
   .cp-core { grid-column: 1 / -1; }
+  /* 덜어낸 두 칸이 강화 칸 위에 나란히 놓이면 칸이 낮다 — 이름표를 위에 맞추고 처음 게임의 횟수는 그 아래 흐름에 둔다 */
+  .cp-zone.is-gone { justify-content: flex-start; }
+  .cp-zone.is-gone > .cp-was { position: static; }
 }
 @media (max-width: 600px) {
   .cp-game, .cp-judge { padding-inline: 14px; }
@@ -193,15 +214,12 @@
 }
 
 /* 좁은 화면(≤600px): 강화대를 [그림 | 이름] 위, [다음 진화] 아래로 — 세 칸을 한 줄에 두면 320px에서 이름 칸이 9px까지 좁아져
-   'Pipi Avocado'가 한 글자씩 11줄이 됐다(10/06 점검). 터치 화면의 작은 누를 것(원본 문서 28px · 건너뛰기 26px)은 44px로.
+   'Pipi Avocado'가 한 글자씩 11줄이 됐다(10/06 점검). 원본 문서 · 건너뛰기는 10/11부터 사이트 단추(.btn, 높이 46px)라 터치용 규칙을 따로 두지 않는다.
    기준은 원래 420px — 10/09 화면 폭 기준 정리에서 600px로 올렸다. 360px로 내리면 375~414px에서 이름 칸이 64px까지 좁아진다 */
 @media (max-width: 600px) {
   .cp-rot { grid-template-columns: auto minmax(0, 1fr); }
   .cp-rot-icon { width: 60px; height: 60px; font-size: 36px; }
   .cp-next { grid-column: 1 / -1; flex-direction: row; justify-content: flex-start; gap: 8px; }
-}
-@media (pointer: coarse) {
-  .view-cut-play .brief-head-doc .btn, .cp-skip { min-height: 44px; display: inline-flex; align-items: center; }
 }
 
 /* 단계 안내 말풍선(10/07) — 누를 것 바로 위에 글 흐름으로 끼운다. 칸 폭만큼 늘어나지 않고 문구 길이만큼 */

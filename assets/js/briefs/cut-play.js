@@ -1,5 +1,5 @@
 import { animate, reducedMotion } from '../motion/animate.js';
-import { fill } from '../text.js';
+import { fill, T } from '../text.js';
 
 // E3 — 직접 해 보는 판단. CUT UNTIL IT'S FUN.
 //
@@ -15,7 +15,8 @@ import { fill } from '../text.js';
 // 결과와 스폰은 정해진 씨앗의 난수로 뽑아 매번 같은 순서로 나온다 — 테스트할 수 있게.
 // 지금 누를 것(style.css .cue)은 할 일을 따라 옮겨 간다. 상태가 먼저이고 연출은 그 위에 얹는다 — 강화 결과는 누르는 순간 정하고,
 // 잠깐의 긴장(setTimeout) 뒤에 보여 준다. 지나가는 줄의 움직임은 CSS가 그리고, 언제 나오고 사라지는지는 Date.now()로 정한다.
-export function playCutPlay(host, cfg, onComplete) {
+// kit.reach — 누른 뒤 볼 것을 화면에 들이는 껍데기의 도구(views/brief.js, 10/11 재5)
+export function playCutPlay(host, cfg, onComplete, _ev, kit = {}) {
   const t = cfg.labels;
   const demo = cfg.demo || {};
   const A = demo.first || {};
@@ -46,11 +47,17 @@ export function playCutPlay(host, cfg, onComplete) {
   let cutTimer = null;
   let revealTimer = null;
   let respawnTimer = null;
+  let shortTimer = null; // 재료 부족 안내가 사라지는 때(마2)
   let cueEl = null;
   let stopCue = null;
   let recapShown = false;
   let dead = false;
   let walkerId = 0;
+  // 방문자가 직접 누른 뒤 — 결과가 그려지면(긴장 · 덜어내기 뒤 포함) 다음에 누를 것이나 결론이 화면 밖일 때 그만큼 화면을 옮긴다(10/11 재5).
+  // 시세 · 시계 · 바위 다시 나오기처럼 저절로 그리는 때에는 움직이지 않는다
+  let reachNext = false;
+  let conclReached = false; // 결론 한 줄은 처음 나올 때 한 번만 들인다
+  const acted = () => { reachNext = true; };
 
   const root = el('div', 'cp');
   root.innerHTML = `
@@ -70,6 +77,7 @@ export function playCutPlay(host, cfg, onComplete) {
           <p class="cp-stock"><span class="cp-price"></span><span class="cp-gold"></span></p>
           <div class="cp-acts"><button type="button" class="cp-act cp-sell"></button><button type="button" class="cp-act cp-buy"></button></div>
           <p class="cp-gone"></p>
+          <p class="cp-was"><span class="cp-label cp-was-name"></span><span class="cp-was-line"></span></p>
         </div>
         <div class="cp-zone cp-core" data-system="enhance">
           <h5></h5><p class="cp-zone-note"></p>
@@ -98,7 +106,7 @@ export function playCutPlay(host, cfg, onComplete) {
           <p class="cp-presses"></p>
         </div>
       </div>
-      <button type="button" class="cp-skip"></button>
+      <button type="button" class="btn ghost cp-skip"></button>
     </section>
     <section class="cp-judge" hidden>
       <span class="cp-judge-eyebrow"></span>
@@ -107,7 +115,7 @@ export function playCutPlay(host, cfg, onComplete) {
       <p class="cp-observe"></p>
       <button type="button" class="cp-cut"></button>
     </section>
-    <p class="cp-caption" role="status" aria-live="polite"></p>
+    <div class="brief-concl cp-concl"><span class="brief-concl-key"></span><p class="cp-caption brief-concl-line" role="status" aria-live="polite"></p></div>
     <figure class="cp-kept" hidden><span class="cp-kept-tag"></span><img alt=""><figcaption></figcaption></figure>
     <p class="cp-note"></p>
     <p class="cp-credit"></p>`;
@@ -126,6 +134,8 @@ export function playCutPlay(host, cfg, onComplete) {
   $('.cp-next-label').textContent = t.next_label || '';
   $('.cp-lane-label').textContent = t.lane || '';
   $('.cp-stand-label').textContent = t.stand || '';
+  // 덜어낸 칸에 남기는 처음 게임의 횟수(10/11 재7) — 판 제목과 횟수 줄의 확정 문구를 그대로 다시 쓴다(새 문장 없음)
+  $('.cp-was-name').textContent = t.first_title || '';
   const lane = $('.cp-lane'); // 지금 누를 것 표시가 붙는 바깥 틀
   const track = $('.cp-track'); // 지나가는 브레인롯이 움직이는 안쪽 길(밖으로 나간 것은 잘린다)
   const room = $('.cp-room');
@@ -171,7 +181,7 @@ export function playCutPlay(host, cfg, onComplete) {
   buyBtn.addEventListener('click', buy);
   enhanceBtn.addEventListener('click', enhance);
   cutBtn.addEventListener('click', cut);
-  skipBtn.addEventListener('click', () => { if (state.phase === 'first') { state.judge = true; paint(); } });
+  skipBtn.addEventListener('click', () => { if (state.phase === 'first') { state.judge = true; acted(); paint(); } });
   // 처음 누를 것: 처음 게임은 강화, 출시한 게임은 지나가는 줄. 안내는 껍데기가 머리말에서 뺐을 때만 붙는다(첫 행동까지만).
   const actionHints = cfg.lead?.prompt_at === 'action';
   // 단계 안내(10/07 사용자 결정 — 튜토리얼처럼): 말풍선 하나가 '지금 누를 것'을 따라 옮겨 가며 지금 할 일을 한 줄로 말한다.
@@ -194,6 +204,8 @@ export function playCutPlay(host, cfg, onComplete) {
   });
   $('.cp-question').textContent = ask.title || '';
   $('.cp-observe').textContent = ask.question || '';
+  // 출시한 게임을 마친 뒤의 결론 한 줄 — 다섯 페이지 공통 부품(이름표 + 17px 굵은 한 줄, 10/10 사용자 동의 마6)
+  $('.cp-concl .brief-concl-key').textContent = T('brief.conclusion');
   $('.cp-kept-tag').textContent = t.kept || '';
   const shot = $('.cp-kept img');
   shot.src = cfg.image; shot.alt = t.source_alt || ''; shot.loading = 'lazy';
@@ -240,7 +252,7 @@ export function playCutPlay(host, cfg, onComplete) {
     rollB = rng(seed + 1);
     rollC = rng(seed + 2);
     state = {
-      phase: 'first', tried: false, judge: false, done: false, busy: false, presses: 0, pressLine: '', msg: '', tone: '',
+      phase: 'first', tried: false, judge: false, done: false, busy: false, presses: 0, pressLine: '', wasLine: '', msg: '', tone: '',
       iron: 0, coal: 0, gold: 0, level: 0, hp: durability, broken: false, pi: 0, trend: 0,
       history: Array.from({ length: 12 }, (_, i) => prices[i % prices.length]),
       lane: [], room: Array(slots).fill(null), sel: -1, took: false, fgold: Number(B.start_gold) || 0, lastSpawn: 0, finalCount: 0, motion: '', popSlot: -1,
@@ -250,6 +262,7 @@ export function playCutPlay(host, cfg, onComplete) {
   // ---------- ① 처음 게임 ----------
   function mine() {
     if (dead || state.phase !== 'first' || state.broken || state.busy) return;
+    acted();
     state.presses += 1;
     state.hp -= 1;
     animate($('.cp-swing'), [{ transform: 'rotate(-55deg)' }, { transform: 'rotate(25deg)' }, { transform: 'none' }], { duration: 220 });
@@ -266,6 +279,7 @@ export function playCutPlay(host, cfg, onComplete) {
 
   function sell() {
     if (dead || state.phase !== 'first' || !state.iron || state.busy) return;
+    acted();
     state.iron -= 1;
     state.gold += prices[state.pi];
     state.presses += 1;
@@ -274,6 +288,7 @@ export function playCutPlay(host, cfg, onComplete) {
 
   function buy() {
     if (dead || state.phase !== 'first' || state.gold < coalPrice || state.busy) return;
+    acted();
     state.gold -= coalPrice;
     state.coal += 1;
     state.presses += 1;
@@ -298,6 +313,7 @@ export function playCutPlay(host, cfg, onComplete) {
     if (dead || state.phase !== 'final') return;
     const w = state.lane.find((x) => x.id === id);
     if (!w) return;
+    acted();
     if (state.room.every(Boolean)) { state.msg = t.room_full; state.tone = 'short'; paint(); return; }
     // 가져온 브레인롯의 버튼은 줄에서 사라진다 — 키보드로 가져왔으면 앉은 방 칸으로 초점을 옮긴다(10/06 점검)
     const hadFocus = track.contains(document.activeElement);
@@ -328,6 +344,7 @@ export function playCutPlay(host, cfg, onComplete) {
 
   function pickSlot(i) {
     if (dead || state.phase !== 'final' || state.busy || !state.room[i]) return;
+    acted();
     state.sel = i;
     paint();
   }
@@ -382,6 +399,7 @@ export function playCutPlay(host, cfg, onComplete) {
     drag = null;
     if (!d.ghost) return;
     d.ghost.remove();
+    acted();
     const at = dropAt(e.clientX, e.clientY);
     markTarget(null);
     if (at === null) returnToLane(d.w);
@@ -414,10 +432,11 @@ export function playCutPlay(host, cfg, onComplete) {
   function enhance() {
     if (dead || state.busy || state.phase === 'cutting') return;
     if (state.phase === 'first') {
+      acted();
       state.presses += 1;
       state.tried = true;
       const up = upgradeAt(state.level);
-      if (state.iron < up.iron || state.coal < up.coal) { state.msg = t.short; state.tone = 'short'; paint(); return; }
+      if (state.iron < up.iron || state.coal < up.coal) { showShort(); paint(); return; }
       state.iron -= up.iron; state.coal -= up.coal;
       const r = rollA() * 100;
       const outcome = r < up.success ? 'up' : r < up.success + up.drop ? 'down' : 'stay';
@@ -434,6 +453,7 @@ export function playCutPlay(host, cfg, onComplete) {
     if (!slot) return;
     const rot = rots[slot.lvl] || {};
     if (state.fgold < rot.cost) return; // 골드가 모이는 중
+    acted();
     state.presses += 1;
     state.fgold -= rot.cost;
     const r = rollB() * 100;
@@ -459,6 +479,39 @@ export function playCutPlay(host, cfg, onComplete) {
     state.presses = 0;
   }
 
+  // 재료 부족 안내 — 뜬 뒤 약 2초 보였다가 서서히 사라진다(10/10 사용자 결정 마2). 그 사이 재료가 충분해지면 바로 지운다(paint).
+  // 전에는 캐기 · 팔기 · 사기가 이 줄을 지우지 않아, 재료를 다 모아 말풍선이 '다시 강화해 보세요'라고 할 때도 그 아래에 '재료가 부족합니다'가 남았다.
+  // 상태(state.msg)는 타이머가 지운다 — 사라지는 움직임(.is-fading, --motion-page)은 그 위에 얹을 뿐이다. 움직임 줄이기면 서서히 대신 바로 지운다.
+  // 문구는 그대로이고, 알림 칸(role=status)은 지금처럼 문장이 바뀔 때만 쓴다
+  const SHORT_MS = 2000;
+  const FADE_MS = 380; // style.css --motion-page와 같다(cut-play.css .cp-msg.is-fading)
+  function showShort() {
+    state.msg = t.short;
+    state.tone = 'short';
+    clearShort();
+    shortTimer = setTimeout(fadeShort, SHORT_MS);
+  }
+  function fadeShort() {
+    shortTimer = null;
+    if (dead || state.msg !== t.short) return;
+    if (reducedMotion() || document.hidden) { dropShort(); return; }
+    $('.cp-msg').classList.add('is-fading');
+    shortTimer = setTimeout(dropShort, FADE_MS);
+  }
+  function dropShort() {
+    shortTimer = null;
+    $('.cp-msg').classList.remove('is-fading');
+    if (dead || state.msg !== t.short) return;
+    state.msg = '';
+    state.tone = '';
+    paint();
+  }
+  function clearShort() {
+    if (shortTimer) clearTimeout(shortTimer);
+    shortTimer = null;
+    $('.cp-msg').classList.remove('is-fading');
+  }
+
   // 잠깐의 긴장 — 결과는 이미 정해져 있고 보여 주는 것만 미룬다
   function charge(ms, land) {
     state.busy = true;
@@ -472,8 +525,11 @@ export function playCutPlay(host, cfg, onComplete) {
   // ---------- ② 판단 ----------
   function cut() {
     if (dead || state.phase !== 'first' || state.busy) return;
+    acted(); // 덜어낸 뒤 출시한 게임이 깔리면(0.8초) 지나가는 줄로 — 휴대폰에서는 줄이 화면 위로 사라져 있었다
     state.phase = 'cutting';
     state.judge = true;
+    // 처음 게임의 '강화 한 번까지 N번'은 지우지 않고 덜어낸 칸에 남긴다 — 출시한 게임의 '1번'과 한 화면에 나란히(10/11 재7)
+    state.wasLine = state.pressLine;
     state.msg = ''; state.tone = ''; state.pressLine = ''; state.presses = 0;
     paint();
     const land = () => {
@@ -525,6 +581,9 @@ export function playCutPlay(host, cfg, onComplete) {
       zone(id).classList.toggle('is-cut', state.phase === 'cutting');
       zone(id).classList.toggle('is-gone', final);
     });
+    // 덜어낸 경제 칸(강화 칸 바로 옆)에 처음 게임의 횟수 — 처음 게임을 건너뛰었으면 남길 것이 없다
+    if ($('.cp-was-line').textContent !== state.wasLine) $('.cp-was-line').textContent = state.wasLine;
+    $('.cp-was').hidden = !(final && state.wasLine);
 
     // 강화대 — 처음 게임은 곡괭이, 출시한 게임은 방에서 고른 브레인롯
     $('.cp-first').hidden = final;
@@ -540,6 +599,9 @@ export function playCutPlay(host, cfg, onComplete) {
     const slot = state.room[state.sel];
     const cost = slot ? (rots[slot.lvl] || {}).cost : Infinity;
     setOff(enhanceBtn, state.phase === 'cutting' || state.busy || (final && (!slot || state.fgold < cost)));
+    // 재료 부족 안내는 재료가 모이면 그 자리에서 지운다(마2). 다른 문장으로 바뀌었으면 사라지던 표시(.is-fading)도 거둔다
+    if (state.msg === t.short && first && !short) { state.msg = ''; state.tone = ''; }
+    if (state.msg !== t.short && (shortTimer || $('.cp-msg').classList.contains('is-fading'))) clearShort();
     // 알림 칸(role=status)은 문장이 바뀔 때만 쓴다 — 같은 문장을 다시 쓰면 화면 낭독기가 되풀이해 읽었다(10/06 점검: 5초에 20번)
     if ($('.cp-msg').textContent !== state.msg) $('.cp-msg').textContent = state.msg;
     $('.cp-msg').dataset.tone = state.tone;
@@ -560,6 +622,15 @@ export function playCutPlay(host, cfg, onComplete) {
     if (final) passFocus(next === lane ? track.querySelector('.cp-walker') || enhanceBtn : next || enhanceBtn);
     // 출시한 게임으로 넘어가면 판단 칸은 할 일을 마쳤다 — 숨긴다(10/07 사용자). 초점을 다음 누를 것으로 넘긴 뒤에 숨겨야 초점이 사라지지 않는다
     if (final) $('.cp-judge').hidden = true;
+    // 방문자가 누른 결과가 그려진 직후 — 다음에 누를 것(말풍선과 함께)이나 처음 나온 결론 한 줄이 화면 밖이면 그만큼 옮긴다(재5).
+    // 긴장(0.65 · 0.28초)과 덜어내기(0.8초)가 끝나 결과가 나온 뒤에 잰다
+    if (reachNext && !state.busy && state.phase !== 'cutting') {
+      reachNext = false;
+      if (state.done && !conclReached) {
+        conclReached = true;
+        kit.reach?.([$('.cp-concl')]);
+      } else if (next) kit.reach?.([guide && !guide.hidden ? guide : null, next]);
+    }
   }
 
   function paintFinal() {
@@ -729,31 +800,10 @@ export function playCutPlay(host, cfg, onComplete) {
   }
 
   function clearTimers() {
-    [cutTimer, revealTimer, respawnTimer].forEach((x) => x && clearTimeout(x));
-    cutTimer = revealTimer = respawnTimer = null;
+    [cutTimer, revealTimer, respawnTimer, shortTimer].forEach((x) => x && clearTimeout(x));
+    cutTimer = revealTimer = respawnTimer = shortTimer = null;
   }
-
-  function restart(before) {
-    if (dead) return;
-    if (drag?.ghost) drag.ghost.remove();
-    drag = null;
-    markTarget(null);
-    clearTimers();
-    before?.();
-    onComplete({ hide: true });
-    recapShown = false;
-    reset();
-    // 방과 줄은 출시한 게임에서만 다시 그리므로, 처음으로 돌아갈 때는 여기서 비운다
-    track.replaceChildren();
-    [...room.children].forEach((n) => { n.dataset.lvl = 'x'; });
-    paintFinal();
-    paint();
-    parked = null;
-    // 다시 해보기 버튼(결론 칸)은 사라진다 — 첫 누를 것으로 초점을 옮기고 화면도 그리로 데려간다.
-    // 초점만 옮기면 버튼이 화면 밖에 있어 키보드 사용자는 아무것도 보지 못했다(10/06 점검)
-    enhanceBtn.focus({ preventScroll: true });
-    enhanceBtn.scrollIntoView({ block: 'center', behavior: reducedMotion() ? 'instant' : 'smooth' });
-  }
+  // 끝의 '다시 해보기'(처음 게임으로 되돌리고 강화 버튼으로 초점을 옮기던 길)는 10/10 사용자 결정(바3)으로 뺐다
 
   function el(tag, cls = '', text) {
     const node = document.createElement(tag); if (cls) node.className = cls;
@@ -762,7 +812,6 @@ export function playCutPlay(host, cfg, onComplete) {
 
   paint();
   return {
-    restart,
     destroy() {
       dead = true;
       clearInterval(priceTimer);
