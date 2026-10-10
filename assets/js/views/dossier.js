@@ -63,7 +63,10 @@ export function renderDossier(view, routePart) {
   // 새로 모은 증거는 배지에 내려앉는 순간(pr:landed) 같은 표시가 붙는다. 움직임 줄이기면 바로 붙는다
   const mark = (id) => {
     view.querySelectorAll(`.anchor[data-eid="${id}"]`).forEach((a) => a.classList.add('got'));
-    view.querySelectorAll(`.idx-mark[data-eid="${id}"]`).forEach((m) => m.classList.add('on', 'just'));
+    // 목차 칸은 읽은 장의 것만 채운다 — 같은 증거가 아직 읽지 않은 장에도 나오면 그 장의 칸은 그 장을 열 때 채운다(10/11 사용자 지적)
+    view.querySelectorAll(`.idx-mark[data-eid="${id}"]`).forEach((m) => {
+      if (state.viewedChapters.has(m.closest('.idx-marks').dataset.ch)) m.classList.add('on', 'just');
+    });
   };
   view.querySelectorAll('.anchor').forEach((a) => {
     if (state.collected.has(a.dataset.eid) && !unlanded.has(a.dataset.eid)) a.classList.add('got');
@@ -121,12 +124,14 @@ export function renderDossier(view, routePart) {
 }
 
 // 목차 칸의 수집 표시 — 그 장에서 세는 증거마다 둥근 칸 하나(10/10 다1). 모은 것은 그 증거 번호가 찍힌 작은 도장이 된다(10/11 기회 1 —
-// 번호는 칸에 미리 들어 있고 모은 뒤에만 보인다). 모양으로 말하는 표시라 화면 낭독기에는 감춘다
+// 번호는 칸에 미리 들어 있고 모은 뒤에만 보인다). 읽은 장의 칸만 채운다 — CASE 02까지 읽었는데 CASE 04 칸에 E8이 찍혀 있었다(10/11 사용자 지적.
+// E8은 두 장에 나온다). 모양으로 말하는 표시라 화면 낭독기에는 감춘다
 function marksHtml(chId) {
   const ids = chapterEvidence(chId).filter((e) => counts(e.id)).map((e) => e.id);
   if (!ids.length) return '';
-  return `<span class="idx-marks" aria-hidden="true">${ids
-    .map((id) => `<i class="idx-mark${state.collected.has(id) && !unlanded.has(id) ? ' on' : ''}" data-eid="${id}">${id}</i>`)
+  const seen = state.viewedChapters.has(chId);
+  return `<span class="idx-marks" data-ch="${chId}" aria-hidden="true">${ids
+    .map((id) => `<i class="idx-mark${seen && state.collected.has(id) && !unlanded.has(id) ? ' on' : ''}" data-eid="${id}">${id}</i>`)
     .join('')}</span>`;
 }
 
