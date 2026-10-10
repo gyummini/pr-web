@@ -1787,7 +1787,7 @@ body.plain-mode #view { min-height: 100vh; }
 .nb-zoom-img { display: block; width: 100%; height: auto; max-height: calc(100dvh - 140px); object-fit: contain; background: var(--nb-paper-dim); }
 
 /* ---- 마지막 쪽 — 사건 종결(10/11 수첩 끝) ---- */
-/* 문단 사이는 한 줄을 비운다(전에는 14px라 문단마다 글과 줄이 14px씩 어긋났다). 추신도 줄 위에.
+/* 문단 사이는 한 줄을 비운다(전에는 14px라 문단마다 글과 줄이 14px씩 어긋났다).
    편지는 메모와 같은 진한 먹(10/11 가 — 전에는 흐린 먹이라 대비가 메모 10.1 : 편지 6.5였다) */
 .nb-folded-line { font-family: var(--nb-font-hand); font-size: var(--text-xl); color: var(--nb-ink-soft); }
 .nb-folded-line p { margin: 0 0 var(--nb-line); max-width: 620px; }
@@ -1809,7 +1809,6 @@ body.plain-mode #view { min-height: 100vh; }
   filter: grayscale(1) brightness(.92) contrast(3.2);
 }
 .nb-sign-face::after { content: ''; position: absolute; inset: 0; background: var(--nb-red); mix-blend-mode: screen; }
-.nb-folded-note { font-size: var(--text-sm); color: var(--nb-muted); max-width: 520px; }
 /* 명함과 돌아가기 — 연락처 · PDF는 클립에 물린 명함 한 장(본편 연결 네이비), 그 아래 '사건 파일로 돌아가기'(채움) */
 .nb-closeout {
   position: relative; margin-top: calc(var(--nb-line) / 2);
