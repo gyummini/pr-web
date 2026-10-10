@@ -638,7 +638,6 @@ function pageFolded(f) {
   return `${sheetOpen('end', ' folded')}
     <div class="nb-folded-line">${paras}</div>
     <p class="nb-sign"><span class="nb-sign-name">${esc(NL().sd_alt)}</span><span class="nb-sign-face" aria-hidden="true"><img src="${SPRITES.sd.normal}" alt=""></span></p>
-    <div class="nb-folded-note">${esc(f.note)}</div>
     <div class="nb-closeout">
       <div class="nb-card">
         <span class="clip" aria-hidden="true"></span>
