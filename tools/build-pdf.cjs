@@ -51,13 +51,11 @@ function parseEssay(md) {
 }
 
 // 앵커는 사이트에서만 의미가 있다 — 문장만 남긴다.
-// '참고 · …' 줄도 글자만 남긴다 — 진술 안의 연결을 뺀 것처럼 참고 포트폴리오 링크도 뺐다(10/11 사용자 결정).
+// '참고 · …' 줄은 PDF에서 통째로 뺀다 — 사이트에서 증거로 가는 길일 뿐 PDF에서는 가리킬 곳이 없다(10/11 사용자 결정)
 function essayBlock(b) {
-  // '참고 · {{E9:문서 이름}}' 줄(10/04 원고 형식) — 본문보다 작은 보조 줄, 링크 없이
-  const ref = b.match(/^(참고 · )\{\{(E\d+):([^}]+)\}\}$/);
-  if (ref) return `<p class="ref">${esc(ref[1])}${esc(ref[3])}</p>`;
+  if (/^참고 · \{\{E\d+:[^}]+\}\}$/.test(b)) return '';
   const only = b.match(/^\{\{(E\d+):([^}]+)\}\}$/);
-  if (only && only[2].startsWith('참고')) return `<p class="ref">${esc(only[2])}</p>`;
+  if (only && only[2].startsWith('참고')) return '';
   const plain = b.replace(/\{\{E\d+:([^}]+)\}\}/g, '$1').replace(/\*\*(.+?)\*\*/g, '$1');
   if (plain.startsWith('### ')) return `<h4>${esc(plain.slice(4))}</h4>`;
   return `<p>${esc(plain).replace(/\n/g, '<br>')}</p>`;
