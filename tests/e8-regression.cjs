@@ -114,6 +114,21 @@ const ch = (no) => `.lg-ch[data-chapter="${no}"]`;
     // 참고 | 결과는 같은 크기 칸
     const pair = await page.locator(`${c2} .lg-pair:not([hidden]) .lg-pocket`).evaluateAll(ns => ns.map(n => [Math.round(n.getBoundingClientRect().width), Math.round(n.getBoundingClientRect().height)]));
     assert.deepEqual(pair[0], pair[1], 'reference and result pockets are the same size');
+    // 결과 그래프 넷은 패널 폭에 맞춰 다시 그린 그림(10/11 사용자 결정 재8 — 2.5배로 찍은 1225px). 1440에서 그림 칸 폭(약 490px)을 다 쓰고,
+    // 02장 시세 그래프는 참고 아래로 옮겨 나란히 놓였을 때(237px)보다 크다. 3-1 · 5-1의 원래 크기 링크는 그대로
+    for (const name of ['chart_price', 'chart_boards', 'chart_pass', 'chart_commits']) {
+      const shown = await page.evaluate((n) => {
+        const img = [...document.querySelectorAll('.lg-ev img')].find((i) => i.src.endsWith(`/${n}.webp`) && !i.closest('.lg-tab'));
+        const panel = img.closest('[role="tabpanel"]');
+        if (panel && panel.hidden) document.getElementById(panel.getAttribute('aria-labelledby')).click();
+        const r = img.getBoundingClientRect();
+        return { w: Math.round(r.width), natural: img.naturalWidth || Number(img.getAttribute('width')), stacked: !!img.closest('.lg-stack'), zoom: !!img.closest('a.lg-zoom') };
+      }, name);
+      assert.ok(shown.w >= 480 && shown.natural >= 1200, `${name} fills the panel at 1440 ${JSON.stringify(shown)}`);
+      if (name === 'chart_price') assert.equal(shown.stacked, true, 'the price chart sits under its reference');
+      assert.equal(shown.zoom, true, `${name} opens at full size`); // 10/11 재8: 네 그래프 모두(02-3 · 03-1 · 05-1 · 07-2)
+    }
+    await tabs.nth(0).click();
 
     // 움직임 줄이기: 모든 영상이 멈춘 채 '재생', 누르면 그 영상만 돈다
     const res = page.locator(`${c2} [role="tabpanel"]`).nth(0).locator('.lg-side.result');
@@ -143,6 +158,8 @@ const ch = (no) => `.lg-ch[data-chapter="${no}"]`;
     await page.locator('.lg-rail-item', { hasText: B.credits.title }).click();
     assert.equal(await credits.evaluate(d => d.open && document.activeElement === d.querySelector('summary')), true);
     assert.equal(await page.locator('.brief-foot a[href="/evidence"]').count(), 1);
+    // 끝 단추 줄은 다른 인터랙티브 페이지처럼 페이지 내용의 왼쪽 끝(머리말 표지와 같은 세로선)에서 시작한다(10/11 재9 — 전에는 글 칸 x=180)
+    assert.equal(await page.evaluate(() => Math.round(document.querySelector('.brief-foot .btn').getBoundingClientRect().left - document.querySelector('.brief-head .evidence-cover').getBoundingClientRect().left)), 0, 'the end button starts on the cover line');
 
     // 본문 블록: 표 · 출처 링크(새 탭)
     const c8 = ch(B.chapters[7].no);
@@ -231,7 +248,20 @@ const ch = (no) => `.lg-ch[data-chapter="${no}"]`;
     await shelf.locator('.ev-card.collected[data-eid="E6"]').waitFor();
     assert.deepEqual(await shelf.evaluate(() => window.__opened), [EVS.find((e) => e.id === 'E6').url]);
     assert.equal(await shelf.locator('.ev-card[data-eid="E6"] .ev-open').innerText(), UI.common.open_doc);
-    assert.equal(await shelf.locator('.hidden-progress').innerText(), UI.evidence.hidden_progress.replace('{n}', '2').replace('{total}', '7'));
+    // 숨은 증거 칸의 8칸 눈금(10/10 라3) — 모은 증거 칸이 채워지고, 묶음 이름이 '증거 n / 7 수집'을 읽는다
+    const meterIs = async (n) => {
+      assert.equal(await shelf.locator('.hidden-meter').getAttribute('aria-label'), UI.evidence.hidden_progress.replace('{n}', String(n)).replace('{total}', '7'));
+      assert.equal(await shelf.locator('.hidden-meter .hm-cell.on').count(), n, `${n} cells filled`);
+    };
+    await meterIs(2);
+    // 10/11(2) 사용자 결정 — 잠긴 띠는 종이(마닐라) 톤, 눈금 칸은 둥근 번호 도장, 주 단추가 이미 원본을 여는 카드(E6)에는 '원본' 칩이 없다
+    const locked = await shelf.locator('.hidden-slot.locked').evaluate((el) => getComputedStyle(el).backgroundColor);
+    assert.equal(locked, 'rgb(241, 233, 214)', 'the locked bonus strip is manila paper, not the dark folder');
+    const onCell = await shelf.locator('.hidden-meter .hm-cell.on').first().evaluate((el) => ({ radius: getComputedStyle(el).borderTopLeftRadius, color: getComputedStyle(el).borderTopColor, text: el.textContent }));
+    assert.equal(onCell.radius, '50%', 'a filled meter cell is a round seal');
+    assert.equal(onCell.color, 'rgb(178, 58, 47)');
+    assert.match(onCell.text, /^E\d+$/, 'the seal carries the evidence number');
+    assert.equal(await shelf.locator('.ev-card[data-eid="E6"] .ev-direct').count(), 0, 'no duplicate original chip when the main button already opens the original');
     // E9(추가 포트폴리오, 10/08) — 10/09부터 에필로그 끝 '참고' 줄에 나오고 센다(사용자 결정): 보관함 요약에서 그 줄로 갈 수 있고 머리글은 EPILOGUE,
     // 잠금해제하면 배지로 날아 수집 개수(배지 · 수첩 진행)에 든다
     const bump = (b) => b.replace(/^\d+/, (n) => String(Number(n) + 1));
@@ -241,12 +271,13 @@ const ch = (no) => `.lg-ch[data-chapter="${no}"]`;
     await shelf.locator('.ev-card[data-eid="E9"]').click();
     assert.deepEqual(await shelf.locator('.popup-actions .btn').allInnerTexts(), [UI.popup.to_statement, unlock(UI.common.open_doc)], 'E9 shelf popup buttons');
     assert.equal(await shelf.locator('.popup .ev-kicker').innerText(), epilogueKicker);
+    assert.equal(await shelf.locator('.popup .ev-kicker').evaluate((el) => getComputedStyle(el).color), 'rgb(93, 89, 79)', 'the evidence head line is a label — ink-soft, not red (10/11)');
     assert.equal(await shelf.locator('.popup .ev-memo .memo-spl').count(), 1, 'E9 memo draws its split block');
     await shelf.getByRole('button', { name: unlock(UI.common.open_doc), exact: true }).click();
     await shelf.locator('.ev-card.collected[data-eid="E9"]').waitFor();
     assert.equal(await shelf.locator('.ev-card[data-eid="E9"] .ev-code').innerText(), UI.evidence.code.replace('{id}', 'E9').replace('{chapters}', UI.common.epilogue_label), 'card code names the epilogue');
     await shelf.waitForFunction((want) => document.querySelector('#badge').innerText === want, bump(badgeBeforeE9));
-    assert.equal(await shelf.locator('.hidden-progress').innerText(), UI.evidence.hidden_progress.replace('{n}', '3').replace('{total}', '7'));
+    await meterIs(3);
     if (E9.url) assert.equal((await shelf.evaluate(() => window.__opened)).at(-1), E9.url);
     // 에필로그의 E9 참고 줄 — 눌러도, 누르지 않고 장을 떠나 자동으로 모여도 배지가 하나 오르고 에필로그 완료 알림이 뜬다
     for (const press of [true, false]) {
@@ -288,6 +319,23 @@ const ch = (no) => `.lg-ch[data-chapter="${no}"]`;
     await shelf.waitForURL('**/evidence/E8/interactive');
     await shelf.waitForFunction(() => document.activeElement?.matches('.lg-cta a'));
     assert.equal(await shelf.locator('.lg-cta a').evaluate(a => a.classList.contains('cue') && a.getAttribute('href') === '/api/play'), true, 'lands on the play button, marked, not pressed');
+    for (const [w, h] of [[1440, 900], [390, 844]]) {
+      const det = await browser.newPage({ viewport: { width: w, height: h } });
+      await det.route('**/_vercel/**', (r) => r.abort());
+      await det.goto(origin + '/evidence/E2', { waitUntil: 'networkidle' });
+      await det.locator('.detail-cover img').waitFor();
+      const at = await det.evaluate(() => {
+        const c = document.querySelector('.detail-cover').getBoundingClientRect();
+        // 제목 상자는 떠 있는 표지 옆에서도 폭이 그대로라, 글자가 놓인 자리(Range)로 잰다
+        const r = document.createRange();
+        r.selectNodeContents(document.querySelector('.view-detail .ev-title'));
+        const t = r.getBoundingClientRect();
+        return { coverRightOfTitle: c.left >= t.right && c.top < t.bottom + 160, coverAboveTitle: c.bottom <= t.top + 1 };
+      });
+      if (w > 820) assert.equal(at.coverRightOfTitle, true, 'wide screens: the title comes first and the cover sits to its right');
+      else assert.equal(at.coverAboveTitle, true, 'phones keep the cover first');
+      await det.close();
+    }
     await shelf.goto(origin + '/case/02');
     // 자기소개서 팝업은 진술을 끊지 않는다(10/09 사용자 결정) — 인터랙티브 · 회고로 가는 단추 없이 '증거 수집'(다시 열면 '닫기') 하나
     for (const id of ['E8', 'E5']) {
@@ -298,6 +346,10 @@ const ch = (no) => `.lg-ch[data-chapter="${no}"]`;
         await shelf.locator('.modal-overlay').waitFor({ state: 'detached' });
       }
     }
+    // 목차 칸 — 모은 뒤에는 그 증거 번호가 찍힌 작은 둥근 도장(10/11 기회 1). 내려앉은 뒤에 붙는다
+    await shelf.locator('.idx-mark.on[data-eid="E8"]').first().waitFor(); // E8은 두 장(CASE 02 · 04)의 목차에 있다
+    const mark = await shelf.locator('.idx-mark.on[data-eid="E8"]').first().evaluate((el) => ({ radius: getComputedStyle(el).borderTopLeftRadius, color: getComputedStyle(el).color, text: el.textContent }));
+    assert.deepEqual(mark, { radius: '50%', color: 'rgb(178, 58, 47)', text: 'E8' }, 'a collected index mark is a round seal with its number');
     // 수집한 카드에는 '원본 ↗'이 붙는다 — 긴 행동 문구에 밀려 카드 밖으로 잘리지 않는다(10/07 사용자 발견). 보관함은 탭으로 옮겨 수집 상태를 지킨다
     await shelf.locator('#tabs a[data-tab="evidence"]').click();
     await shelf.locator('.ev-card.collected[data-eid="E5"] .ev-direct').waitFor();
@@ -337,7 +389,26 @@ const ch = (no) => `.lg-ch[data-chapter="${no}"]`;
     await live.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
     await live.waitForFunction(() => [...document.querySelectorAll('.lg video')].every(v => v.paused), null, { timeout: 3000 });
 
+    // '포트폴리오 화면으로 돌아가기'는 보관함 맨 위가 아니라 이 증거의 카드 자리로 내려앉는다 — 카드가 화면 가운데쯤, 잠깐 들린다(10/11 기회 5).
+    // 1440×900 보관함 맨 위에서 E8 카드는 화면 밖(y 814 ~)이었다. 마우스로 눌렀으면 카드에 초점을 옮기지 않는다(초점 테두리가 그려지지 않게)
+    await live.locator('.brief-foot a').click();
+    await live.locator('.ev-grid').waitFor();
+    const landed = await live.evaluate(() => {
+      const card = document.querySelector('.ev-card[data-eid="E8"]');
+      const r = card.getBoundingClientRect();
+      const head = document.getElementById('site-header').getBoundingClientRect().bottom;
+      return { inView: r.top >= head && r.bottom <= innerHeight, centered: Math.abs((r.top + r.bottom) / 2 - (head + innerHeight) / 2) <= 24, marked: card.classList.contains('is-back'), focused: document.activeElement === card };
+    });
+    assert.deepEqual(landed, { inView: true, centered: true, marked: true, focused: false }, `back to the portfolio lands on the E8 card ${JSON.stringify(landed)}`);
+    // 머리말 탭 · 다른 길로 오면 지금처럼 저장된 자리 — 맨 위로 올려 두고 떠났다가 탭으로 돌아오면 맨 위, 카드 표시도 없다
+    await live.evaluate(() => window.scrollTo(0, 0));
+    await live.evaluate(async () => { const { navigate } = await import('/assets/js/router.js'); navigate('/evidence/E8/interactive'); });
+    await live.locator('.lg-map').waitFor();
+    await live.locator('#tabs a[data-tab="evidence"]').click();
+    await live.locator('.ev-grid').waitFor();
+    assert.deepEqual(await live.evaluate(() => [scrollY, document.querySelectorAll('.ev-card.is-back').length]), [0, 0], 'the header tab keeps the saved place');
+
     assert.deepEqual(errors, []);
-    console.log('PASS E8 retro: map (pack, core, four a side, joins at the pack), cover panel stays with the cover, play links never clicked, no red spine or connectors, no lead line, map and rail jumps with focus, mine/AI split, tabs and keys, same-size pair, videos (reduced motion, toggle, play only in view, tab switch), notice open and credits folded, tables and sources, 320–1920px, shelf and popup labels (try vs read), shelf summary popup (no collect, memo compass = map, find in statement, unlock to page or document, remaining-evidence button), play chip lands on the play button.');
+    console.log('PASS E8 retro: map (pack, core, four a side, joins at the pack), cover panel stays with the cover, play links never clicked, no red spine or connectors, no lead line, map and rail jumps with focus, mine/AI split, tabs and keys, same-size pair, videos (reduced motion, toggle, play only in view, tab switch), notice open and credits folded, tables and sources, 320–1920px, shelf and popup labels (try vs read), shelf summary popup (no collect, memo compass = map, find in statement, unlock to page or document, remaining-evidence button), play chip lands on the play button, back to the portfolio lands on the card (header tab keeps the saved place).');
   } finally { await browser.close(); }
 })().catch(e => { console.error(e); process.exitCode = 1; });

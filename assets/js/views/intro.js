@@ -8,11 +8,14 @@ import { TH } from '../text.js';
 // 시작 페이지 (명세서 2-1). SKIP은 첫 프레임부터 상시 노출.
 // 선택지 없는 단일 동선 — 대사가 끝나거나 SKIP하면 기본 사항으로 이동한다.
 
-// 첫 진입 오프닝 타이밍. CSS 애니메이션과 동기이며 총 0.8s (요구 상한 1.2s 이내).
-const OPEN_HOLD_MS = 300;   // 표지를 읽을 정지 시간
-const OPEN_TURN_MS = 500;   // 표지가 왼쪽 축으로 열리는 시간
-const CLUE_AT_MS = 500;     // 배경 페이드인(300ms 시작)보다 반 박자 늦게 클루 등장
-const DIALOGUE_AT_MS = 650; // 스탠딩이 떠오른 뒤 대사창 등장 → 대사 재생
+// 첫 진입 오프닝 타이밍(10/10 나1). 표지는 index.html에 있어 첫 프레임부터 보인다 — 데이터를 받는 동안에도 표지다.
+// 표지가 첫 화면부터 0.7초(데이터가 늦으면 받은 뒤 0.25초)는 보인 다음 0.5초에 걸쳐 열린다. 전에는 데이터를 받는 0.2초 남짓 빈 화면이 먼저 뜨고,
+// 표지는 약 0.2초만 온전히 보였다. 열리는 길이 · 순서는 그대로(7/30 결정: 1.2초 이하, CSS만, 누르면 건너뜀)
+const COVER_MIN_MS = 700;   // 페이지를 연 때부터 표지를 읽을 시간
+const COVER_AFTER_MS = 250; // 데이터가 늦게 왔을 때 받은 뒤 더 보이는 시간
+const OPEN_TURN_MS = 500;   // 표지가 왼쪽 축으로 열리는 시간(CSS coverOpen과 같다)
+const CLUE_AFTER_MS = 200;  // 열리기 시작한 뒤 클루 등장
+const DIALOGUE_AFTER_MS = 350; // 스탠딩이 떠오른 뒤 대사창 등장 → 대사 재생
 
 export function renderIntro(view) {
   // 세션 내 재진입: 대사를 다시 재생하지 않고 곧바로 기본 사항으로
@@ -56,13 +59,18 @@ export function renderIntro(view) {
     started = true;
     showClue();
     // 스크립트에 choice 블록이 없으므로 재생 종료 → onComplete → 기본 사항.
-    engine.play(DB.intro.lines, { onComplete: goNext });
+    // 한국 시간 밤(html.night — index.html 머리 스크립트가 붙인다)에는 대사의 밤 판(night_text)을 쓴다.
+    // 지금은 첫 대사만 있다(10/11 사용자 요청 — 밤 사무소 그림과 짝)
+    const night = document.documentElement.classList.contains('night');
+    const lines = (DB.intro.lines || []).map((l) => (night && l.night_text ? { ...l, text: l.night_text } : l));
+    engine.play(lines, { onComplete: goNext });
   };
 
-  // 첫 진입 오프닝. reduced-motion이면 통째로 생략하고 인트로를 즉시 표시한다.
+  // 첫 진입 오프닝 — index.html의 표지(#boot-cover)를 받아 넘긴다. 첫 진입(/ · /intro)이 아니거나 움직임 줄이기면 표지가 없다.
   // 인트로 DOM은 위에서 이미 렌더됐고 표지가 그 위를 덮을 뿐이라, 콘텐츠 준비가 늦어지지 않는다.
   const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const opening = reduced ? null : buildOpening();
+  const boot = document.getElementById('boot-cover');
+  const opening = !reduced && boot && document.documentElement.classList.contains('boot-cover') ? boot : null;
   const timers = [];
   let openingDone = false;
 
@@ -76,10 +84,11 @@ export function renderIntro(view) {
     openingDone = true;
     timers.splice(0).forEach(clearTimeout);
     document.removeEventListener('keydown', onKey);
-    view.classList.remove('opening-active');
-    if (opening) opening.remove();
+    view.classList.remove('opening-active', 'opening-turn');
+    removeCover();
   };
 
+  // 표지 위의 SKIP(첫 프레임부터 누를 수 있다) — 스크립트가 늦으면 /basic 링크 그대로, 라우터가 뜬 뒤에는 라우터가 받는다. 표지는 떠날 때 지운다
   view.querySelector('.skip-btn').addEventListener('click', (e) => {
     e.stopPropagation();
     // 오프닝 중이라도 SKIP은 즉시 동작해야 한다. play() 이후여야 종료 콜백이 걸린다.
@@ -109,6 +118,7 @@ export function renderIntro(view) {
     memo.querySelector('.notice-ok').addEventListener('click', go);
     document.addEventListener('keydown', onNoticeKey);
     memo.querySelector('.notice-ok').focus();
+    removeCover(); // 메모가 먼저 서는 길(지금은 꺼 둠)에서는 표지를 쓰지 않는다
     return {
       destroy: () => {
         document.removeEventListener('keydown', onNoticeKey);
@@ -122,40 +132,55 @@ export function renderIntro(view) {
   begin();
 
   function begin() {
-  if (reduced) {
+  if (!opening) {
+    removeCover();
     startDialogue();
     return;
   }
 
-  view.appendChild(opening);
   view.classList.add('opening-active');
 
-  // 화면 아무 곳이나 클릭·탭·키 입력 → 잔여 애니메이션 생략하고 인트로로
+  // 표지의 아무 곳이나 클릭·탭·키 입력 → 잔여 애니메이션 생략하고 인트로로(SKIP 링크는 제 할 일을 한다)
   opening.addEventListener('click', (e) => {
+    if (e.target.closest('.cover-skip')) return;
     e.stopPropagation();
     onKey();
   });
   document.addEventListener('keydown', onKey);
 
-  timers.push(setTimeout(showClue, CLUE_AT_MS));
+  const hold = Math.max(COVER_AFTER_MS, COVER_MIN_MS - performance.now());
+  timers.push(
+    setTimeout(() => {
+      opening.classList.add('turn');
+      view.classList.add('opening-turn');
+    }, hold)
+  );
+  timers.push(setTimeout(showClue, hold + CLUE_AFTER_MS));
   timers.push(
     setTimeout(() => {
       startDialogue();
       // 대사가 시작된 뒤에는 남은 표지 회전이 입력을 가로채지 않게 한다
       document.removeEventListener('keydown', onKey);
       opening.classList.add('through');
-    }, DIALOGUE_AT_MS)
+    }, hold + DIALOGUE_AFTER_MS)
   );
-  timers.push(setTimeout(endOpening, OPEN_HOLD_MS + OPEN_TURN_MS));
+  timers.push(setTimeout(endOpening, hold + OPEN_TURN_MS));
   }
 
   return {
     destroy: () => {
       timers.splice(0).forEach(clearTimeout);
       document.removeEventListener('keydown', onKey);
+      removeCover();
       engine.destroy();
     },
   };
+}
+
+// 첫 진입 표지를 걷는다 — 다 넘어갔을 때, 건너뛰었을 때, 인트로를 떠날 때(표지의 SKIP 포함)
+function removeCover() {
+  document.getElementById('boot-cover')?.remove();
+  document.documentElement.classList.remove('boot-cover');
 }
 
 // 표지에 붙은 클루의 메모 — 수첩(2부)의 포스트잇 톤을 그대로 빌린다.
@@ -180,19 +205,5 @@ function buildNotice(n) {
     body.appendChild(p);
   });
   el.querySelector('.notice-ok').textContent = n.button || '';
-  return el;
-}
-
-// 사건 파일 표지 — 새 에셋 없이 기존 종이 톤·세리프 타이포·도장 컴포넌트만 사용
-function buildOpening() {
-  const el = document.createElement('div');
-  el.className = 'opening';
-  el.innerHTML = `
-    <div class="opening-cover">
-      <div class="opening-kicker">${TH('opening.kicker')}</div>
-      <div class="opening-title">${TH('opening.title')}</div>
-      <div class="opening-foot">${TH('opening.foot')}</div>
-      <div class="stamp opening-stamp">${TH('opening.stamp')}</div>
-    </div>`;
   return el;
 }

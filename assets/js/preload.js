@@ -9,7 +9,12 @@ import { DB } from './data.js';
 export const NB_FONT_CSS =
   'https://fonts.googleapis.com/css2?family=Gowun+Dodum&display=swap';
 const NB_FONT_ID = 'nb-fonts';
-const NB_HAND_FONT = '/assets/fonts/KyoboHandwriting2025lyb.woff2';
+// 글꼴을 미리 불러 둘 때 쓰는 글자 — 고운돋움은 글자 범위마다 조각이 나뉘어 있어, 한글을 주어야 한글 조각을 받는다.
+// 수첩 표지의 글(데이터는 첫 화면 전에 다 받아 둔다)을 쓴다. 없으면 글꼴의 기본 견본으로 부른다
+const nbFontSample = () => {
+  const c = (DB.notebook && DB.notebook.cover) || {};
+  return [c.kicker, c.title, c.sub, c.stamp].filter(Boolean).join(' ') || undefined;
+};
 
 const idle = (fn) =>
   typeof requestIdleCallback === 'function'
@@ -42,21 +47,17 @@ function imageList() {
   (DB.cards || []).forEach((c) => {
     if (c.thumb) urls.push(c.thumb);
   });
-  urls.push('/assets/img/bg_office.jpg');
+  // 사무소 그림 — 한국 시간 밤이면 밤 그림(index.html이 html에 night를 붙인다, 10/11 나4)
+  urls.push(document.documentElement.classList.contains('night') ? '/assets/img/bg_office_night.jpg' : '/assets/img/bg_office.jpg');
   return [...new Set(urls.filter(Boolean))];
 }
 
-// 수첩 폰트를 백그라운드로 요청. 스타일시트는 한 번만 삽입되고,
-// 이후 수첩 페이지는 이미 받아진 폰트를 그대로 쓴다.
+// 수첩 폰트를 백그라운드로 불러 둔다. 한 번만 하고, 글꼴이 준비되면 풀리는 약속을 돌려준다(수첩 화면이 이것을 기다린다).
+// 손글씨는 style.css의 @font-face를 document.fonts.load로 직접 불러 둔다 — 한 번 불린 글꼴은 문서가 끝날 때까지 다시 받지 않는다.
+// 전에는 preload 링크를 달았는데, 링크와 @font-face가 같은 파일(175KB)을 따로 받거나 수첩을 열 때 다시 받았다(10/11 수첩 재점검).
+let nbFontsReady = null;
 export function preloadNotebookFonts() {
-  if (document.getElementById(NB_FONT_ID)) return;
-  // 자체 호스팅 손글씨 폰트를 먼저 당겨온다 (수첩 화면 대부분이 이 서체)
-  const handPre = document.createElement('link');
-  handPre.rel = 'preload';
-  handPre.as = 'font';
-  handPre.type = 'font/woff2';
-  handPre.href = NB_HAND_FONT;
-  handPre.crossOrigin = 'anonymous';
+  if (nbFontsReady) return nbFontsReady;
   const pre1 = document.createElement('link');
   pre1.rel = 'preconnect';
   pre1.href = 'https://fonts.googleapis.com';
@@ -68,7 +69,19 @@ export function preloadNotebookFonts() {
   css.id = NB_FONT_ID;
   css.rel = 'stylesheet';
   css.href = NB_FONT_CSS;
-  document.head.append(handPre, pre1, pre2, css);
+  const cssLoaded = new Promise((done) => {
+    css.addEventListener('load', done, { once: true });
+    css.addEventListener('error', done, { once: true });
+  });
+  document.head.append(pre1, pre2, css);
+  const load = (spec) =>
+    document.fonts && document.fonts.load ? document.fonts.load(spec, nbFontSample()).catch(() => []) : Promise.resolve([]);
+  nbFontsReady = Promise.all([
+    load('400 1rem "Kyobo Handwriting 2025 lyb"'),
+    // 고운돋움의 @font-face는 위 스타일시트가 와야 생긴다 — 오기 전에 부르면 빈손으로 끝난다
+    cssLoaded.then(() => load('400 1rem "Gowun Dodum"')),
+  ]);
+  return nbFontsReady;
 }
 
 // 첫 화면 렌더를 막지 않도록, 최초 렌더에 필요한 normal 스탠딩만 먼저 받고

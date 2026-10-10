@@ -11,7 +11,7 @@ npm test                    # 서버를 직접 띄우고 다섯 스위트를 돌
 
 `package.json` lives in `tests/`, not at the repository root — Vercel treats a root `package.json` as a Node project and would turn the static deploy into a build. The site itself has no dependencies and no build step.
 
-The browser test checks route interruption and history navigation, source document access, accepted/rejected casts, queue order, cost reduction and recovery boost, hidden-tab interruption, pointer cancellation, drag and keyboard matching, both E1 passes, facet counts, restart, mobile layout, reduced motion and missing View Transition support.
+The browser test checks route interruption and history navigation, source document access, accepted/rejected casts, queue order, cost reduction and recovery boost, hidden-tab interruption, pointer cancellation, drag and keyboard matching, both E1 passes, facet counts, the end buttons (original document and back to the portfolio — the restart button was removed on 10/10), the E2 conclusion opening after the first cast with its line under the deck and the used cell shown inside its table box, phone sheets that keep their words, mobile layout, reduced motion and missing View Transition support.
 
 E2 fixtures use the real renderer with deterministic cost and timing settings; production data is not changed by the tests. Visibility interruption is simulated with a visibilitychange event. The unsupported-API check removes the API in Chromium; it is not a substitute for testing on physical Safari/Firefox devices.
 
@@ -27,7 +27,7 @@ The common motion layer cancels on reduced-motion changes and hidden tabs; anima
 
 ## E3 · E5
 
-`node tests/e3-regression.cjs`, `node tests/e5-regression.cjs` run the same way (server on 4173, Playwright on `NODE_PATH`). E5 checks the two lanes and card art, the original link (the interactive proposal), the cue and prompt on the run button, everything the set adds in one cell, the one-line caption (read from the data, so final copy needs no test change), the three relations, restart, a timed run settled by a hidden tab, and 320–1440px without horizontal overflow.
+`node tests/e3-regression.cjs`, `node tests/e5-regression.cjs` run the same way (server on 4173, Playwright on `NODE_PATH`). E5 checks the two lanes and card art, the original link (the interactive proposal), the cue and prompt on the run button, everything the set adds in one cell, the one-line caption (read from the data, so final copy needs no test change), the three relations, the end buttons without restart, the phone scroll to the result after the first pick, the 'one card' badge inside the picture, a timed run settled by a hidden tab, and 320–1440px without horizontal overflow. E3 also checks that the shortage notice fades after about two seconds and is gone once the materials are in, and the PC notice on narrow screens.
 
 ## On-screen text
 

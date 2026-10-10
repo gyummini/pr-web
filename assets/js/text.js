@@ -26,3 +26,21 @@ export function fill(template, vars) {
 export function escapeHTML(s) {
   return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
+
+// 단추 이름을 넣는다. 끝의 화살표(→ · ↗)가 혼자 다음 줄로 떨어지지 않게 마지막 낱말과 묶는다
+// (10/10 휴대폰 320px — 보관함 요약 팝업의 보조 단추에서 '→'만 다음 줄로 갔다). 글자는 그대로다
+export function setLabel(el, label) {
+  const m = String(label).match(/^([\s\S]*\s)(\S+\s*[→↗])$/);
+  if (!m) {
+    el.textContent = label;
+    return el;
+  }
+  // 단추가 flex 상자라 글자와 묶음을 따로 넣으면 둘이 다른 칸이 되어 사이가 벌어진다 — 이름 전체를 한 칸에 담는다
+  const whole = document.createElement('span');
+  const tail = document.createElement('span');
+  tail.className = 'nowrap';
+  tail.textContent = m[2];
+  whole.append(m[1], tail);
+  el.replaceChildren(whole);
+  return el;
+}

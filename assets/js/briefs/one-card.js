@@ -1,4 +1,5 @@
 import { animate, effects, reducedMotion } from '../motion/animate.js';
+import { T } from '../text.js';
 
 // E5 — 편성 화면이 곧 조작판(10/07 사용자 승인 시안). 방문자가 직접 한 장을 바꾼다.
 //
@@ -11,7 +12,8 @@ import { animate, effects, reducedMotion } from '../motion/animate.js';
 // 더해지는 것(세트 이벤트 · 스킬 강화 · 편성 효과)은 빈 시간 한 칸에 모인다(10/03 결정 그대로). 실은 그 원인을 가리킬 뿐이다.
 // 진행 박자는 데이터(beats)대로다. 상태가 먼저이고 움직임은 그 위에 얹는다 — 한 타이머가 Date.now()로 지난 시간을 보고,
 // 가려진 탭 · 움직임 줄이기는 진행을 끝까지 한 번에 마친다.
-export function playOneCard(host, cfg, onComplete) {
+// kit.reach — 누른 뒤 볼 것을 화면에 들이는 껍데기의 도구(views/brief.js, 10/11 재5). 본체만 띄우는 테스트에는 없다
+export function playOneCard(host, cfg, onComplete, _ev, kit = {}) {
   const t = cfg.labels;
   const cards = cfg.cards;
   const beats = cfg.beats; // [{ id, at }] — 켜지는 것: s0 i0 s1 i1 s2 i2 ready s3 event reward end
@@ -23,6 +25,8 @@ export function playOneCard(host, cfg, onComplete) {
   let started = 0;
   let recapShown = false;
   let dead = false;
+  let picks = 0; // 방문자가 후보를 고른 횟수
+  let stopAgain = null; // '한 번 더' 표시가 화면에 들어오기를 기다리는 관찰자
 
   const root = el('div', 'ocx');
   const NS = 'http://www.w3.org/2000/svg';
@@ -33,10 +37,13 @@ export function playOneCard(host, cfg, onComplete) {
   knot.setAttribute('aria-hidden', 'true');
   const board = el('section', 'ocx-board');
   const journey = el('section', 'ocx-journey');
-  const caption = el('p', 'oc-caption');
+  const caption = el('p', 'oc-caption brief-concl-line');
   caption.setAttribute('role', 'status');
   caption.setAttribute('aria-live', 'polite');
-  root.append(svg, knot, board, journey, caption, el('p', 'oc-note', t.note));
+  // 여정이 끝난 뒤의 결론 한 줄 — 다섯 페이지 공통 부품(이름표 + 17px 굵은 한 줄, 10/10 사용자 동의 마6). 전에는 초록 네모가 붙은 14.7px
+  const concl = el('div', 'brief-concl oc-concl');
+  concl.append(el('span', 'brief-concl-key', T('brief.conclusion')), caption);
+  root.append(svg, knot, board, journey, concl, el('p', 'oc-note', t.note));
   host.append(root);
   // 처음 누를 것 — 후보 패. 안내 말풍선은 첫 선택까지만(껍데기가 머리말에서 안내를 뺐을 때만 붙는다)
   const hint = cfg.lead?.prompt_at === 'action' && t.pick_hint ? el('p', 'cue-note', t.pick_hint) : null;
@@ -294,6 +301,8 @@ export function playOneCard(host, cfg, onComplete) {
     state.running = false;
     const first = !state.picked;
     state.picked = true;
+    picks += 1;
+    stopAgain?.();
     state.set = set ? set.id : null;
     buildBoard();
     buildJourney();
@@ -304,13 +313,40 @@ export function playOneCard(host, cfg, onComplete) {
       state.running = true;
       started = Date.now();
       paint();
+      bringResult();
       // 한 타이머가 지난 시간에서 걸음을 다시 계산한다 — 한 번 건너뛴 틱이 진행을 멈추지 않는다
       timer = setInterval(tick, 80);
       return;
     }
     state.step = beats.length;
     finish();
+    bringResult();
     if (!first) animate(journey.querySelector('.ocx-stage'), [{ boxShadow: '0 0 0 10px rgba(213,233,168,.95)' }, { boxShadow: '0 0 0 4px rgba(213,233,168,.7)' }], { duration: 800 });
+  }
+
+  // 고른 뒤 결과(빈 시간 칸에서 결론 한 줄까지)가 화면 밖이면 보일 만큼만 화면을 옮긴다 — 화면 폭과 상관없이(10/11 재5. 전에는 ≤1180px에서만
+  // 여정의 머리를 머리띠 밑까지 올렸다 — 10/10 마7). 1366×768 · 1280×720 · 1536×864에서 결론 줄이 화면 아래였다. 결론 줄은 여정이 끝나야 나타나므로
+  // 그 자리(위 여백 + 이름표 + 문장)를 같은 문장으로 미리 재어 넣는다. 다 들지 않으면 빈 시간 칸부터 보인다. 움직임 줄이기면 바로 옮긴다
+  function bringResult() {
+    const stage = journey.querySelector('.ocx-stage-main');
+    if (!stage || !kit.reach) return;
+    const j = journey.getBoundingClientRect();
+    kit.reach([{ top: stage.getBoundingClientRect().top, bottom: j.bottom + conclHeight() }]);
+  }
+  // 결론 줄이 나타나면 차지할 높이(위 여백 포함) — 보이지 않는 사본에 같은 문장을 넣어 잰다(화면 낭독기 알림 칸은 건드리지 않는다)
+  function conclHeight() {
+    if (concl.getClientRects().length) return concl.getBoundingClientRect().height + parseFloat(getComputedStyle(concl).marginTop || 0);
+    const ghost = concl.cloneNode(true);
+    const line = ghost.querySelector('.oc-caption');
+    line.removeAttribute('role');
+    line.removeAttribute('aria-live');
+    line.textContent = t.caption || '';
+    ghost.setAttribute('aria-hidden', 'true');
+    ghost.style.cssText = 'position:absolute;left:0;right:0;top:0;visibility:hidden;pointer-events:none';
+    root.append(ghost);
+    const h = ghost.getBoundingClientRect().height + parseFloat(getComputedStyle(ghost).marginTop || 0);
+    ghost.remove();
+    return h;
   }
 
   function tick() {
@@ -332,24 +368,29 @@ export function playOneCard(host, cfg, onComplete) {
     state.done = true;
     paint();
     if (!recapShown) { recapShown = true; onComplete({ scroll: false }); }
+    callAgain();
+  }
+
+  // 첫 결과가 나온 뒤 '한 번 더'(10/11 사용자 결정 재9 — DESIGN.md 13절 원칙 7 '끝은 열어 둔다'): 후보 패에 세 번만 퍼지는 표시(.cue-step).
+  // 처음 표시(.cue)는 첫 선택에 거뒀으니 한 화면에 누를 것은 이것 하나다. 다시 고르면 거둔다(buildBoard가 표시 없이 다시 그린다)
+  function callAgain() {
+    if (picks !== 1 || !state.set) return;
+    const bench = board.querySelector('.ocx-bench');
+    if (!bench || bench.classList.contains('cue')) return;
+    bench.classList.add('cue', 'cue-step');
+    if (typeof IntersectionObserver !== 'function') return;
+    const io = new IntersectionObserver((entries) => {
+      if (!entries.some((e) => e.isIntersecting)) return;
+      io.disconnect();
+      bench.classList.add('cue-seen');
+    }, { threshold: 0.6 });
+    io.observe(bench);
+    stopAgain = () => { io.disconnect(); stopAgain = null; };
   }
 
   function stop() { if (timer) { clearInterval(timer); timer = null; } }
-
-  function restart(before) {
-    if (dead) return;
-    stop();
-    before?.();
-    recapShown = false;
-    Object.assign(state, { set: null, step: 0, running: false, done: false, picked: false });
-    buildBoard();
-    buildJourney();
-    paint();
-    // 다시 해보기 버튼(결론 칸)은 사라진다 — 초점을 첫 후보로 옮기고 화면도 그리로 데려간다
-    const firstPick = board.querySelector('.ocx-pick');
-    firstPick?.focus({ preventScroll: true });
-    board.scrollIntoView({ block: 'center', behavior: reducedMotion() ? 'instant' : 'smooth' });
-  }
+  // 끝의 '다시 해보기'(처음 편성으로 되돌리고 첫 후보로 초점을 옮기던 길)는 10/10 사용자 결정(바3)으로 뺐다 —
+  // 후보 패가 그대로 '다른 관계로 바꿔 보기'이고, 처음 카드를 고르면 처음 모습으로 돌아간다
 
   function el(tag, cls = '', text) {
     const node = document.createElement(tag); if (cls) node.className = cls;
@@ -362,7 +403,6 @@ export function playOneCard(host, cfg, onComplete) {
   // 그림이 늦게 실리면 자리가 바뀔 수 있다 — 다 실린 뒤에 실을 다시 잰다(그림 비율은 고정이라 대개 그대로다)
   root.querySelectorAll('img').forEach((img) => { if (!img.complete) img.addEventListener('load', layout, { once: true }); });
   return {
-    restart,
-    destroy() { dead = true; stop(); document.removeEventListener('visibilitychange', onVisibility); window.removeEventListener('resize', layout); },
+    destroy() { dead = true; stop(); stopAgain?.(); document.removeEventListener('visibilitychange', onVisibility); window.removeEventListener('resize', layout); },
   };
 }

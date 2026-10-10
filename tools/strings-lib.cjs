@@ -30,6 +30,12 @@ const HTML = {
   'html.nav.basic': /data-tab="basic">([^<]*)<\/a>/,
   'html.nav.dossier': /data-tab="dossier">([^<]*)<\/a>/,
   'html.nav.evidence': /data-tab="evidence">([^<]*?)\s*<span/,
+  // 첫 진입 표지(10/10 나1) — 스크립트 · 데이터를 받기 전 첫 프레임부터 떠야 해서 HTML에 있다(전에는 콘텐츠_화면문구.json의 opening.*)
+  'html.cover.kicker': /<div class="opening-kicker">([^<]*)<\/div>/,
+  'html.cover.title': /<div class="opening-title">([^<]*)<\/div>/,
+  'html.cover.foot': /<div class="opening-foot">([^<]*)<\/div>/,
+  'html.cover.stamp': /<div class="stamp opening-stamp">([^<]*)<\/div>/,
+  'html.cover.skip': /<a class="skip-btn cover-skip" href="\/basic">([^<]*)<\/a>/,
 };
 const HANGUL = /[가-힣]/;
 const ESSAY = '콘텐츠_자기소개서.md';
@@ -64,6 +70,11 @@ const NOT_SHOWN = [
   /^E5\.brief\.labels\.tbd$/,
   // 10/07 사용자 의견으로 E1 장 머리줄('CHAPTER 01 · 역설 … 01 / 05')을 뺐다 — 장 사이는 선만(확정 문구라 남겨 둠).
   /^E1\.brief\.chapters\.\d+\.(no|name|mark)$/,
+  // 10/10 사용자 결정 — 인터랙티브 페이지 끝 단추에서 '다시 해보기'를 뺐고(바3), E1 머리말의 안내 알약을 뺐다(마3). 확정 문구라 남겨 둠.
+  /^ui\.brief\.restart$/,
+  /^E1\.brief\.lead\.prompt$/,
+  // 10/10 첫 진입 표지를 index.html로 옮겼다(html.cover.*) — 데이터의 opening.*은 화면에 나가지 않는다(확정 문구라 남겨 둠)
+  /^ui\.opening\./,
 ];
 const shown = (key) => !NOT_SHOWN.some((re) => re.test(key));
 

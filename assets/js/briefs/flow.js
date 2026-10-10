@@ -2,7 +2,7 @@ import { animate, effects, reducedMotion } from '../motion/animate.js';
 import { fromRect } from '../motion/flip.js';
 import { flowPaths } from '../motion/flow-paths.js';
 import { revealOnce } from '../motion/reveal.js';
-import { fill as fillText } from '../text.js'; // 이 파일에는 표 행을 채우는 fill이 따로 있다
+import { fill as fillText, T } from '../text.js'; // 이 파일에는 표 행을 채우는 fill이 따로 있다
 // E2 · Cost 스킬 시스템 — 한 번의 클릭이 읽는 데이터와 쓰는 데이터.
 //
 //   ① 읽기 — 마스터 데이터(하늘). 기획자가 정의한 정적 데이터.
@@ -22,6 +22,8 @@ import { fill as fillText } from '../text.js'; // 이 파일에는 표 행을 �
 const TICK_MS = 100;
 // 첫 시전이 판을 펼치는 시간 — 손패 칸이 제자리로 옮겨 가고 차트 · 표가 드러난 뒤에 흐름이 걷기 시작한다
 const OPEN_MS = 560;
+// 사용자가 표 상자를 직접 만진 뒤 이만큼은 켜진 칸으로 저절로 밀지 않는다(마1 — 밀고 있는 손에 끼어들지 않게)
+const HAND_MS = 1500;
 
 // 변화 표시를 하지 않는 칸.
 // 큐의 순번은 카드 한 장이 움직이면 모든 행이 한꺼번에 밀려서 여섯 칸이 동시에 깜빡인다.
@@ -36,8 +38,9 @@ export function playFlow(host, cfg, onComplete) {
   const max = Number(play.max_cost) || 10;
   const baseRate = Number(play.rate) || 0;
   const boostRate = Number(play.boosted_rate) || baseRate;
-  // 흐름 속도 — 처음에는 천천히 짚어주고, 반복될수록 빨라진다
-  const stepStart = Number(play.step_ms_start) || 620;
+  // 흐름 속도 — 처음에는 천천히 짚어주고, 반복될수록 빨라진다.
+  // 첫 흐름은 판이 펼쳐지는 0.56초 + 12걸음 × 0.37초 ≈ 5초(10/10 — 0.62초씩 8.1초였다. 걸음 간격 0.2~0.6초 원칙)
+  const stepStart = Number(play.step_ms_start) || 370;
   const stepMin = Number(play.step_ms_min) || 45;
   const speedupUses = Math.max(1, Number(play.speedup_uses) || 5);
 
@@ -55,10 +58,22 @@ export function playFlow(host, cfg, onComplete) {
   let stepTimers = [];
   // 표를 다시 그리기 전의 값 — 어떤 칸이 '방금' 바뀌었는지는 이전 값을 알아야 말할 수 있다
   let prevCells = new Map();
+  // 표 상자(가로 스크롤)마다 사용자가 직접 만진 때 · 누르고 있는지 · 저절로 미는 중인지(마1)
+  const hands = new Map();
   let presentation = null;
   let graph = null;
   let previousNode = null;
   let finishTrace = null;
+  let recapShown = false; // 결론 칸(원본 문서 · 첨부)은 첫 시전의 흐름이 끝난 뒤에 한 번 연다(10/10)
+  // 첫 결과 뒤의 '한 번 더'(10/11 사용자 결정 재9 — DESIGN.md 13절 원칙 7 '끝은 열어 둔다'): 예외 경로가 있는 카드
+  // (우이 — 예외 4 코스트 감소, 호시노 — 예외 1 회복력 증가)에 세 번만 퍼지는 표시(.cue-step)를 붙인다. 한 화면에 누를 것은 하나 —
+  // 그 카드가 손패에 있으면 그 카드, 아직 덱에 있으면 손패 묶음(한 장 더 쓰면 덱 맨 위에서 올라온다). 두 예외를 다 지나가 봤으면 거둔다.
+  // 표시는 흐름이 끝날 때만 옮긴다
+  const exceptional = (play.students || []).filter((x) => x.reduce || x.boost).map((x) => x.id);
+  const tried = new Set(); // 예외 경로를 지나간 카드
+  let invite = null; // null | 'hand' | 학생 id
+  let inviteSeen = null; // 화면에 들어와 세 번 퍼진 표시 — 걸음마다 새로 그린 카드에서 다시 퍼지지 않게
+  let watched = null; // { el, io } — 화면에 들어오기를 기다리는 표시
 
   const root = document.createElement('div');
   root.className = 'fx fx-closed';
@@ -81,9 +96,11 @@ export function playFlow(host, cfg, onComplete) {
           <span class="fx-sub fx-sub-deck"></span>
           <ol class="fx-deck"></ol>
         </div>
+        <div class="fx-concl brief-concl"><span class="brief-concl-key"></span><p class="fx-caption brief-concl-line"></p></div>
       </section>
       <section class="fx-chartcol">
         <span class="fx-sec fx-sec-chart"></span>
+        <div class="fx-keys"><span class="fx-legend"></span></div>
         <div class="fx-chart"></div>
       </section>
       <section class="fx-datacol">
@@ -98,11 +115,12 @@ export function playFlow(host, cfg, onComplete) {
         </div>
       </section>
     </div>
-    <p class="fx-caption"></p>
-    <p class="sr-only" role="status"></p>
-    <div class="fx-foot"><span class="fx-legend"></span></div>`;
+    <p class="sr-only" role="status"></p>`;
   // 캡션은 흐름의 단계마다 바뀐다(한 번 누를 때 12~15번). 그대로 알리면 낭독이 겹친다 —
-  // 화면 낭독기에는 한 번의 흐름이 끝났을 때 마지막 캡션만 한 번 알린다(10/06 점검). 진행 수('1 / 4')는 10/07 사용자 의견으로 화면에서 뺐다
+  // 화면 낭독기에는 한 번의 흐름이 끝났을 때 마지막 캡션만 한 번 알린다(10/06 점검). 진행 수('1 / 4')는 10/07 사용자 의견으로 화면에서 뺐다.
+  // 캡션은 조작 칸의 덱 아래 빈 자리에 둔다(10/10 사용자 동의 마6) — 판 맨 아래에 있을 때는 첫 흐름이 끝나는 순간
+  // 1440×900 · 1536×864에서 화면 아래 끝에 걸려 잘렸다. 흐름 동안은 걸음마다 바뀌는 작은 글이고, 끝나면 '결론 한 줄'(공통 부품
+  // .brief-concl — 이름표 + 17px 굵은 한 줄)이 된다. 결론 표시는 붉은 왼쪽 띠(절 제목 · 알림 전용) 대신 공통 부품을 쓴다
 
   const sec = cfg.sections || {};
   const mst = cfg.master || {};
@@ -114,6 +132,7 @@ export function playFlow(host, cfg, onComplete) {
   root.querySelector('.fx-sec-tables').textContent = sec.tables || '';
   root.querySelector('.fx-master-note').textContent = mst.note || '';
   root.querySelector('.fx-rate-note').textContent = play.rate_note || '';
+  root.querySelector('.fx-concl .brief-concl-key').textContent = T('brief.conclusion');
 
   buildMaster();
   buildLegend();
@@ -122,7 +141,7 @@ export function playFlow(host, cfg, onComplete) {
 
   const handWrap = root.querySelector('.fx-hand');
   // 처음 누를 것은 손패다(style.css .cue). 데이터가 prompt_at: 'action'이면 껍데기가 머리말의 안내를 빼고,
-  // 같은 문구가 손패 바로 위 말풍선으로 온다 — 둘 다 첫 조작까지만. 다시 해보기는 처음 상태로 돌린다.
+  // 같은 문구가 손패 바로 위 말풍선으로 온다 — 둘 다 첫 조작까지만.
   const hint = cfg.lead?.prompt_at === 'action' && cfg.lead.prompt ? document.createElement('p') : null;
   if (hint) {
     hint.className = 'cue-note points-down';
@@ -131,8 +150,41 @@ export function playFlow(host, cfg, onComplete) {
   }
   let pressed = false;
   function paintCue() {
-    handWrap.classList.toggle('cue', !pressed);
+    const onHand = pressed && invite === 'hand';
+    handWrap.classList.toggle('cue', !pressed || onHand);
+    handWrap.classList.toggle('cue-step', onHand);
+    if (!onHand) handWrap.classList.remove('cue-seen');
     if (hint) hint.hidden = pressed;
+    handWrap.querySelectorAll('.fx-card').forEach((b) => {
+      const on = !!invite && b.dataset.sid === invite;
+      b.classList.toggle('cue', on);
+      b.classList.toggle('cue-step', on);
+    });
+    seeInvite();
+  }
+  // '한 번 더' 표시가 화면에 들어오면 세 번 퍼진다(.cue-seen). 이미 퍼진 표시는 새로 그린 카드에서도 고정 테두리로만 남는다
+  function seeInvite() {
+    const el = invite === 'hand' ? handWrap : invite ? handWrap.querySelector(`.fx-card[data-sid="${invite}"]`) : null;
+    if (watched && watched.el === el) return;
+    watched?.io.disconnect();
+    watched = null;
+    if (!el || inviteSeen === invite || typeof IntersectionObserver !== 'function') return;
+    const key = invite;
+    const io = new IntersectionObserver((entries) => {
+      if (!entries.some((e) => e.isIntersecting)) return;
+      io.disconnect();
+      el.classList.add('cue-seen');
+      inviteSeen = key;
+    }, { threshold: 0.6 });
+    io.observe(el);
+    watched = { el, io };
+  }
+  // 흐름이 끝날 때 — 결론이 나온 뒤에만, 아직 지나가 보지 않은 예외 카드로
+  function moveInvite() {
+    if (!recapShown) return;
+    const left = exceptional.filter((id) => !tried.has(id));
+    invite = !left.length ? null : hand.find((x) => left.includes(x.id))?.id || 'hand';
+    paintCue();
   }
   const deckWrap = root.querySelector('.fx-deck');
   const caption = root.querySelector('.fx-caption');
@@ -157,10 +209,8 @@ export function playFlow(host, cfg, onComplete) {
   })));
 
   reset();
-  // 결론과 원본 문서는 처음부터 열어 둔다. 네 번을 눌러야 원본에 닿는 구조는
-  // 검토자에게 통행료를 물리는 셈이다 — 인터랙션은 이해를 돕는 것이지 관문이 아니다.
-  // 스크롤은 넘기지 않는다. 페이지를 연 사람은 맨 위에서 시작해야 한다.
-  onComplete({ scroll: false });
+  // 결론 칸(원본 문서 · 첨부)은 E1 · E3 · E5처럼 첫 시전의 흐름이 끝난 뒤에 연다(10/10 사용자 동의 마4 — finish).
+  // 전에는 처음부터 열어 두었다('원본까지의 통행료'를 없애려고). 10/06부터 원본은 머리말에 늘 있어 그 이유가 사라졌다
   timer = setInterval(() => {
     // 흐름이 도는 동안에는 회복을 멈춘다 — 차트를 보는 사이에 게이지가 차면
     // 무엇 때문에 쓸 수 있게 됐는지가 흐려진다
@@ -326,41 +376,68 @@ export function playFlow(host, cfg, onComplete) {
     const scroller = box.querySelector('.fx-tscroll');
     scroller.setAttribute('role', 'region');
     scroller.setAttribute('aria-labelledby', id);
+    watchHand(scroller);
+  }
+
+  /* ---------- 켜진 칸은 자기 상자 안에 다 보이게(10/10 사용자 결정 마1 가안) ----------
+     표 상자가 표보다 좁아서, 카드를 내면 실제로 값이 바뀌는 '현재_Cost'(전투 환경 설정 넷째 칸)가 켜진 채 상자 오른쪽 밖에 숨었다
+     (1440 0% · 1600 0% · 1920 36%만 보임). 칸을 켤 때 그 칸이 상자에서 다 보이지 않으면 그 상자만 옆으로 민다 —
+     페이지는 세로로든 가로로든 움직이지 않고(scrollIntoView 대신 상자의 scrollLeft만), 표 모양 · 칸 순서는 그대로다.
+     움직임 줄이기면 바로 옮긴다. 사용자가 상자를 직접 밀고 있으면(누르는 중 · 방금 굴림 · 키) 끼어들지 않는다. */
+  function watchHand(sc) {
+    const h = { at: 0, holding: false, autoUntil: 0 };
+    hands.set(sc, h);
+    const touched = () => { h.at = Date.now(); };
+    sc.addEventListener('pointerdown', () => { h.holding = true; touched(); }); // 스크롤 막대를 잡거나 손가락으로 끄는 중
+    sc.addEventListener('wheel', (e) => { if (e.deltaX || e.shiftKey) touched(); }, { passive: true }); // 옆으로 굴림만(세로 굴림은 페이지 스크롤)
+    // 옆으로 실제로 밀린 때(키보드 · 터치패드 포함). 저절로 미는 동안의 scroll은 사용자의 손이 아니다
+    sc.addEventListener('scroll', () => { if (Date.now() > h.autoUntil) touched(); }, { passive: true });
+  }
+  function letGo() {
+    hands.forEach((h) => {
+      if (!h.holding) return;
+      h.holding = false;
+      h.at = Date.now();
+    });
+  }
+  window.addEventListener('pointerup', letGo);
+  window.addEventListener('pointercancel', letGo);
+
+  function reveal(box) {
+    const sc = box && box.querySelector('.fx-tscroll');
+    const h = sc && hands.get(sc);
+    if (!h || sc.scrollWidth <= sc.clientWidth + 1) return;
+    if (h.holding || Date.now() - h.at < HAND_MS) return;
+    const cells = [...sc.querySelectorAll('td.on')];
+    if (!cells.length) return;
+    const zero = sc.getBoundingClientRect().left - sc.scrollLeft; // 상자 안 좌표의 0(스크롤 포함)
+    const left = Math.min(...cells.map((td) => td.getBoundingClientRect().left)) - zero;
+    const right = Math.max(...cells.map((td) => td.getBoundingClientRect().right)) - zero;
+    let to = sc.scrollLeft;
+    if (right > to + sc.clientWidth) to = right - sc.clientWidth;
+    if (left < to) to = left;
+    to = Math.max(0, Math.min(Math.ceil(to), sc.scrollWidth - sc.clientWidth));
+    if (Math.abs(to - sc.scrollLeft) < 1) return;
+    const instant = reducedMotion() || document.hidden;
+    h.autoUntil = Date.now() + (instant ? 80 : 800);
+    sc.scrollTo({ left: to, behavior: instant ? 'instant' : 'smooth' });
   }
 
   /* ---------- 상태 → 화면 ---------- */
 
+  // 처음 상태 — 손패 · 덱 · Cost를 데이터대로 놓고 그린다(마운트 때 한 번).
+  // 처음 화면(조작 칸만, .fx-closed)으로 되돌리던 '다시 해보기'는 10/10 사용자 결정(바3)으로 뺐다
   function reset() {
-    clearTimers();
-    stepTimers = [];
     hand = (play.hand || []).map((id) => byId.get(id)).filter(Boolean);
     deck = (play.deck || []).map((id) => byId.get(id)).filter(Boolean);
     costs = new Map((play.students || []).map((x) => [x.id, Number(x.cost) || 0]));
     cost = Number(play.start_cost) || 0;
-    boosted = false;
-    used = 0;
-    running = false;
-    presentation = null;
-    finishTrace = null;
     last = Date.now();
-    caption.textContent = '';
-    root.classList.remove('fx-tracing', 'fx-returned', 'fx-assembled-on', 'fx-assembled-done');
-    prevCells.clear();
-    fillMaster(null);
-    clearLit();
     drawHand();
     drawDeck();
-    // 이전 판의 값이 '방금 바뀐 값'으로 읽히지 않게 상태 표를 비우고 다시 그린다 —
-    // fill()은 화면에 남은 값을 이전 값으로 삼는다(다시 해보기 뒤 '3 → 6' 가짜 표시, 10/06 점검)
-    root.querySelectorAll('.fx-tables tbody').forEach((t) => (t.textContent = ''));
     paintTables();
     paint();
-    pressed = false;
     paintCue();
-    // 다시 해보기는 처음 화면(조작 칸만)으로 돌린다 — 펼쳐지는 순간도 다시 볼 수 있게
-    opened = false;
-    scrolled = false;
-    root.classList.add('fx-closed');
   }
 
   // 조작 칸 하나만 있던 판을 연다. 칸은 제자리(왼쪽 첫 열)로 옮겨 가고, 차트와 두 표 무리가 그 오른쪽으로 펼쳐진다.
@@ -379,7 +456,7 @@ export function playFlow(host, cfg, onComplete) {
     // READ → WRITE 머리는 화면에 들어오는 순간 제 연출(revealOnce)로 나타난다
     [root.querySelector('.fx-chartcol'), root.querySelector('.fx-datacol')].forEach((el, i) =>
       animate(el, [{ opacity: 0, transform: 'translateX(-32px)' }, { opacity: 1, transform: 'none' }], { duration: 460, delay: 140 + i * 130, fill: 'backwards' }));
-    [caption, root.querySelector('.fx-foot')].forEach((el) => animate(el, effects.fade, { duration: 360, delay: 420, fill: 'backwards' }));
+    animate(caption, effects.fade, { duration: 360, delay: 420, fill: 'backwards' }); // 범례는 차트 칸 안이라 칸과 함께 들어온다
     return OPEN_MS;
   }
 
@@ -486,6 +563,7 @@ export function playFlow(host, cfg, onComplete) {
         || handWrap.children[Math.min(focusAt, handWrap.children.length - 1)];
       if (back) back.focus({ preventScroll: true });
     }
+    paintCue(); // 새로 그린 카드에도 '한 번 더' 표시를 다시 붙인다
   }
 
   function drawDeck() {
@@ -614,10 +692,28 @@ export function playFlow(host, cfg, onComplete) {
     fillMaster(s.id);
     paint();
 
-    // 첫 조작에서 판 전체를 화면에 맞춘다 — 아래쪽 상태 테이블이 접혀 있으면 변화가 안 보인다
+    // 첫 조작에서 판 전체를 화면에 맞춘다 — 아래쪽 상태 테이블이 접혀 있으면 변화가 안 보인다.
+    // 맞추는 양은 덱 아래 결론 줄까지 넓힌다(10/11 사용자 결정 재5 — 1366×768 · 1280×720 노트북에서 첫 흐름이 끝난 결론 줄이 화면 밖이었다).
+    // 누른 직후 한 번만 움직인다. 판이 펼쳐지는 움직임(transform)과 상관없이 결론 줄이 놓일 자리(offsetTop)로 잰다
     if (!scrolled) {
       scrolled = true;
-      const top = root.getBoundingClientRect().top + window.scrollY - 70;
+      let top = root.getBoundingClientRect().top + window.scrollY - 70;
+      // 결론 줄은 글이 비어 있으면 숨어 있다(.brief-concl:has(> :empty)). 끝날 때의 모양(결론 문장, 흐름 표시 없음)을 잠깐 만들어 자리를 재고
+      // 같은 차례에서 되돌린다 — 화면에 그려지지 않는다
+      const concl = root.querySelector('.fx-concl');
+      const line = concl && concl.querySelector('.brief-concl-line');
+      if (line) {
+        const was = line.textContent;
+        if (!was) line.textContent = (cfg.captions || {})[afford ? 'complete' : 'deny'] || ' ';
+        root.classList.remove('fx-tracing');
+        let y = 0;
+        for (let n = concl; n; n = n.offsetParent) y += n.offsetTop;
+        const h = concl.offsetHeight;
+        root.classList.add('fx-tracing');
+        line.textContent = was;
+        // 흐름 동안 손패 카드가 바뀌며 설명이 한 줄씩 늘 수 있다(1366에서 30px 밀렸다) — 카드마다 한 줄을 미리 셈한다
+        if (h) top = Math.max(top, y + h + 16 * hand.length + 16 - window.innerHeight);
+      }
       window.scrollTo({ top: Math.max(0, top), behavior: reducedMotion() ? 'instant' : 'smooth' });
     }
 
@@ -634,10 +730,20 @@ export function playFlow(host, cfg, onComplete) {
       running = false;
       root.classList.remove('fx-tracing');
       graph.end();
+      // 흐름이 끝나면 마지막 단계도 '지나온 단계'로 내린다 — 붉은 '지금 단계' 고리가 남아 손패의 '한 번 더' 고리와 함께 떠 있었다(10/11 재채점).
+      // 바뀐 값의 칸 표시(행 · 칸)는 무엇이 바뀌었는지 보여 주므로 남긴다
+      root.querySelectorAll('.fx-node.on, .fx-arm.on, .fx-master-table.on, .fx-tables .fx-table.on').forEach((el) => {
+        el.classList.remove('on');
+        el.classList.add('past');
+      });
       drawHand(); drawDeck(); paintTables(); paint();
       last = Date.now();
-      caption.textContent = (cfg.captions || {})[afford ? 'complete' : 'deny'] || caption.textContent;
+      setCaption((cfg.captions || {})[afford ? 'complete' : 'deny'] || caption.textContent);
       announce(caption.textContent);
+      // 첫 흐름이 끝나면 결론 칸(원본 문서 · 첨부)을 연다 — 화면은 끌어내리지 않는다(결론 한 줄은 덱 아래에 이미 있다)
+      if (!recapShown) { recapShown = true; onComplete({ scroll: false }); }
+      if (afford && exceptional.includes(s.id)) tried.add(s.id);
+      moveInvite();
     };
     finishTrace = finish;
     if (reducedMotion() || document.hidden) {
@@ -783,12 +889,28 @@ export function playFlow(host, cfg, onComplete) {
           if (tr) tr.classList.add('on');
         }
         if (st.c) tb.querySelectorAll(`td[data-c="${st.c}"]`).forEach((td) => td.classList.add('on'));
+        reveal(tb); // 켜진 칸이 상자 밖이면 그 상자만 민다(마1). 마스터 표는 표 전체를 밝힐 뿐 칸을 켜지 않아 밀 일이 없다
       }
     }
 
     const key = st.cap || (st.m ? `m_${st.m}` : st.arm ? `${st.n}_${st.arm}` : st.n);
     const cap = (cfg.captions || {})[key];
-    if (cap) caption.textContent = cap;
+    if (cap) setCaption(cap);
+  }
+
+  // 가운뎃점으로 이은 낱말('손패·덱')은 한 덩어리로 줄을 바꾼다 — 캡션이 덱 아래 좁은 칸(250px)으로 오며
+  // '·덱 순서가 …'처럼 가운뎃점으로 시작하는 줄이 생겼다(10/10). 글자는 그대로이고 감싸기만 한다
+  function setCaption(text) {
+    caption.replaceChildren();
+    String(text || '').split(/(\S+·\S+)/).forEach((part, i) => {
+      if (!part) return;
+      if (i % 2) {
+        const keep = document.createElement('span');
+        keep.className = 'fx-keep';
+        keep.textContent = part;
+        caption.append(keep);
+      } else caption.append(part);
+    });
   }
 
   /* ---------- 손패·덱의 움직임 ---------- */
@@ -859,17 +981,15 @@ export function playFlow(host, cfg, onComplete) {
   }
 
   return {
-    restart() {
-      // 결론을 닫지 않는다. 처음부터 열려 있는 것을 조작 한 번에 걷어내면
-      // 원본 문서로 가는 길이 도로 막힌다.
-      reset();
-    },
     destroy() {
       stopConcept();
+      watched?.io.disconnect();
       graph.destroy();
       clearInterval(timer);
       clearTimers();
       document.removeEventListener('visibilitychange', onVisible);
+      window.removeEventListener('pointerup', letGo);
+      window.removeEventListener('pointercancel', letGo);
       document.querySelectorAll('.fx-ghost').forEach((n) => n.remove());
       running = true; // 화면을 떠난 뒤 남은 콜백이 조작을 되살리지 않도록
     },

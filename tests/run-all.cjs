@@ -13,6 +13,7 @@ const SUITES = [
   ['E3 · cut_play', ['node', ['tests/e3-regression.cjs']]],
   ['E5 · one_card', ['node', ['tests/e5-regression.cjs']]],
   ['E8 · retro', ['node', ['tests/e8-regression.cjs']]],
+  ['수첩 · notebook', ['node', ['tests/notebook-regression.cjs']]],
   ['입장권 API', ['node', ['--test', 'tests/play.test.mjs']]],
   ['화면 문구 · GPT 목록', ['node', ['tools/strings.cjs', 'check']]],
 ];

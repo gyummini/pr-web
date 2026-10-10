@@ -76,7 +76,6 @@ export function playRetro(host, b, _onComplete, ev = {}) {
   }
 
   return {
-    restart: null,
     destroy() {
       side?.stop();
       clips.stop();
@@ -194,7 +193,9 @@ function split(ch) {
     if (bk.verdict) out.verdict = bk.verdict;
     else if (bk.roles) out.roles = bk.roles;
     else if (bk.pair) {
-      out.items.push({ kind: 'pair', ref: bk.pair.find((f) => f.tag === 'ref') || bk.pair[0], res: bk.pair.find((f) => f.tag === 'result') || bk.pair[1] });
+      // 결과가 그래프인 쌍(데이터 stack — 02장 시세)은 나란히 두면 그래프가 237px로 줄어 글씨가 4px이었다 — 점수 막대처럼 참고는 위에 작게,
+      // 그래프는 아래에 패널 폭을 다 쓴다(10/11 사용자 결정 재8)
+      out.items.push({ kind: bk.stack ? 'stack' : 'pair', ref: bk.pair.find((f) => f.tag === 'ref') || bk.pair[0], res: bk.pair.find((f) => f.tag === 'result') || bk.pair[1] });
     } else if (bk.figure) {
       const next = blocks[i + 1]?.figure;
       if (bk.figure.tag === 'ref' && next?.tag === 'result') {
@@ -305,6 +306,7 @@ function item(it, clips) {
     const res = el('figure', 'lg-side result');
     const bar = el('div', 'lg-frame-bar');
     bar.appendChild(img(it.res));
+    if (it.res.zoom) zoomLink(bar, it.res); // 02장 시세 그래프 — 다른 그래프처럼 원래 크기로 연다(10/11 사용자 결정 재8)
     res.append(bar, caption(it.res));
     box.append(ref, res);
     return box;
@@ -317,8 +319,27 @@ function item(it, clips) {
     frame.style.aspectRatio = `${f.w} / ${f.h}`;
   }
   show(f, frame, true, clips);
+  if (f.zoom) zoomLink(frame, f);
   fig.append(frame, caption(f));
   return fig;
+}
+
+// 눈금 · 이름표가 패널 폭에서 작아지는 그래프(데이터 zoom — 03-1 막대 · 05-1 선, 10/11부터 02-3 시세 · 07-2 커밋도)는 누르면 원래 크기 그림이 새 탭에서 열린다
+// (1280px 이하 화면에서 그래프 속 가장 작은 글씨가 12px보다 작다 — 10/11 사용자 결정 재8: 넷 모두 크게 볼 수 있게)
+// (10/10 사용자 동의 마5). 그림의 대체 글은 비어 있으므로(캡션이 설명한다) 링크 이름은 따로 붙인다(labels.open_full)
+function zoomLink(frame, f) {
+  const im = frame.querySelector(':scope > img');
+  if (!im) return;
+  const a = el('a', 'lg-zoom');
+  a.href = f.src;
+  a.target = '_blank';
+  a.rel = 'noopener';
+  if (L.open_full) {
+    a.setAttribute('aria-label', L.open_full);
+    a.title = L.open_full;
+  }
+  im.replaceWith(a);
+  a.appendChild(im);
 }
 
 // 참고 | 결과 한 쌍: 두 칸은 같은 크기. 칸의 비율은 두 그림이 같은 넓이로 담기는 값(두 비율의 기하평균)에서
