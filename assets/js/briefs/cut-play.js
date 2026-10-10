@@ -1,7 +1,7 @@
 import { animate, reducedMotion } from '../motion/animate.js';
 import { fill, T } from '../text.js';
 
-// E3 — 직접 해 보는 판단. CUT UNTIL IT'S FUN.
+// E5 — 직접 해 보는 판단. CUT UNTIL IT'S FUN.
 //
 // ① 처음 만든 게임(MineSmith — 곡괭이 강화 + 채굴 + 경제)을 직접 해 본다. 곡괭이를 휘둘러 바위를 깨야 철광석이 하나 나오고,
 //    깬 바위는 잠시 뒤에 다시 나온다. 강화에는 광석이 재료로 들고(2→3강부터 석탄도), 석탄은 시장에서 시세를 보고 판 돈으로 산다.

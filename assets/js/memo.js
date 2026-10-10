@@ -1,7 +1,7 @@
 // 증거 요약 메모 — 클루가 문서를 미리 읽고 남겨둔 쪽지.
 //
 // 방문자는 읽기만 한다. 클릭·대기·자동 연출 없음 (명세서 절대원칙 3: 읽기를 방해하지 않는다).
-// 시각 언어는 수사 수첩(E7)에서 가져오되 손글씨 폰트는 수첩 전용으로 남겨둔다 —
+// 시각 언어는 수사 수첩(E8)에서 가져오되 손글씨 폰트는 수첩 전용으로 남겨둔다 —
 // 팝업 시점에는 아직 폰트가 선로딩되지 않고(ui.js: 5수집), 히든의 특별함도 지켜야 한다.
 //
 // 모든 증거가 공유하는 뼈대 — 이 순서를 증거마다 바꾸지 않는다:
@@ -23,12 +23,12 @@ import { sdSprite } from './sprites.js';
 // 증거마다 그림이 통째로 달라진다 — 형태를 돌려쓰지 않는다.
 const BLOCKS = {
   cycle: blockCycle,     // E1: 각인 → 호출 → 입체감이 반복되는 운영 사이클
-  mapping: blockMapping, // E2: 설계 요소 ↔ 요구되는 것, 그리고 한 줄로 수렴
-  reduce: blockReduce,   // E3: 단계마다 덜어내며 좁혀지는 구성
+  mapping: blockMapping, // E6: 설계 요소 ↔ 요구되는 것, 그리고 한 줄로 수렴
+  reduce: blockReduce,   // E5: 단계마다 덜어내며 좁혀지는 구성
   bridge: blockBridge,   // E4: 끊긴 두 콘텐츠와 그 사이 징검다리
-  graft: blockGraft,     // E5: 손대지 않은 기존 구조 위에 얹히는 조각
-  split: blockSplit,     // E6: 같은 일의 두 단계와 그 사이 무게 이동
-  compass: blockCompass, // E8: 갈림길마다 처음의 재미로 돌아와 정한 방향
+  graft: blockGraft,     // E2: 손대지 않은 기존 구조 위에 얹히는 조각
+  split: blockSplit,     // E7: 같은 일의 두 단계와 그 사이 무게 이동
+  compass: blockCompass, // E3: 갈림길마다 처음의 재미로 돌아와 정한 방향
 };
 
 export function hasMemo(ev) {
@@ -178,7 +178,7 @@ function blockReduce(cfg) {
 }
 
 /* ---------- 블록: 갈림길마다 돌아오는 기준 ----------
-   E8 페이지 첫 화면의 지도와 같은 그림(10/07 사용자 요청 — 전에는 알약에서 내려오는 등뼈): 가운데 실제 게임의 팩,
+   E3 페이지 첫 화면의 지도와 같은 그림(10/07 사용자 요청 — 전에는 알약에서 내려오는 등뼈): 가운데 실제 게임의 팩,
    양쪽에 갈림길이 반씩. 갈림길마다 가지가 세로줄로 모이고 그 가운데에서 화살촉이 팩을 가리킨다 — 결정할 때마다 이 재미로 돌아왔다.
    기준 문구는 팩 아래. 메모 칸이 좁으면 팩 → 기준 → 줄기가 두 갈래로 갈라져 갈림길을 매단다(컨테이너 쿼리) */
 
@@ -211,7 +211,7 @@ function blockCompass(cfg, ev) {
 }
 
 // 팩 개봉 첫 장면에서 팩만 잘라 배경으로 보인다(데이터 cover.pack의 box — 원본 화소의 x · y · 폭 · 높이). 새 그림을 싣지 않는다.
-// E8 페이지의 지도(briefs/retro.js)와 이 메모의 나침반이 같은 팩을 쓴다
+// E3 페이지의 지도(briefs/retro.js)와 이 메모의 나침반이 같은 팩을 쓴다
 export function packCrop(node, pack) {
   if (!pack?.src || !pack.box) return false;
   const [x, y, w, h] = pack.box;

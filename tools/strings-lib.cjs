@@ -1,13 +1,13 @@
 // 화면 문구의 위치(키) 규칙 — Text/strings.csv, GPT 요청문, 문구 검사, 출처 조사가 모두 이 규칙을 쓴다.
 //
 // 문구는 원래 자리(데이터 파일)에 그대로 있다. 키는 그 자리를 가리키는 주소일 뿐이다.
-//   E5.brief.labels.caption   증거 카드 JSON — 증거 id로 시작
+//   E2.brief.labels.caption   증거 카드 JSON — 증거 id로 시작
 //   groups.doc.name            증거 카드 JSON의 묶음
 //   intro.notice.title         스크립트_인트로.json      (별칭.경로)
 //   ui.evidence.title          콘텐츠_화면문구.json — 화면 공통 문구(버튼·안내)
 //   html.title                 index.html — 링크 미리보기·첫 화면이 스크립트 없이 떠야 해서 HTML에 남은 문구
 //   essay.CASE01.label         콘텐츠_자기소개서.md의 장 제목 라벨('## [CASE01] 라벨 — 부제'의 라벨). 부제·본문은 사용자 원고라 키가 없다
-// 배열은 원소에 id가 있으면 id로, 없으면 0부터 세는 번호로 가리킨다(E5.brief.sets.writer.name, intro.lines.3.text).
+// 배열은 원소에 id가 있으면 id로, 없으면 0부터 세는 번호로 가리킨다(E2.brief.sets.writer.name, intro.lines.3.text).
 const fs = require('node:fs');
 const path = require('node:path');
 
@@ -45,29 +45,29 @@ const NOT_SHOWN = [
   /^intro\.skip_behavior\./, // 동작 설명(개발 메모)
   /^ending\.on_complete\./, // 동작 설명(개발 메모)
   /^intro\.notice\./, // 첫 진입 메모 — 10/04 사용자 요청으로 끔(notice.off). 다시 켜면 이 줄을 지운다
-  /^E7\.unlock_condition$/, // 코드가 읽지 않는다(옛 해금 조건 설명)
-  // 10/03 E5 개편으로 화면에서 빠진 것. 확정 문구라 지우지 않고 남겨 뒀다 — 지울지는 사용자 결정.
-  /^E5\.brief\.labels\.(diff_title|diff_added|diff_moved|moved_from|moved_rule|diff_same|summary_title|limit|ready|finished|no_set)$/,
-  /^E5\.brief\.(summary|same_items)\./,
-  /^E5\.brief\.sets\.[^.]+\.effect$/,
-  // 10/04 E3을 '직접 해 보는 판단'(cut_play)으로 다시 짜며 화면에서 빠진 것 — 다섯 단계 화면의 글. 확정 문구라 지우지 않았다.
-  /^E3\.brief\.lead\.prompt$/,
-  /^E3\.brief\.labels\.(nav|chapter|diagram|idle|retry|skip|back|restart|next|cut_economy|cut_mining|add_context|show_result|economy_weight|economy_verdict|discovery|compare|before|after|cut_record|none_cut|action|context|action_line|context_question|context_found|social_label|final_detail|rules|core_code)$/,
-  /^E3\.brief\.labels\.social\./,
-  /^E3\.brief\.chapters\.(0|1|3|4)\./,
-  /^E3\.brief\.chapters\.2\.(name|verb|body|source)$/, // 남는 것은 질문(title)과 관찰(question) — 판단 칸
-  /^E3\.brief\.systems\.(mining|economy)\.(tag|detail|status|cut)$/, // 남는 것은 칸 이름(title)과 설명(note)
-  /^E3\.brief\.systems\.market\./,
-  /^E3\.brief\.(economy_rules|comparison|targets|rhythm|lessons)\./,
-  // 10/07 E8을 '결정 장부'로 다시 짜며 화면에서 빠진 것 — 좁은 화면의 장 목록 알약(첫 화면의 장부가 대신한다). 확정 문구라 지우지 않았다.
-  /^E8\.brief\.labels\.toc$/,
+  /^E8\.unlock_condition$/, // 코드가 읽지 않는다(옛 해금 조건 설명)
+  // 10/03 E2 개편으로 화면에서 빠진 것. 확정 문구라 지우지 않고 남겨 뒀다 — 지울지는 사용자 결정.
+  /^E2\.brief\.labels\.(diff_title|diff_added|diff_moved|moved_from|moved_rule|diff_same|summary_title|limit|ready|finished|no_set)$/,
+  /^E2\.brief\.(summary|same_items)\./,
+  /^E2\.brief\.sets\.[^.]+\.effect$/,
+  // 10/04 E5을 '직접 해 보는 판단'(cut_play)으로 다시 짜며 화면에서 빠진 것 — 다섯 단계 화면의 글. 확정 문구라 지우지 않았다.
+  /^E5\.brief\.lead\.prompt$/,
+  /^E5\.brief\.labels\.(nav|chapter|diagram|idle|retry|skip|back|restart|next|cut_economy|cut_mining|add_context|show_result|economy_weight|economy_verdict|discovery|compare|before|after|cut_record|none_cut|action|context|action_line|context_question|context_found|social_label|final_detail|rules|core_code)$/,
+  /^E5\.brief\.labels\.social\./,
+  /^E5\.brief\.chapters\.(0|1|3|4)\./,
+  /^E5\.brief\.chapters\.2\.(name|verb|body|source)$/, // 남는 것은 질문(title)과 관찰(question) — 판단 칸
+  /^E5\.brief\.systems\.(mining|economy)\.(tag|detail|status|cut)$/, // 남는 것은 칸 이름(title)과 설명(note)
+  /^E5\.brief\.systems\.market\./,
+  /^E5\.brief\.(economy_rules|comparison|targets|rhythm|lessons)\./,
+  // 10/07 E3을 '결정 장부'로 다시 짜며 화면에서 빠진 것 — 좁은 화면의 장 목록 알약(첫 화면의 장부가 대신한다). 확정 문구라 지우지 않았다.
+  /^E3\.brief\.labels\.toc$/,
   // 10/07 사용자 지시로 08장의 '시기 | 있었던 일' 표와 출처 목록을 뺐다 — 출처 목록의 머리 라벨만 남았다(확정 문구라 지우지 않음).
-  /^E8\.brief\.labels\.sources$/,
+  /^E3\.brief\.labels\.sources$/,
   // 10/07 사용자 결정으로 문서만 모아보기(/docs)와 보관함의 그 버튼을 뺐다 — 문구는 확정본이라 남겨 둠(지울지는 사용자 결정).
   /^ui\.docs\./,
   /^ui\.evidence\.to_docs$/,
   // 10/07 사용자 문구로 동대륙 세트에도 이벤트 이름('동대륙의 일상')이 생겨, 이름 없는 세트에 쓰던 '내용 미정'이 나올 자리가 없다(확정 문구라 남겨 둠).
-  /^E5\.brief\.labels\.tbd$/,
+  /^E2\.brief\.labels\.tbd$/,
   // 10/07 사용자 의견으로 E1 장 머리줄('CHAPTER 01 · 역설 … 01 / 05')을 뺐다 — 장 사이는 선만(확정 문구라 남겨 둠).
   /^E1\.brief\.chapters\.\d+\.(no|name|mark)$/,
   // 10/10 사용자 결정 — 인터랙티브 페이지 끝 단추에서 '다시 해보기'를 뺐고(바3), E1 머리말의 안내 알약을 뺐다(마3). 확정 문구라 남겨 둠.

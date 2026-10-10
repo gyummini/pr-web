@@ -124,8 +124,8 @@ export function renderDossier(view, routePart) {
 }
 
 // 목차 칸의 수집 표시 — 그 장에서 세는 증거마다 둥근 칸 하나(10/10 다1). 모은 것은 그 증거 번호가 찍힌 작은 도장이 된다(10/11 기회 1 —
-// 번호는 칸에 미리 들어 있고 모은 뒤에만 보인다). 읽은 장의 칸만 채운다 — CASE 02까지 읽었는데 CASE 04 칸에 E8이 찍혀 있었다(10/11 사용자 지적.
-// E8은 두 장에 나온다). 모양으로 말하는 표시라 화면 낭독기에는 감춘다
+// 번호는 칸에 미리 들어 있고 모은 뒤에만 보인다). 읽은 장의 칸만 채운다 — CASE 02까지 읽었는데 CASE 04 칸에 E3이 찍혀 있었다(10/11 사용자 지적.
+// E3은 두 장에 나온다). 모양으로 말하는 표시라 화면 낭독기에는 감춘다
 function marksHtml(chId) {
   const ids = chapterEvidence(chId).filter((e) => counts(e.id)).map((e) => e.id);
   if (!ids.length) return '';
