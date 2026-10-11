@@ -7,6 +7,8 @@
 // 펼침은 다섯 면(넘김 네 번) — 3부는 사진마다 한 쪽(380px 안팎), 마지막 면 오른쪽은 글자 없는 뒤표지, 알약은 두 화면이 같은 일곱 쪽을 센다.
 // 넘어가는 쪽은 앞으로든 뒤로든 독자 쪽으로 들린다(10/11 사용자 지적 — 책 뒤로 젖혀지던 방향을 바로잡음).
 // 키 큰 화면의 종이는 높이 ÷ 폭 1.45까지(2560×1300 펼침 · 900×1600 한 쪽) — 남는 높이의 가운데에 놓이고 단추 · 알약 · 탭은 종이 밖. 휴대폰은 묶지 않는다.
+// 세로 종이(10/11 사용자 지적 '수첩이 가로로 너무 넓다'): 821px 이상은 한 쪽씩이어도 펼침과 같은 세로 쪽(폭 560~640px) · 같은 쪽 구성(3부 두 쪽, 번호 하나).
+// 표지(10/11 사용자 결정)는 위쪽 가운데의 이름표(제목만)와 클루 얼굴 스티커뿐이다 — 끈 · 봉인 · 도장 없음.
 const assert = require('node:assert/strict');
 const { chromium } = require('playwright');
 const fs = require('node:fs');
@@ -110,16 +112,32 @@ const IMG = /memo_\d|notebook_photo_\d/;
       assert.deepEqual(await page.locator('.nb-tab').allInnerTexts(), [L.part1_tab, L.part2_tab, L.part3_tab, L.end_tab].map((s) => s.trim()));
       assert.equal(await page.locator('.nb-tab[aria-current="true"]').count(), 0, 'the cover is before the chapters');
 
-      // 일곱 쪽(2부가 세 쪽) — 종이 크기 · 자리, 구멍 줄 자리, 제목 줄 자리가 모두 같다
+      // 표지 — 이름표(제목 한 줄)와 클루 스티커만, 이름표는 위쪽 가운데(윗변이 표지 높이의 15%)
+      const cover = await page.evaluate(() => {
+        const c = document.querySelector('.nb-page[data-ch="cover"] .nb-cover').getBoundingClientRect();
+        const l = document.querySelector('.nb-cover-label').getBoundingClientRect();
+        return { kids: [...document.querySelector('.nb-page[data-ch="cover"] .nb-cover').children].map((k) => k.classList[0]),
+          label: [...document.querySelector('.nb-cover-label').children].map((k) => k.classList[0]),
+          top: Math.round(((l.top - c.top) / c.height) * 100), centre: Math.round(l.left + l.width / 2 - (c.left + c.width / 2)) };
+      });
+      assert.deepEqual(cover, { kids: ['nb-spiral', 'nb-cover-label'], label: ['nb-cover-title', 'nb-sticker'], top: 15, centre: 0 },
+        `[new] the cover is the title label and the sticker, near the top in the middle ${JSON.stringify(cover)}`);
+      // 세로 종이 — 1440×900에서 가로로 누운 880×734가 아니라 세로로 긴 쪽
+      const shape = await paperFit(page);
+      assert.ok(shape.ratio > 1.1, `[new] 1440×900: the paper stands upright (${shape.size})`);
+
+      // 여덟 면(2부 세 쪽 · 3부 두 쪽, 알약은 일곱 쪽) — 종이 크기 · 자리, 구멍 줄 자리, 제목 줄 자리가 모두 같다
       const seen = [];
-      for (let i = 0; i < 7; i++) {
+      const pills = [];
+      for (let i = 0; i < 8; i++) {
         seen.push(...(await geometry(page)));
+        pills.push(await indicator(page));
         if (i === 4) {
           // 2부 셋째 쪽 — 종합 소견과 플레이 기록 단추가 스크롤 없이 첫 화면 안(10/11(2) — 전에는 2부 둘째 쪽 아래에 있어 단추가 화면 밖)
           const v = await closingView(page);
           assert.ok(v.nth === 3 && v.top === 0 && v.closing && v.link, `[new] 1440×900: the closing note and the play record are on screen on the third 2부 page ${JSON.stringify(v)}`);
         }
-        if (i < 6) {
+        if (i < 7) {
           if (i === 0) {
             const mid = await midTurn(page, '.nb-next');
             assert.ok(mid.length >= 2 && mid.every((m) => m.opacity === 1), `turning pages stay opaque ${JSON.stringify(mid)}`);
@@ -130,8 +148,9 @@ const IMG = /memo_\d|notebook_photo_\d/;
       }
       assert.equal(new Set(seen.map((s) => s.paper.join())).size, 1, `one paper size and place ${JSON.stringify(seen.map((s) => s.paper))}`);
       assert.equal(new Set(seen.map((s) => s.holes[0])).size, 1, 'the holes are at the same place on every page');
+      assert.deepEqual(pills, ['1 / 7', '2 / 7', '3 / 7', '4 / 7', '5 / 7', '6 / 7', '6 / 7', '7 / 7'], '[new] eight views count the same seven pages');
       const titles = seen.filter((s) => s.title).map((s) => s.title[1]);
-      assert.equal(titles.length, 5, 'titles on 1부, the three 2부 pages and 3부');
+      assert.equal(titles.length, 6, 'titles on 1부, the three 2부 pages and the two 3부 pages');
       assert.equal(new Set(titles).size, 1, `titles on the same line ${titles}`);
       assert.equal(await overX(page), 0);
       await page.close();
@@ -192,7 +211,8 @@ const IMG = /memo_\d|notebook_photo_\d/;
       assert.ok(weight.link >= 16 && weight.linkBorder > 0, JSON.stringify(weight));
       assert.equal(weight.letter, weight.memo);
 
-      // 3부 사진 창
+      // 3부 사진 창 — 세로 종이는 사진마다 한 쪽
+      assert.equal(await page.locator('.nb-page.active .nb-photo-btn').count(), 1, '[new] one photo on each 3부 page');
       const photo = page.locator('.nb-page.active .nb-photo-btn').first();
       const box = await photo.boundingBox();
       assert.ok(box.width >= 330, `3부 photo is larger than before (300px) ${box.width}`);
@@ -334,7 +354,7 @@ const IMG = /memo_\d|notebook_photo_\d/;
       await page.setViewportSize({ width: 1366, height: 768 });
       await page.waitForTimeout(300);
       assert.equal(await indicator(page), '6 / 7', 'same chapter after leaving the spread');
-      assert.equal(await page.locator('.nb-page.active .nb-photo-btn').count(), 2, 'the single 3부 page has both photos');
+      assert.equal(await page.locator('.nb-page.active .nb-photo-btn').count(), 1, 'the single 3부 page is the first photo page');
       await page.setViewportSize({ width: 1920, height: 1080 });
       await page.waitForTimeout(300);
       assert.equal(await indicator(page), '6 / 7', 'same chapter after coming back to the spread');
@@ -357,7 +377,7 @@ const IMG = /memo_\d|notebook_photo_\d/;
     }
 
     assert.deepEqual(errors, []);
-    console.log('PASS notebook: one paper size · binding · title line on every page (seven pages, 2부 in three), opaque turns that lift toward the reader (also under reduced motion), four index tabs with the current chapter, keys scroll inside first, pictures only for the current and next page, the 2부 closing note on screen at 1366×768 (with the play record at 1440×900), 3부 photo window (focus kept, Esc · outside · close, focus back), weight of the conclusion, last page (signature · CASE CLOSED stamp with the visit date · card · back, stamp covers nothing, phones not longer than before), spreads at 1920×1080 (five views, four turns, 3부 photo per page, blank back cover, outer folded corner, kept turn) and back to single pages on a low screen, paper height ÷ width 1.45 or less on tall screens (phones not capped).');
+    console.log('PASS notebook: one paper size · binding · title line on every page (seven pages, 2부 in three), upright pages from 821px (cover: title label and sticker only), opaque turns that lift toward the reader (also under reduced motion), four index tabs with the current chapter, keys scroll inside first, pictures only for the current and next page, the 2부 closing note on screen at 1366×768 (with the play record at 1440×900), 3부 photo window (focus kept, Esc · outside · close, focus back), weight of the conclusion, last page (signature · CASE CLOSED stamp with the visit date · card · back, stamp covers nothing, phones not longer than before), spreads at 1920×1080 (five views, four turns, 3부 photo per page, blank back cover, outer folded corner, kept turn) and back to single pages on a low screen, paper height ÷ width 1.45 or less on tall screens (phones not capped).');
   } finally {
     await browser.close();
   }
