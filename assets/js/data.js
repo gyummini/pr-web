@@ -50,9 +50,11 @@ export async function loadAll() {
 // 묶음마다 카드를 나눈다. 묶음을 정하지 않은 카드는 맨 끝에 이름 없는 묶음으로 남긴다 —
 // 데이터를 하나 빠뜨려도 카드가 화면에서 사라지지는 않게.
 export function groupCards(cards) {
-  const groups = (DB.groups || []).map((g) => ({ ...g, cards: cards.filter((c) => c.group === g.id) }));
+  // 묶음 안은 증거 번호 순(10/11 사용자 결정 — 번호를 중요도 순으로 다시 매긴 뒤 데이터 순서대로 놓으면 E1·E6·E2처럼 섞여 보였다)
+  const byNo = (a, b) => Number(a.id.slice(1)) - Number(b.id.slice(1));
+  const groups = (DB.groups || []).map((g) => ({ ...g, cards: cards.filter((c) => c.group === g.id).sort(byNo) }));
   const known = new Set(groups.map((g) => g.id));
-  const rest = cards.filter((c) => !known.has(c.group));
+  const rest = cards.filter((c) => !known.has(c.group)).sort(byNo);
   if (rest.length) groups.push({ id: 'rest', label: '', cards: rest });
   return groups.filter((g) => g.cards.length);
 }
