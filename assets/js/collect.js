@@ -3,7 +3,7 @@ import { DB } from './data.js';
 import { addPending, landOne, flyFromRect, toast } from './ui.js';
 import { T } from './text.js';
 
-// 장 이름(CASE 02 · EPILOGUE) — 에필로그에도 증거가 생겼다(E9 참고 줄, 10/09)
+// 장 이름(CASE 02 · EPILOGUE) — 에필로그에도 증거가 생겼다(E4 참고 줄, 10/09)
 export function fmtCase(chId) {
   return chId === 'EPILOGUE' ? T('common.epilogue_label') : T('common.case_label', { n: chId.slice(4) });
 }
@@ -21,7 +21,7 @@ export function chapterEvidence(chId) {
 // 수집 개수에 들지 않는 증거(counts가 거짓 — 지금은 없음)만 있는 장은 알리지 않는다
 export function checkChapterToasts() {
   // 기본 증거를 다 모은 순간에는 해금 알림 하나만 띄운다(10/10 라4 — '내려앉기, 파일철 펼침, 안내 하나').
-  // 전에는 해금 알림 위에 그 순간 끝난 장의 '완벽 수집' 알림이 한두 장 더 겹쳐 E5 카드의 행동 줄을 가렸다
+  // 전에는 해금 알림 위에 그 순간 끝난 장의 '완벽 수집' 알림이 한두 장 더 겹쳐 E2 카드의 행동 줄을 가렸다
   const quiet = baseUnlocked();
   for (const ch of DB.chapters) {
     const evs = chapterEvidence(ch.id).filter((e) => counts(e.id));

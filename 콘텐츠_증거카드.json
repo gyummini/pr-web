@@ -1,5 +1,5 @@
 {
-  "_readme": "증거 카드 데이터. E1~E6 url 실링크 연결됨(E5는 노션, 나머지는 드라이브·anyone 열람 확인). E7은 사이트 내 라우트(/notebook). E8(PokeCollect 개발 회고)은 E7 뒤에 추가한 기본 증거로, 외부 원본 없이 브리프(kind retro)가 곧 원문이다(url null). doc_type=카드에 표시할 문서 유형 라벨, thumb=표지 썸네일 경로(파일이 없으면 카드가 자동으로 아이콘 폴백 — E5는 노션 문서라 표지 없음). sd_dialogue는 조수 캐릭터 '클루'의 확정 대사(캐릭터_조수_클루.md 톤 가이드 준수). sd_dialogue_revisit은 이미 수집된 증거의 앵커를 다시 클릭했을 때 대사(null이면 기본 sd_dialogue 재사용). memo=팝업 요약 메모. 모든 증거가 같은 뼈대를 공유한다 — rows는 반드시 관찰 → 판단 → block → 결과 순서로 쓴다. 증거를 여러 개 열어도 읽는 법을 다시 배우지 않게 하는 것이 목적이므로 앞의 두 칸(관찰·판단)은 고정하고, 세 번째 칸만 문서 성격에 맞춰 바꾼다 (적용/재구성/결과/제안/설계/정리 — 증거의 doc_type을 따라간다). 프로젝트마다 달라지는 것은 가운데 block 하나뿐이다: block.kind가 assets/js/memo.js의 렌더러를 고르고, block 안의 나머지 필드는 kind마다 자유다 (E3 = before_after). rows의 v는 본문, hl은 그 본문 안에서 형광펜을 그을 부분(없으면 생략). brief=증거 상세의 Interactive Brief. 뼈대는 메모와 같은 순서(관찰 → 판단 → 직접 해보기 → 재구성)이고, brief.kind가 assets/js/briefs/의 인터랙션 렌더러를 고른다. play 안의 값은 kind마다 자유이며, E2의 수치는 역기획서 원문(회복력 합계 4857 · 배율 1.202 · 회복속도 0.5838/sec · 시작 Cost 2.48)에서 그대로 가져왔다. brief가 없는 증거는 상세 페이지가 기존 요약 화면으로 동작한다. groups=증거 보관함과 /docs의 묶음(순서대로 그린다). 각 증거의 group이 id를 가리킨다. minor: true인 묶음은 \"추가\"로 세어 머리말 건수에서 따로 표시한다 — 수집·엔딩 조건에는 영향이 없다. 화면에서는 brief를 \"인터랙티브 페이지\"로 부르고 주소도 /evidence/:id/interactive를 쓴다(데이터·코드 키는 brief 그대로). [임시]로 시작하는 문구는 Claude가 넣은 임시 문구(DRAFT)다 — Text/strings.csv에 DRAFT로 올라 있고, 최종 문구로 바꾼 뒤 배포한다(커밋 훅이 막는다). 각 brief.labels에는 그 화면에만 붙는 고정 문구(버튼·머리글)가 있다 — 코드에 문구를 두지 않는다. lead.prompt_at=\"action\"이면 안내 문구를 머리말 대신 인터랙티브 페이지의 첫 행동 옆에 붙인다. E9(블루 아카이브 전술대회 전투 개선 제안서, 10/08 추가)는 추가 포트폴리오(group extra)다 — 10/09부터 에필로그 끝 '참고' 줄에 걸리고(chapters EPILOGUE), 수집 개수(배지 n/8)와 수첩 해금 조건에 든다(assets/js/state.js BASE_EVIDENCE_IDS, 사용자 결정). E4(에픽세븐 오토마톤 타워 개선 제안서)는 10/10 사용자 결정으로 뺐다 — 번호는 비워 두고 다시 쓰지 않는다. 원본은 드라이브 김경민_포트폴리오 폴더(anyone 열람)에 있다 — 같은 폴더의 '[전투]블루아카이브 전술대회(비동기 PVP) 개선 제안서.pdf'는 2025.09 Canva 원본(E6 AI 활용기 초안의 근거)이라 새 버전으로 덮지 않고 따로 둔다.",
+  "_readme": "증거 카드 데이터. E1~E7 url 실링크(E2는 아르카나 웹 페이지, E7은 노션, 나머지는 드라이브·anyone 열람 확인). E8은 사이트 내 라우트(/notebook). E3(PokeCollect 개발 회고)은 외부 원본 없이 브리프(kind retro)가 곧 원문이다(url null). doc_type=카드에 표시할 문서 유형 라벨, thumb=표지 썸네일 경로(파일이 없으면 카드가 자동으로 아이콘 폴백). sd_dialogue는 조수 캐릭터 '클루'의 확정 대사(캐릭터_조수_클루.md 톤 가이드 준수). sd_dialogue_revisit은 이미 수집된 증거의 앵커를 다시 클릭했을 때 대사(null이면 기본 sd_dialogue 재사용). memo=팝업 요약 메모. 모든 증거가 같은 뼈대를 공유한다 — rows는 반드시 관찰 → 판단 → block → 결과 순서로 쓴다. 증거를 여러 개 열어도 읽는 법을 다시 배우지 않게 하는 것이 목적이므로 앞의 두 칸(관찰·판단)은 고정하고, 세 번째 칸만 문서 성격에 맞춰 바꾼다 (적용/재구성/결과/제안/설계/정리 — 증거의 doc_type을 따라간다). 프로젝트마다 달라지는 것은 가운데 block 하나뿐이다: block.kind가 assets/js/memo.js의 렌더러를 고르고, block 안의 나머지 필드는 kind마다 자유다 (E5 = before_after). rows의 v는 본문, hl은 그 본문 안에서 형광펜을 그을 부분(없으면 생략). brief=증거 상세의 Interactive Brief. 뼈대는 메모와 같은 순서(관찰 → 판단 → 직접 해보기 → 재구성)이고, brief.kind가 assets/js/briefs/의 인터랙션 렌더러를 고른다. play 안의 값은 kind마다 자유이며, E6의 수치는 역기획서 원문(회복력 합계 4857 · 배율 1.202 · 회복속도 0.5838/sec · 시작 Cost 2.48)에서 그대로 가져왔다. brief가 없는 증거는 상세 페이지가 기존 요약 화면으로 동작한다. groups=증거 보관함과 /docs의 묶음(순서대로 그린다). 각 증거의 group이 id를 가리킨다. minor: true인 묶음은 \"추가\"로 세어 머리말 건수에서 따로 표시한다 — 수집·엔딩 조건에는 영향이 없다. 화면에서는 brief를 \"인터랙티브 페이지\"로 부르고 주소도 /evidence/:id/interactive를 쓴다(데이터·코드 키는 brief 그대로). [임시]로 시작하는 문구는 Claude가 넣은 임시 문구(DRAFT)다 — Text/strings.csv에 DRAFT로 올라 있고, 최종 문구로 바꾼 뒤 배포한다(커밋 훅이 막는다). 각 brief.labels에는 그 화면에만 붙는 고정 문구(버튼·머리글)가 있다 — 코드에 문구를 두지 않는다. lead.prompt_at=\"action\"이면 안내 문구를 머리말 대신 인터랙티브 페이지의 첫 행동 옆에 붙인다. E4(블루 아카이브 전술대회 전투 개선 제안서, 10/08 추가)는 추가 포트폴리오(group extra)다 — 10/09부터 에필로그 끝 '참고' 줄에 걸리고(chapters EPILOGUE), 수집 개수(배지 n/8)와 수첩 해금 조건에 든다(assets/js/state.js BASE_EVIDENCE_IDS, 사용자 결정). 옛 E4(에픽세븐 오토마톤 타워 개선 제안서)는 10/10 사용자 결정으로 뺐다. 10/11 사용자 결정으로 번호를 중요도 순으로 다시 매겼다(옛 번호 → 새 번호: E5→E2 · E8→E3 · E9→E4 · E3→E5 · E2→E6 · E6→E7 · E7→E8, E1은 그대로). 원본은 드라이브 김경민_포트폴리오 폴더(anyone 열람)에 있다 — 같은 폴더의 '[전투]블루아카이브 전술대회(비동기 PVP) 개선 제안서.pdf'는 2025.09 Canva 원본(E7 AI 활용기 초안의 근거)이라 새 버전으로 덮지 않고 따로 둔다.",
   "groups": [
     {
       "id": "doc",
@@ -381,10 +381,10 @@
       }
     },
     {
-      "id": "E2",
+      "id": "E6",
       "doc_type": "시스템 기획",
       "group": "doc",
-      "thumb": "/assets/img/thumb_e2.jpg",
+      "thumb": "/assets/img/thumb_e6.jpg",
       "title": "블루아카이브 Cost 시스템 역기획서",
       "subtitle": "설계 의도에서 데이터 테이블까지",
       "chapters": [
@@ -1107,10 +1107,10 @@
       }
     },
     {
-      "id": "E3",
+      "id": "E5",
       "doc_type": "게임 개발",
       "group": "game",
-      "thumb": "/assets/img/thumb_e3.jpg",
+      "thumb": "/assets/img/thumb_e5.jpg",
       "title": "로블록스 '브레인롯 강화하기' 개발 회고",
       "subtitle": "덜어내며 찾은 재미 — 기획·개발·출시 전 과정",
       "brief": {
@@ -1342,10 +1342,10 @@
           {
             "name": "브레인롯 캐릭터",
             "caption": "강화 결과 자체가 공유 가능한 밈",
-            "image": "/assets/img/e3-gameplay.webp"
+            "image": "/assets/img/e5-gameplay.webp"
           }
         ],
-        "image": "/assets/img/e3-gameplay.webp",
+        "image": "/assets/img/e5-gameplay.webp",
         "rhythm": {
           "title": "FUN RHYTHM TRACK",
           "label": "강화 결과가 생기는 순간",
@@ -1508,7 +1508,7 @@
               },
               {
                 "name": "Boneca",
-                "img": "/assets/img/e3/brainrots/boneca.webp",
+                "img": "/assets/img/e5/brainrots/boneca.webp",
                 "credit": {
                   "file": "Boneca_Ambalabu.png",
                   "by": "Bhutanish Fan",
@@ -1522,7 +1522,7 @@
               },
               {
                 "name": "Mat_teo",
-                "img": "/assets/img/e3/brainrots/mat-teo.webp",
+                "img": "/assets/img/e5/brainrots/mat-teo.webp",
                 "credit": {
                   "file": "Matteo.png",
                   "by": "AGoofyBuncs",
@@ -1536,7 +1536,7 @@
               },
               {
                 "name": "Tim Cheese",
-                "img": "/assets/img/e3/brainrots/tim-cheese.webp",
+                "img": "/assets/img/e5/brainrots/tim-cheese.webp",
                 "credit": {
                   "file": "Tim.png",
                   "by": "Zuchuly",
@@ -1550,7 +1550,7 @@
               },
               {
                 "name": "Pipi Corni",
-                "img": "/assets/img/e3/brainrots/pipi-corni.webp",
+                "img": "/assets/img/e5/brainrots/pipi-corni.webp",
                 "credit": {
                   "file": "PipiCorni.png",
                   "by": "YellowSmithers",
@@ -1564,7 +1564,7 @@
               },
               {
                 "name": "Pipi_Kiwi",
-                "img": "/assets/img/e3/brainrots/pipi-kiwi.webp",
+                "img": "/assets/img/e5/brainrots/pipi-kiwi.webp",
                 "credit": {
                   "file": "Better_pipi_kiwi.png",
                   "by": "Bhutanish Fan",
@@ -1578,7 +1578,7 @@
               },
               {
                 "name": "Pipi Avocado",
-                "img": "/assets/img/e3/brainrots/pipi-avocado.webp",
+                "img": "/assets/img/e5/brainrots/pipi-avocado.webp",
                 "credit": {
                   "file": "Pipi_Avocado.png",
                   "by": "Excavadoragrua",
@@ -1592,7 +1592,7 @@
               },
               {
                 "name": "Pi Pi Watermelon",
-                "img": "/assets/img/e3/brainrots/pi-pi-watermelon.webp",
+                "img": "/assets/img/e5/brainrots/pi-pi-watermelon.webp",
                 "credit": {
                   "file": "Pi_pi_watermelon.png",
                   "by": "SabArepa128",
@@ -1606,7 +1606,7 @@
               },
               {
                 "name": "Noobini Pizzanini",
-                "img": "/assets/img/e3/brainrots/noobini-pizzanini.webp",
+                "img": "/assets/img/e5/brainrots/noobini-pizzanini.webp",
                 "credit": {
                   "file": "NoobiniPizzanini.png",
                   "by": "Bhutanish Fan",
@@ -1620,7 +1620,7 @@
               },
               {
                 "name": "Cocosini Mama",
-                "img": "/assets/img/e3/brainrots/cocosini-mama.webp",
+                "img": "/assets/img/e5/brainrots/cocosini-mama.webp",
                 "credit": {
                   "file": "Cocosini_Mama.png",
                   "by": "Sonicball pro",
@@ -1634,7 +1634,7 @@
               },
               {
                 "name": "Frigo Camelo",
-                "img": "/assets/img/e3/brainrots/frigo-camelo.webp",
+                "img": "/assets/img/e5/brainrots/frigo-camelo.webp",
                 "credit": {
                   "file": "Frigo_Camelo.png",
                   "by": "AGoofyBuncs",
@@ -1648,7 +1648,7 @@
               },
               {
                 "name": "Talpa Di Fero",
-                "img": "/assets/img/e3/brainrots/talpa-di-fero.webp",
+                "img": "/assets/img/e5/brainrots/talpa-di-fero.webp",
                 "credit": {
                   "file": "Talpa_Di_Fero.png",
                   "by": "Bhutanish Fan",
@@ -1662,7 +1662,7 @@
               },
               {
                 "name": "Ballerino Lololo",
-                "img": "/assets/img/e3/brainrots/ballerino-lololo.webp",
+                "img": "/assets/img/e5/brainrots/ballerino-lololo.webp",
                 "credit": {
                   "file": "Ballerinolololo.png",
                   "by": "Zuchuly",
@@ -1676,7 +1676,7 @@
               },
               {
                 "name": "Burbaloni Loliloli",
-                "img": "/assets/img/e3/brainrots/burbaloni-loliloli.webp",
+                "img": "/assets/img/e5/brainrots/burbaloni-loliloli.webp",
                 "credit": {
                   "file": "Burbaloni_Loliloli.png",
                   "by": "KingBoo16",
@@ -1690,7 +1690,7 @@
               },
               {
                 "name": "Bambini_Crostini",
-                "img": "/assets/img/e3/brainrots/bambini-crostini.webp",
+                "img": "/assets/img/e5/brainrots/bambini-crostini.webp",
                 "credit": {
                   "file": "Bambini_Crostini.png",
                   "by": "SOMEONEWHODOESNOTCARE",
@@ -1704,7 +1704,7 @@
               },
               {
                 "name": "Cavallo_Virtuoso",
-                "img": "/assets/img/e3/brainrots/cavallo-virtuoso.webp",
+                "img": "/assets/img/e5/brainrots/cavallo-virtuoso.webp",
                 "credit": {
                   "file": "Cavallo_Virtuoso.png",
                   "by": "AGoofyBuncs",
@@ -1718,7 +1718,7 @@
               },
               {
                 "name": "Girafa_Celestre",
-                "img": "/assets/img/e3/brainrots/girafa-celestre.webp",
+                "img": "/assets/img/e5/brainrots/girafa-celestre.webp",
                 "credit": {
                   "file": "Girafa_Celestre.png",
                   "by": "SOMEONEWHODOESNOTCARE",
@@ -1732,7 +1732,7 @@
               },
               {
                 "name": "Graipuss Medussi",
-                "img": "/assets/img/e3/brainrots/graipuss-medussi.webp",
+                "img": "/assets/img/e5/brainrots/graipuss-medussi.webp",
                 "credit": {
                   "file": "Graipuss_Medussi.png",
                   "by": "KingBoo16",
@@ -1746,7 +1746,7 @@
               },
               {
                 "name": "Gangster Footera",
-                "img": "/assets/img/e3/brainrots/gangster-footera.webp",
+                "img": "/assets/img/e5/brainrots/gangster-footera.webp",
                 "credit": {
                   "file": "Gangster_Footera.png",
                   "by": "KingBoo16",
@@ -1760,7 +1760,7 @@
               },
               {
                 "name": "Blueberrinni_Octopusini",
-                "img": "/assets/img/e3/brainrots/blueberrinni-octopusini.webp",
+                "img": "/assets/img/e5/brainrots/blueberrinni-octopusini.webp",
                 "credit": {
                   "file": "Blueberrinni_Octopusini.png",
                   "by": "KingBoo16",
@@ -1774,7 +1774,7 @@
               },
               {
                 "name": "Chicleteira Bicicleteira",
-                "img": "/assets/img/e3/brainrots/chicleteira-bicicleteira.webp",
+                "img": "/assets/img/e5/brainrots/chicleteira-bicicleteira.webp",
                 "credit": {
                   "file": "Default_Chicleteira_Bicicleteira.png",
                   "by": "KingBoo16",
@@ -1788,7 +1788,7 @@
               },
               {
                 "name": "Perochello_Lemonchello",
-                "img": "/assets/img/e3/brainrots/perochello-lemonchello.webp",
+                "img": "/assets/img/e5/brainrots/perochello-lemonchello.webp",
                 "credit": {
                   "file": "Perochello_Lemonchello.png",
                   "by": "KingBoo16",
@@ -1802,7 +1802,7 @@
               },
               {
                 "name": "Agarrini la Palini",
-                "img": "/assets/img/e3/brainrots/agarrini-la-palini.webp",
+                "img": "/assets/img/e5/brainrots/agarrini-la-palini.webp",
                 "credit": {
                   "file": "Agarrini_la_Palini.png",
                   "by": "LuckyLOL420",
@@ -1816,7 +1816,7 @@
               },
               {
                 "name": "Avocadini Guffo",
-                "img": "/assets/img/e3/brainrots/avocadini-guffo.webp",
+                "img": "/assets/img/e5/brainrots/avocadini-guffo.webp",
                 "credit": {
                   "file": "AvocadiniGuffo.png",
                   "by": "YellowSmithers",
@@ -1830,7 +1830,7 @@
               },
               {
                 "name": "Gattatino_Nyanino",
-                "img": "/assets/img/e3/brainrots/gattatino-nyanino.webp",
+                "img": "/assets/img/e5/brainrots/gattatino-nyanino.webp",
                 "credit": {
                   "file": "Gattatino_Nyanino.png",
                   "by": "SOMEONEWHODOESNOTCARE",
@@ -1844,7 +1844,7 @@
               },
               {
                 "name": "Lionel_Cactuseli",
-                "img": "/assets/img/e3/brainrots/lionel-cactuseli.webp",
+                "img": "/assets/img/e5/brainrots/lionel-cactuseli.webp",
                 "credit": {
                   "file": "Lionel_Cactuseli.png",
                   "by": "KingBoo16",
@@ -1858,7 +1858,7 @@
               },
               {
                 "name": "Sammyni_Spyderini",
-                "img": "/assets/img/e3/brainrots/sammyni-spyderini.webp",
+                "img": "/assets/img/e5/brainrots/sammyni-spyderini.webp",
                 "credit": {
                   "file": "Sammyni_Spyderini.png",
                   "by": "LuckyLOL420",
@@ -1872,7 +1872,7 @@
               },
               {
                 "name": "Unclito_Samito",
-                "img": "/assets/img/e3/brainrots/unclito-samito.webp",
+                "img": "/assets/img/e5/brainrots/unclito-samito.webp",
                 "credit": {
                   "file": "Unclito_Samito.png",
                   "by": "LuckyLOL420",
@@ -1886,7 +1886,7 @@
               },
               {
                 "name": "Zibra Zubra Zibralini",
-                "img": "/assets/img/e3/brainrots/zibra-zubra-zibralini.webp",
+                "img": "/assets/img/e5/brainrots/zibra-zubra-zibralini.webp",
                 "credit": {
                   "file": "Zibra_Zubra_Zibralini.png",
                   "by": "LuckyLOL420",
@@ -2072,10 +2072,10 @@
       }
     },
     {
-      "id": "E5",
+      "id": "E2",
       "doc_type": "시스템 기획",
       "group": "doc",
-      "thumb": "/assets/img/thumb_e6.jpg",
+      "thumb": "/assets/img/thumb_e7.jpg",
       "title": "스타세이비어 아르카나 세트 시스템 제안서",
       "subtitle": "기존 구조를 유지하면서 캐릭터의 매력을 더하는 신규 시스템",
       "chapters": [
@@ -2168,7 +2168,7 @@
         "cards": {
           "layce": {
             "name": "레이시",
-            "image": "/assets/img/e5_layce.webp",
+            "image": "/assets/img/e2_layce.webp",
             "events": [
               "동상이몽",
               "하고 싶은 이야기",
@@ -2177,7 +2177,7 @@
           },
           "scarlet": {
             "name": "스칼렛",
-            "image": "/assets/img/e5_scarlet.webp",
+            "image": "/assets/img/e2_scarlet.webp",
             "events": [
               "운명",
               "날개를 활짝 펴고",
@@ -2186,7 +2186,7 @@
           },
           "ceres": {
             "name": "세레스",
-            "image": "/assets/img/e5_ceres.webp",
+            "image": "/assets/img/e2_ceres.webp",
             "events": [
               "힘을 원하는가",
               "기준의 차이",
@@ -2195,7 +2195,7 @@
           },
           "lin": {
             "name": "린",
-            "image": "/assets/img/e5_lin.webp",
+            "image": "/assets/img/e2_lin.webp",
             "events": [
               "부끄럽지 않아요!",
               "만물이 지닌 가치",
@@ -2204,7 +2204,7 @@
           },
           "dana": {
             "name": "다나",
-            "image": "/assets/img/e5_dana.webp",
+            "image": "/assets/img/e2_dana.webp",
             "events": [
               "드루이드의 재테크",
               "다나의 개인 농장",
@@ -2213,7 +2213,7 @@
           },
           "rosaria": {
             "name": "로자리아",
-            "image": "/assets/img/e5_rosaria.webp",
+            "image": "/assets/img/e2_rosaria.webp",
             "events": [
               "편식하는 마왕님",
               "운명의 상대…?",
@@ -2222,7 +2222,7 @@
           },
           "bunny": {
             "name": "바니걸 스칼렛",
-            "image": "/assets/img/e5_bunny.webp",
+            "image": "/assets/img/e2_bunny.webp",
             "events": [
               "날개를 활짝 펴고",
               "먹을 줄 아는 사람",
@@ -2231,7 +2231,7 @@
           },
           "fei": {
             "name": "페이",
-            "image": "/assets/img/e5_fei.webp",
+            "image": "/assets/img/e2_fei.webp",
             "events": [
               "생명의 은인",
               "언어를 초월하는 경험",
@@ -2382,10 +2382,10 @@
       }
     },
     {
-      "id": "E6",
+      "id": "E7",
       "doc_type": "AI 활용",
       "group": "extra",
-      "thumb": "/assets/img/thumb_e5.jpg",
+      "thumb": "/assets/img/thumb_e2.jpg",
       "title": "AI 문서 작성 효율화 보고서",
       "subtitle": "기획 문서 작성에 AI 활용하기",
       "chapters": [
@@ -2440,10 +2440,10 @@
       }
     },
     {
-      "id": "E8",
+      "id": "E3",
       "doc_type": "게임 개발",
       "group": "game",
-      "thumb": "/assets/img/thumb_e8.jpg",
+      "thumb": "/assets/img/thumb_e3.jpg",
       "title": "PokeCollect 개발 회고",
       "subtitle": "포켓몬 스킨에서 출발한 카드 수집 게임",
       "chapters": [
@@ -2518,14 +2518,14 @@
             ]
           ],
           "figure": {
-            "src": "/assets/img/e8/title.webp",
+            "src": "/assets/img/e3/title.webp",
             "w": 1600,
             "h": 750,
             "max": 760,
             "caption": "타이틀 화면. 팩을 열어 관동 포켓몬 카드 4,536장을 모으는 게임입니다."
           },
           "pack": {
-            "src": "/assets/img/e8/clip_pack_open_poster.webp",
+            "src": "/assets/img/e3/clip_pack_open_poster.webp",
             "w": 720,
             "h": 474,
             "box": [
@@ -2585,7 +2585,7 @@
               {
                 "pair": [
                   {
-                    "src": "/assets/img/e8/ref_splendor_pokemon.webp",
+                    "src": "/assets/img/e3/ref_splendor_pokemon.webp",
                     "w": 576,
                     "h": 576,
                     "max": 306,
@@ -2593,7 +2593,7 @@
                     "tag": "ref"
                   },
                   {
-                    "src": "/assets/img/e8/table_stage6.webp",
+                    "src": "/assets/img/e3/table_stage6.webp",
                     "w": 1600,
                     "h": 750,
                     "max": 368,
@@ -2604,7 +2604,7 @@
               },
               {
                 "figure": {
-                  "src": "/assets/img/e8/diagram_loop.webp",
+                  "src": "/assets/img/e3/diagram_loop.webp",
                   "w": 1640,
                   "h": 660,
                   "max": 760,
@@ -2627,9 +2627,9 @@
               {
                 "pair": [
                   {
-                    "src": "/assets/img/e8/clip_tcgpocket.gif",
-                    "video": "/assets/img/e8/clip_tcgpocket.webm",
-                    "poster": "/assets/img/e8/clip_tcgpocket_poster.webp",
+                    "src": "/assets/img/e3/clip_tcgpocket.gif",
+                    "video": "/assets/img/e3/clip_tcgpocket.webm",
+                    "poster": "/assets/img/e3/clip_tcgpocket_poster.webp",
                     "w": 300,
                     "h": 628,
                     "max": 208,
@@ -2637,9 +2637,9 @@
                     "tag": "ref"
                   },
                   {
-                    "src": "/assets/img/e8/clip_pack_open.gif",
-                    "video": "/assets/img/e8/clip_pack_open.webm",
-                    "poster": "/assets/img/e8/clip_pack_open_poster.webp",
+                    "src": "/assets/img/e3/clip_pack_open.gif",
+                    "video": "/assets/img/e3/clip_pack_open.webm",
+                    "poster": "/assets/img/e3/clip_pack_open_poster.webp",
                     "fit": "cover",
                     "w": 720,
                     "h": 474,
@@ -2652,7 +2652,7 @@
               {
                 "pair": [
                   {
-                    "src": "/assets/img/e8/ref_pokeholo.webp",
+                    "src": "/assets/img/e3/ref_pokeholo.webp",
                     "w": 950,
                     "h": 515,
                     "max": 368,
@@ -2660,9 +2660,9 @@
                     "tag": "ref"
                   },
                   {
-                    "src": "/assets/img/e8/clip_holo.gif",
-                    "video": "/assets/img/e8/clip_holo.webm",
-                    "poster": "/assets/img/e8/clip_holo_poster.webp",
+                    "src": "/assets/img/e3/clip_holo.gif",
+                    "video": "/assets/img/e3/clip_holo.webm",
+                    "poster": "/assets/img/e3/clip_holo_poster.webp",
                     "w": 380,
                     "h": 458,
                     "max": 233,
@@ -2674,7 +2674,7 @@
               {
                 "pair": [
                   {
-                    "src": "/assets/img/e8/ref_scrydex.webp",
+                    "src": "/assets/img/e3/ref_scrydex.webp",
                     "w": 830,
                     "h": 840,
                     "max": 306,
@@ -2682,7 +2682,7 @@
                     "tag": "ref"
                   },
                   {
-                    "src": "/assets/img/e8/chart_price.webp",
+                    "src": "/assets/img/e3/chart_price.webp",
                     "w": 1225,
                     "h": 760,
                     "max": 368,
@@ -2714,7 +2714,7 @@
               },
               {
                 "figure": {
-                  "src": "/assets/img/e8/chart_boards.webp",
+                  "src": "/assets/img/e3/chart_boards.webp",
                   "w": 1225,
                   "h": 765,
                   "max": 662,
@@ -2727,7 +2727,7 @@
               },
               {
                 "figure": {
-                  "src": "/assets/img/e8/expedition.webp",
+                  "src": "/assets/img/e3/expedition.webp",
                   "w": 1600,
                   "h": 750,
                   "max": 760,
@@ -2761,7 +2761,7 @@
               },
               {
                 "figure": {
-                  "src": "/assets/img/e8/ref_balatro.webp",
+                  "src": "/assets/img/e3/ref_balatro.webp",
                   "w": 1200,
                   "h": 982,
                   "max": 405,
@@ -2771,7 +2771,7 @@
               },
               {
                 "figure": {
-                  "src": "/assets/img/e8/score_bar.webp",
+                  "src": "/assets/img/e3/score_bar.webp",
                   "w": 960,
                   "h": 60,
                   "max": 760,
@@ -2781,7 +2781,7 @@
               },
               {
                 "figure": {
-                  "src": "/assets/img/e8/area_band.webp",
+                  "src": "/assets/img/e3/area_band.webp",
                   "w": 1600,
                   "h": 569,
                   "max": 760,
@@ -2790,9 +2790,9 @@
               },
               {
                 "figure": {
-                  "src": "/assets/img/e8/clip_deal.gif",
-                  "video": "/assets/img/e8/clip_deal.webm",
-                  "poster": "/assets/img/e8/clip_deal_poster.webp",
+                  "src": "/assets/img/e3/clip_deal.gif",
+                  "video": "/assets/img/e3/clip_deal.webm",
+                  "poster": "/assets/img/e3/clip_deal_poster.webp",
                   "w": 720,
                   "h": 302,
                   "max": 662,
@@ -2811,7 +2811,7 @@
               {
                 "pair": [
                   {
-                    "src": "/assets/img/e8/ref_tft_augments.webp",
+                    "src": "/assets/img/e3/ref_tft_augments.webp",
                     "w": 1110,
                     "h": 690,
                     "max": 368,
@@ -2819,7 +2819,7 @@
                     "tag": "ref"
                   },
                   {
-                    "src": "/assets/img/e8/core_pick.webp",
+                    "src": "/assets/img/e3/core_pick.webp",
                     "w": 970,
                     "h": 570,
                     "max": 368,
@@ -2852,7 +2852,7 @@
               },
               {
                 "figure": {
-                  "src": "/assets/img/e8/chart_pass.webp",
+                  "src": "/assets/img/e3/chart_pass.webp",
                   "w": 1225,
                   "h": 878,
                   "max": 760,
@@ -2865,7 +2865,7 @@
               },
               {
                 "figure": {
-                  "src": "/assets/img/e8/result.webp",
+                  "src": "/assets/img/e3/result.webp",
                   "w": 596,
                   "h": 718,
                   "max": 343,
@@ -2893,9 +2893,9 @@
               },
               {
                 "figure": {
-                  "src": "/assets/img/e8/clip_file_book.gif",
-                  "video": "/assets/img/e8/clip_file_book.webm",
-                  "poster": "/assets/img/e8/clip_file_book_poster.webp",
+                  "src": "/assets/img/e3/clip_file_book.gif",
+                  "video": "/assets/img/e3/clip_file_book.webm",
+                  "poster": "/assets/img/e3/clip_file_book_poster.webp",
                   "w": 720,
                   "h": 337,
                   "max": 662,
@@ -2904,7 +2904,7 @@
               },
               {
                 "figure": {
-                  "src": "/assets/img/e8/pokedex.webp",
+                  "src": "/assets/img/e3/pokedex.webp",
                   "w": 1600,
                   "h": 750,
                   "max": 760,
@@ -2913,7 +2913,7 @@
               },
               {
                 "figure": {
-                  "src": "/assets/img/e8/exchange.webp",
+                  "src": "/assets/img/e3/exchange.webp",
                   "w": 850,
                   "h": 500,
                   "max": 490,
@@ -2922,7 +2922,7 @@
               },
               {
                 "figure": {
-                  "src": "/assets/img/e8/collections.webp",
+                  "src": "/assets/img/e3/collections.webp",
                   "w": 1600,
                   "h": 493,
                   "max": 760,
@@ -2947,7 +2947,7 @@
               },
               {
                 "figure": {
-                  "src": "/assets/img/e8/diagram_ai.webp",
+                  "src": "/assets/img/e3/diagram_ai.webp",
                   "w": 1280,
                   "h": 1022,
                   "max": 760,
@@ -2963,7 +2963,7 @@
               },
               {
                 "figure": {
-                  "src": "/assets/img/e8/chart_commits.webp",
+                  "src": "/assets/img/e3/chart_commits.webp",
                   "w": 1225,
                   "h": 830,
                   "max": 760,
@@ -2995,7 +2995,7 @@
               },
               {
                 "figure": {
-                  "src": "/assets/img/e8/diagram_gate.webp",
+                  "src": "/assets/img/e3/diagram_gate.webp",
                   "w": 1160,
                   "h": 1315,
                   "max": 760,
@@ -3145,10 +3145,10 @@
       }
     },
     {
-      "id": "E9",
+      "id": "E4",
       "doc_type": "시스템 기획",
       "group": "extra",
-      "thumb": "/assets/img/thumb_e9.jpg",
+      "thumb": "/assets/img/thumb_e4.jpg",
       "title": "블루 아카이브 전술대회 전투 개선 제안서",
       "subtitle": "자동 전투 전에 규칙을 짜는 ‘전투 매뉴얼’",
       "chapters": [
@@ -3201,12 +3201,12 @@
       }
     },
     {
-      "id": "E7",
+      "id": "E8",
       "title": "클루의 수사 수첩",
       "subtitle": "히든 — 사건 밖에서 만난 의뢰인의 모습",
       "chapters": [],
       "hidden": true,
-      "unlock_condition": "기본 증거(E1~E6, E8) 전부 수집",
+      "unlock_condition": "기본 증거(E1~E7) 전부 수집",
       "summary": "조수 클루가 수사 중 몰래 남긴 기록입니다. 클루의 프로필과 서류에는 없는 지원자의 취향을 담았습니다.",
       "url": "/notebook",
       "attachments": [],

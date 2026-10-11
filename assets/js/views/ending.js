@@ -28,12 +28,12 @@ export function renderEnding(view) {
 
   const finish = () => {
     state.endingSeen = true;
-    state.collected.add('E7'); // 히든 증거 수집 완료 → 7/7
+    state.collected.add('E8'); // 히든 증거 수집 완료 → 7/7
     syncBadge();
-    // on_complete: open_evidence E7 — 목적지는 E7 카드의 내부 라우트
+    // on_complete: open_evidence E8 — 목적지는 E8 카드의 내부 라우트
     const e7 = DB.cards.find((c) => c.hidden);
     // 내부 라우트는 '/'로 시작한다 (외부 문서는 https://...)
-    navigate(e7 && e7.url && e7.url.startsWith('/') ? e7.url : '/notebook');
+    navigate(e7 && e8.url && e8.url.startsWith('/') ? e8.url : '/notebook');
   };
 
   engine.play(DB.ending.lines, { onComplete: finish });

@@ -1,7 +1,7 @@
 // 회귀 테스트 전부를 한 번에 돌린다 — `npm test`.
 //
 // 터미널 두 개를 띄우는 절차(서버 하나 + 테스트 하나)는 매번 건너뛰게 된다.
-// 실제로 9/29에 E8 커밋이 회귀 테스트를 못 돌린 채 배포돼 E2가 깨진 채 나갔다.
+// 실제로 9/29에 E3 커밋이 회귀 테스트를 못 돌린 채 배포돼 E6가 깨진 채 나갔다.
 // 서버를 직접 띄우고, 끝나면 반드시 내린다.
 const { spawn } = require('node:child_process');
 const http = require('node:http');
@@ -9,10 +9,10 @@ const path = require('node:path');
 
 const ORIGIN = process.env.TEST_ORIGIN || 'http://127.0.0.1:4173';
 const SUITES = [
-  ['인터랙티브 공통 (E1·E2)', ['node', ['tests/brief-regression.cjs']]],
-  ['E3 · cut_play', ['node', ['tests/e3-regression.cjs']]],
-  ['E5 · one_card', ['node', ['tests/e5-regression.cjs']]],
-  ['E8 · retro', ['node', ['tests/e8-regression.cjs']]],
+  ['인터랙티브 공통 (E1·E6)', ['node', ['tests/brief-regression.cjs']]],
+  ['E2 · one_card', ['node', ['tests/e2-regression.cjs']]],
+  ['E3 · retro', ['node', ['tests/e3-regression.cjs']]],
+  ['E5 · cut_play', ['node', ['tests/e5-regression.cjs']]],
   ['수첩 · notebook', ['node', ['tests/notebook-regression.cjs']]],
   ['입장권 API', ['node', ['--test', 'tests/play.test.mjs']]],
   ['화면 문구 · GPT 목록', ['node', ['tools/strings.cjs', 'check']]],

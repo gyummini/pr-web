@@ -6,7 +6,7 @@ const path = require('node:path');
 // 화면 문구는 GPT가 바꿀 수 있다 — 버튼 이름은 데이터에서 읽는다
 const UI = JSON.parse(fs.readFileSync(path.join(__dirname, '..', '콘텐츠_화면문구.json'), 'utf8'));
 const EVS = JSON.parse(fs.readFileSync(path.join(__dirname, '..', '콘텐츠_증거카드.json'), 'utf8')).evidences;
-const E2card = EVS.find((e) => e.id === 'E2');
+const E2card = EVS.find((e) => e.id === 'E6');
 const E1card = EVS.find((e) => e.id === 'E1');
 const origin = process.env.TEST_ORIGIN || 'http://127.0.0.1:4173';
 // 보관함의 아직 모으지 않은 카드는 요약 팝업을 연다 — '잠금해제하고 요약 인터랙티브 페이지 보기'로 넘어간다(10/07)
@@ -25,7 +25,7 @@ const UNLOCK = UI.popup.unlock.replace('{action}', UI.common.to_interactive);
     });
     await page.waitForTimeout(600);
     assert.equal(await page.locator('.ev-grid').count(), 1, 'Cancel pending route back to source');
-    await page.locator('.ev-card[data-eid="E2"]').click();
+    await page.locator('.ev-card[data-eid="E6"]').click();
     await page.getByRole('button', { name: UNLOCK, exact: true }).click();
     await page.locator('.fx-card').first().waitFor();
     await page.waitForTimeout(500);
@@ -35,14 +35,14 @@ const UNLOCK = UI.popup.unlock.replace('{action}', UI.common.to_interactive);
     assert.equal(await page.locator('.fx-node').count(), 13);
     assert.equal(await page.locator('.fx-master-table').count(), 4);
     // 처음에는 조작 칸만 — 차트 · 표는 첫 스킬을 누를 때 펼쳐진다(10/06)
-    assert.equal(await page.locator('.fx.fx-closed').count(), 1, 'E2 opens with the skill panel only');
+    assert.equal(await page.locator('.fx.fx-closed').count(), 1, 'E6 opens with the skill panel only');
     assert.equal(await page.locator('.fx-chartcol').isVisible(), false);
     assert.equal(await page.locator('.fx-card').first().isVisible(), true);
     // 원본 문서는 버튼이 아니라 새 탭으로 여는 링크다(10/06 — 가운데 클릭 · 주소 복사가 되게)
     assert.equal(await page.locator('.brief-head-doc a[target="_blank"]').count(), 1, 'Original is always reachable');
     assert.notEqual(await page.locator('.brief-head-doc a').getAttribute('href'), '#', 'Original link has a real address');
     // 결론 칸(원본 문서 · 첨부)은 처음부터 열지 않는다 — 첫 시전의 흐름이 끝난 뒤에 연다(10/10 마4)
-    assert.equal(await page.locator('.brief-recap').isHidden(), true, 'E2 conclusion box waits for the first cast');
+    assert.equal(await page.locator('.brief-recap').isHidden(), true, 'E6 conclusion box waits for the first cast');
     // 첫 시전(움직임 줄이기 — 흐름이 한 번에 끝난다): 결론 한 줄은 덱 아래(조작 칸 안)에서 첫 화면 안에, 켜진 칸은 자기 상자 안에 다 보이고
     // 페이지는 옆으로 움직이지 않는다(마1 · 마6)
     await page.emulateMedia({ reducedMotion: 'reduce' });
@@ -59,13 +59,13 @@ const UNLOCK = UI.popup.unlock.replace('{action}', UI.common.to_interactive);
       const ink = (v) => { const p = document.createElement('i'); p.style.color = `var(${v})`; document.querySelector('.view-brief').append(p); const c = getComputedStyle(p).color; p.remove(); return c; };
       return { soft: ink('--fx-soft'), accent: ink('--accent'), rate: getComputedStyle(document.querySelector('#view .fx-rate')).color, labels: [...document.querySelectorAll('#view .fx-sec, #view .fx-concl .brief-concl-key')].map((n) => getComputedStyle(n).color) };
     });
-    assert.deepEqual(labelInk.labels, Array(5).fill(labelInk.soft), `the five E2 section labels are the soft ink ${JSON.stringify(labelInk)}`);
+    assert.deepEqual(labelInk.labels, Array(5).fill(labelInk.soft), `the five E6 section labels are the soft ink ${JSON.stringify(labelInk)}`);
     assert.equal(labelInk.rate, labelInk.accent, 'the Cost gauge stays red');
     // 노트북 높이(1366×768 · 1280×720)에서도 — 첫 시전 때 화면을 맞추는 양을 결론 줄까지 넓힌다(10/11 사용자 결정 재5. 전에는 결론 줄의 아래 절반 · 전체가 화면 밖)
     for (const [w, h] of [[1366, 768], [1280, 720]]) {
       const lap = await browser.newPage({ viewport: { width: w, height: h }, reducedMotion: 'reduce' });
       await lap.route('**/_vercel/**', (r) => r.abort());
-      await lap.goto(origin + '/evidence/E2/interactive', { waitUntil: 'networkidle' });
+      await lap.goto(origin + '/evidence/E6/interactive', { waitUntil: 'networkidle' });
       await lap.waitForFunction(() => document.querySelector('.fx-card[data-sid="himari"]')?.classList.contains('ready'));
       await lap.locator('.fx-card[data-sid="himari"]').click();
       await lap.waitForTimeout(400);
@@ -98,7 +98,7 @@ const UNLOCK = UI.popup.unlock.replace('{action}', UI.common.to_interactive);
         window.testFlow?.destroy();
         const { DB } = await import('/assets/js/data.js');
         const { playFlow } = await import('/assets/js/briefs/flow.js');
-        const cfg = structuredClone(DB.cards.find(c => c.id === 'E2').brief);
+        const cfg = structuredClone(DB.cards.find(c => c.id === 'E6').brief);
         Object.assign(cfg.play, { start_cost: 10, rate: 0, step_ms_start: 30, step_ms_min: 30 }, overrides);
         let host = document.getElementById('regression-host');
         if (!host) { host = document.createElement('div'); host.id = 'regression-host'; document.body.append(host); }
@@ -289,7 +289,7 @@ const UNLOCK = UI.popup.unlock.replace('{action}', UI.common.to_interactive);
     // 끝 단추는 둘 — 원본 문서(결론 칸)와 '포트폴리오 화면으로 돌아가기'(10/10 사용자 결정 바3). '다시 해보기'는 뺐다
     await page.locator('.brief-recap:not([hidden]) .brief-docs a').first().waitFor();
     assert.deepEqual(await page.locator('.brief-docs a, .brief-docs button, .brief-foot a').allInnerTexts(), [UI.brief.original_doc, UI.brief.back], 'E1 end buttons');
-    // 결론 칸의 맺음 줄에는 굵은 왼쪽 띠가 없다 — 왼쪽 띠는 절 제목 · 알림 전용(10/11 작은 정리 4. E3의 맺음 줄과 같은 부품)
+    // 결론 칸의 맺음 줄에는 굵은 왼쪽 띠가 없다 — 왼쪽 띠는 절 제목 · 알림 전용(10/11 작은 정리 4. E5의 맺음 줄과 같은 부품)
     assert.equal(await page.locator('.brief-closing').evaluate((n) => getComputedStyle(n).borderLeftWidth), '0px', 'the closing line has no thick left band');
     assert.equal(await page.getByRole('button', { name: UI.brief.restart, exact: true }).count(), 0, 'no restart button');
     // 머리말의 안내 알약은 뺐다(마3) · 맞힌 직후의 결론 한 줄은 공통 부품(이름표 + 17px 굵게, 마6)
@@ -314,7 +314,7 @@ const UNLOCK = UI.popup.unlock.replace('{action}', UI.common.to_interactive);
       return { concl: on('.cc-match-done .brief-concl'), next: on('.cc-match-done .cc-next'), cue: document.querySelector('.cc-match-done .cc-next').classList.contains('cue') };
     });
     assert.deepEqual(quizDone, { concl: true, next: true, cue: true }, 'after the third match at 1366x768 the conclusion line and the cued next button are on screen');
-    // 건너뛰기는 E3와 같은 모양 — 사이트 보조 단추(10/11 재9). 전에는 다음 장 단추와 같은 검은 테두리 단추였다
+    // 건너뛰기는 E5와 같은 모양 — 사이트 보조 단추(10/11 재9). 전에는 다음 장 단추와 같은 검은 테두리 단추였다
     await laptop.goto(origin + '/evidence/E1/interactive');
     await laptop.locator('.cc').waitFor();
     assert.equal(await laptop.locator('.cc-skip').evaluate((b) => b.classList.contains('btn') && b.classList.contains('ghost') && !b.classList.contains('cc-next')), true, 'the skip is the site ghost button');
@@ -359,13 +359,13 @@ const UNLOCK = UI.popup.unlock.replace('{action}', UI.common.to_interactive);
       return { inView: r.top >= head && r.bottom <= innerHeight, centered: Math.abs((r.top + r.bottom) / 2 - (head + innerHeight) / 2) <= 24, marked: card.classList.contains('is-back'), focused: document.activeElement === card };
     });
     assert.deepEqual(backAt, { inView: true, centered: true, marked: true, focused: false }, `back to the portfolio lands on the E1 card ${JSON.stringify(backAt)}`);
-    await page.locator('.ev-card[data-eid="E2"]').click();
+    await page.locator('.ev-card[data-eid="E6"]').click();
     await page.getByRole('button', { name: UNLOCK, exact: true }).click(); await page.locator('.fx').waitFor();
     assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);
     assert.equal(await page.locator('.fx-concept b').allTextContents().then(x => x.join(' ')), 'READ WRITE');
     await page.waitForTimeout(600);
     assert.equal(await page.evaluate(() => document.getAnimations().filter(a => a.playState === 'running').length), 0);
     assert.deepEqual(errors, []);
-    console.log('PASS: navigation, interruption, cost/queue/reduction/boost, hidden-tab recovery, E2 conclusion after the first cast (under the deck, used cell shown in its box), E2 section labels in soft ink, E1 help bubble that leaves with the cue, one sentence per episode, drag/keyboard, rewind lands on the first call (desktop and phone)/facets, closing line without a left band, end buttons without restart, phone sheets, back to the portfolio lands on the card, reduced motion, fallback.');
+    console.log('PASS: navigation, interruption, cost/queue/reduction/boost, hidden-tab recovery, E6 conclusion after the first cast (under the deck, used cell shown in its box), E6 section labels in soft ink, E1 help bubble that leaves with the cue, one sentence per episode, drag/keyboard, rewind lands on the first call (desktop and phone)/facets, closing line without a left band, end buttons without restart, phone sheets, back to the portfolio lands on the card, reduced motion, fallback.');
   } finally { await browser.close(); }
 })().catch(e => { console.error(e); process.exitCode = 1; });

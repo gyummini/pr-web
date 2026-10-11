@@ -3,7 +3,7 @@ import { fromRect } from '../motion/flip.js';
 import { flowPaths } from '../motion/flow-paths.js';
 import { revealOnce } from '../motion/reveal.js';
 import { fill as fillText, T } from '../text.js'; // 이 파일에는 표 행을 채우는 fill이 따로 있다
-// E2 · Cost 스킬 시스템 — 한 번의 클릭이 읽는 데이터와 쓰는 데이터.
+// E6 · Cost 스킬 시스템 — 한 번의 클릭이 읽는 데이터와 쓰는 데이터.
 //
 //   ① 읽기 — 마스터 데이터(하늘). 기획자가 정의한 정적 데이터.
 //      Student_Master → Skill_Master → Skill_Level_Detail → Skill_String
@@ -209,7 +209,7 @@ export function playFlow(host, cfg, onComplete) {
   })));
 
   reset();
-  // 결론 칸(원본 문서 · 첨부)은 E1 · E3 · E5처럼 첫 시전의 흐름이 끝난 뒤에 연다(10/10 사용자 동의 마4 — finish).
+  // 결론 칸(원본 문서 · 첨부)은 E1 · E5 · E2처럼 첫 시전의 흐름이 끝난 뒤에 연다(10/10 사용자 동의 마4 — finish).
   // 전에는 처음부터 열어 두었다('원본까지의 통행료'를 없애려고). 10/06부터 원본은 머리말에 늘 있어 그 이유가 사라졌다
   timer = setInterval(() => {
     // 흐름이 도는 동안에는 회복을 멈춘다 — 차트를 보는 사이에 게이지가 차면

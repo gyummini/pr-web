@@ -2,7 +2,7 @@ import { state, baseUnlocked, collectedCount, TOTAL_EVIDENCE } from './state.js'
 import { preloadNotebookFonts } from './preload.js';
 import { T, TH } from './text.js';
 
-// 수첩(E7)에 곧 도달할 신호. 폰트는 용량이 커서 진입 시점에 받으면 글씨가 늦게 바뀌므로,
+// 수첩(E8)에 곧 도달할 신호. 폰트는 용량이 커서 진입 시점에 받으면 글씨가 늦게 바뀌므로,
 // 기본 증거를 거의 다 모은 시점(세는 증거 전체 − 2)에 미리 백그라운드 요청해둔다.
 const NB_FONT_TRIGGER = TOTAL_EVIDENCE - 2;
 function maybePreloadNotebookFonts() {
@@ -168,7 +168,7 @@ function maybeShowHiddenUnlockToast() {
 
   state.hiddenUnlockToastShown = true;
   // 엔딩 대화를 아직 안 봤다면 그쪽을 거쳐 간다 — 마지막 클루 대사가 여기서만 나오고,
-  // E7 수집(7/7)도 엔딩이 끝나는 시점에 일어난다. 곧장 /notebook으로 보내면 둘 다 건너뛴다.
+  // E8 수집(7/7)도 엔딩이 끝나는 시점에 일어난다. 곧장 /notebook으로 보내면 둘 다 건너뛴다.
   // 토스트는 닫기 전까지 남아 있으므로 목적지는 누르는 시점에 다시 판단한다.
   // (router.js는 순환 참조라 import하지 않는다 — 내부 링크는 라우터가 <a href>를 가로챈다)
   const dest = () => (state.endingSeen ? '/notebook' : '/ending');

@@ -128,7 +128,7 @@ function renderRoute(path, restoreScroll) {
 
   // 한 화면이 터져도 사이트 전체가 멈추지는 않게 한다.
   // dispatching이 true로 남으면 이후의 navigate()가 전부 pendingRedirect로 보류되고,
-  // 뒤로가기나 새로고침 전까지 상단 탭까지 죽는다 — 9/29에 E2 하나 때문에 실제로 그렇게 됐다.
+  // 뒤로가기나 새로고침 전까지 상단 탭까지 죽는다 — 9/29에 E6 하나 때문에 실제로 그렇게 됐다.
   // finally로 반드시 풀고, 나머지(탭·배지·구독자)는 평소대로 이어간다.
   try {
     switch (seg[0]) {
