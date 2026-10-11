@@ -376,8 +376,24 @@ const IMG = /memo_\d|notebook_photo_\d/;
       await page.close();
     }
 
+    // 엔딩 → 수첩: 기본 증거를 다 모은 뒤 엔딩 대사가 끝나면 히든 수첩이 열린다.
+    // 10/11 번호를 다시 매길 때 엔딩의 변수 이름(e7.url)이 그림 경로처럼 바뀌어 대사 뒤에 멈춘 적이 있다 — 수첩으로 바로 들어가는 검사만으로는 못 잡았다.
+    {
+      const { page } = await open({ width: 1366, height: 768 });
+      await page.evaluate(async () => {
+        const { state, BASE_EVIDENCE_IDS } = await import('/assets/js/state.js');
+        BASE_EVIDENCE_IDS.forEach((id) => state.collected.add(id));
+        (await import('/assets/js/router.js')).navigate('/ending');
+      });
+      await page.locator('.view-ending .skip-btn').click();
+      await page.waitForURL('**/notebook');
+      await page.locator('.nb-page.active').first().waitFor();
+      assert.match(await page.locator('#badge').innerText(), /8\/8/);
+      await page.close();
+    }
+
     assert.deepEqual(errors, []);
-    console.log('PASS notebook: one paper size · binding · title line on every page (seven pages, 2부 in three), upright pages from 821px (cover: title label and sticker only), opaque turns that lift toward the reader (also under reduced motion), four index tabs with the current chapter, keys scroll inside first, pictures only for the current and next page, the 2부 closing note on screen at 1366×768 (with the play record at 1440×900), 3부 photo window (focus kept, Esc · outside · close, focus back), weight of the conclusion, last page (signature · CASE CLOSED stamp with the visit date · card · back, stamp covers nothing, phones not longer than before), spreads at 1920×1080 (five views, four turns, 3부 photo per page, blank back cover, outer folded corner, kept turn) and back to single pages on a low screen, paper height ÷ width 1.45 or less on tall screens (phones not capped).');
+    console.log('PASS notebook: ending → notebook after the last line, one paper size · binding · title line on every page (seven pages, 2부 in three), upright pages from 821px (cover: title label and sticker only), opaque turns that lift toward the reader (also under reduced motion), four index tabs with the current chapter, keys scroll inside first, pictures only for the current and next page, the 2부 closing note on screen at 1366×768 (with the play record at 1440×900), 3부 photo window (focus kept, Esc · outside · close, focus back), weight of the conclusion, last page (signature · CASE CLOSED stamp with the visit date · card · back, stamp covers nothing, phones not longer than before), spreads at 1920×1080 (five views, four turns, 3부 photo per page, blank back cover, outer folded corner, kept turn) and back to single pages on a low screen, paper height ÷ width 1.45 or less on tall screens (phones not capped).');
   } finally {
     await browser.close();
   }
