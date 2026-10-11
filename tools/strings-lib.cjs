@@ -75,6 +75,8 @@ const NOT_SHOWN = [
   /^E1\.brief\.lead\.prompt$/,
   // 10/10 첫 진입 표지를 index.html로 옮겼다(html.cover.*) — 데이터의 opening.*은 화면에 나가지 않는다(확정 문구라 남겨 둠)
   /^ui\.opening\./,
+  // 10/11 사용자 결정 — 수첩 표지에서 봉인과 '함부로 열람 금지!' 도장을 뺐다('수첩에 봉인은 이상하다'). 확정 문구라 남겨 둠
+  /^notebook\.cover\.(stamp|seal\.)/,
 ];
 const shown = (key) => !NOT_SHOWN.some((re) => re.test(key));
 

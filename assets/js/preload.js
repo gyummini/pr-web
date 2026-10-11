@@ -13,7 +13,7 @@ const NB_FONT_ID = 'nb-fonts';
 // 수첩 표지의 글(데이터는 첫 화면 전에 다 받아 둔다)을 쓴다. 없으면 글꼴의 기본 견본으로 부른다
 const nbFontSample = () => {
   const c = (DB.notebook && DB.notebook.cover) || {};
-  return [c.kicker, c.title, c.sub, c.stamp].filter(Boolean).join(' ') || undefined;
+  return c.title || undefined;
 };
 
 const idle = (fn) =>

@@ -12,6 +12,8 @@ const NL = () => DB.notebook.labels;
 // 10/11 사용자 결정(수첩 가 · 수첩 끝 · 수첩 나)으로 한 권으로 다듬었다.
 // 쪽 구성(한 쪽씩): 표지 / 1부 / 2부(메모 둘) / 2부 계속(메모 둘) / 2부 계속(메모 하나 · 종합 소견 · 플레이 기록) / 3부 / 마지막 쪽
 //   = 7쪽, 넘김 여섯 번(10/11(2) — 전에는 2부가 메모 셋 · 메모 둘+종합 소견이라 1366×768에서 종합 소견이 화면 밖이었다).
+// 세로 종이(821px 이상 — 10/11 사용자 지적 '수첩이 가로로 너무 넓다'): 한 쪽씩 보는 넓은 화면도 펼침과 같은 세로 쪽(폭 560~640px)을 쓴다.
+//   전에는 880px 폭의 가로로 누운 종이였다. 쪽 구성도 펼침과 같아 3부가 사진마다 한 쪽(번호는 하나)이라 넘김이 일곱 번이다.
 // 펼친 수첩(넓고 높은 화면): 표지 | 1부 · 2부 | 2부 계속 · 2부 계속 | 3부(사진 ①) · 3부 계속(사진 ②) | 마지막 쪽 · 뒤표지
 //   = 다섯 면, 넘김 네 번. 표지는 오른쪽 자리에 홀로 놓이고(덮인 수첩), 마지막 면의 오른쪽은 글자 없는 뒤표지라 첫 면과 짝을 이룬다(10/11(2)).
 //   쪽 번호는 두 화면이 같은 일곱 쪽을 센다 — 펼침의 3부 두 쪽은 한 쪽(6), 뒤표지는 세지 않는다.
@@ -28,6 +30,9 @@ const LOCK_EXTRA_MS = 100; // 애니메이션 종료 후 추가 입력 잠금
 // 폭 1600px 이상(쪽 폭 640px)에서는 높이 888px부터 들어온다 — 1080p 모니터의 브라우저 높이(약 905~950px)가 여기 든다.
 // 폭이 좁으면 쪽이 좁아져 더 높아야 한다(1536 폭은 940px, 1440 · 1366 폭은 1000px 넘게) — 1440×900 · 1536×864 · 1366×768 노트북은 한 쪽씩
 const SPREAD_MEDIA = '(min-width: 1600px) and (min-height: 890px)';
+// 세로 종이(10/11) — 이 폭부터는 한 쪽씩이어도 펼침과 같은 세로 쪽 · 같은 쪽 구성이다. 그보다 좁으면(휴대폰 · 태블릿 세로) 화면 폭을 다 쓴다.
+// CSS의 .nb-portrait 규칙과 820/821px 경계가 같다
+const PORTRAIT_MEDIA = '(min-width: 821px)';
 
 // 2부 메모를 쪽으로 나누는 자리(메모 번호) — 두 화면 모두 2 · 4에서 나눈다(10/11(2) — 한 쪽씩은 전에 3에서 나눴다)
 const P2_SPLIT = [2, 4];
@@ -91,14 +96,14 @@ export function renderNotebook(view) {
 }
 
 // ---- 쪽 · 면 구성 ----
-// 쪽마다 no(알약에 적는 쪽 번호)를 붙인다 — 펼침에서만 나뉘는 3부 둘째 쪽은 첫 쪽과 같은 번호, 뒤표지는 번호 없음
-function pagePlan(nb, spread) {
+// 쪽마다 no(알약에 적는 쪽 번호)를 붙인다 — 세로 종이에서만 나뉘는 3부 둘째 쪽은 첫 쪽과 같은 번호, 뒤표지는 번호 없음
+function pagePlan(nb, spread, portrait) {
   const n = nb.part2.items.length;
   const cuts = [0, ...P2_SPLIT.filter((c) => c > 0 && c < n), n];
   const p2 = cuts.slice(0, -1).map((from, i) => ({ ch: 'p2', from, to: cuts[i + 1], first: i === 0, last: i === cuts.length - 2 }));
-  // 3부: 한 쪽씩이면 사진 둘이 한 쪽에, 펼침이면 두 쪽(왼쪽: 제목 · 말풍선 · 사진 ① / 오른쪽: 사진 ②)
+  // 3부: 휴대폰은 사진 둘이 한 쪽에, 세로 종이(펼침 · 넓은 화면의 한 쪽)는 두 쪽(제목 · 말풍선 · 사진 ① / 사진 ②)
   const shots = nb.part3.photos.length;
-  const p3 = spread && shots > 1
+  const p3 = portrait && shots > 1
     ? [{ ch: 'p3', from: 0, to: 1, first: true }, { ch: 'p3', from: 1, to: shots, first: false }]
     : [{ ch: 'p3', from: 0, to: shots, first: true }];
   const plan = [{ ch: 'cover' }, { ch: 'p1' }, ...p2, ...p3, { ch: 'end' }];
@@ -137,6 +142,7 @@ function setupNotebook(view) {
   const prevBtn = view.querySelector('.nb-prev');
   const nextBtn = view.querySelector('.nb-next');
   const mq = SPREAD_MEDIA && window.matchMedia ? window.matchMedia(SPREAD_MEDIA) : null;
+  const pmq = window.matchMedia ? window.matchMedia(PORTRAIT_MEDIA) : null;
 
   let spread = false;
   let plan = [];
@@ -218,8 +224,10 @@ function setupNotebook(view) {
     queued = null;
     if (photo) photo.close(false); // 다시 그리면 누른 사진이 사라진다 — 창을 먼저 닫는다
     spread = !!(mq && mq.matches);
+    const portrait = spread || !!(pmq && pmq.matches);
     view.classList.toggle('nb-spreads', spread);
-    plan = pagePlan(nb, spread);
+    view.classList.toggle('nb-portrait', portrait);
+    plan = pagePlan(nb, spread, portrait);
     leaves.innerHTML = plan.map((p) => renderPage(nb, p)).join('') + (spread ? '<div class="nb-coil" aria-hidden="true"></div>' : '');
     pages = [...leaves.querySelectorAll('.nb-page')];
     views = viewPlan(pages.length, spread);
@@ -411,10 +419,12 @@ function setupNotebook(view) {
   };
   document.addEventListener('keydown', onKey);
   window.addEventListener('resize', syncMore);
-  if (mq) {
-    if (mq.addEventListener) mq.addEventListener('change', onMode);
-    else if (mq.addListener) mq.addListener(onMode);
-  }
+  // 펼침 조건이나 세로 종이 조건을 넘나들면 쪽을 다시 그린다
+  [mq, pmq].forEach((m) => {
+    if (!m) return;
+    if (m.addEventListener) m.addEventListener('change', onMode);
+    else if (m.addListener) m.addListener(onMode);
+  });
 
   build(null);
   // 글꼴을 기다리는 동안(최대 0.9초)은 쪽 높이와 도장 글 길이가 바뀐다
@@ -427,10 +437,11 @@ function setupNotebook(view) {
     destroy() {
       document.removeEventListener('keydown', onKey);
       window.removeEventListener('resize', syncMore);
-      if (mq) {
-        if (mq.removeEventListener) mq.removeEventListener('change', onMode);
-        else if (mq.removeListener) mq.removeListener(onMode);
-      }
+      [mq, pmq].forEach((m) => {
+        if (!m) return;
+        if (m.removeEventListener) m.removeEventListener('change', onMode);
+        else if (m.removeListener) m.removeListener(onMode);
+      });
       timers.forEach(clearTimeout);
       timers.clear();
       if (photo) photo.close(false);
@@ -465,23 +476,17 @@ function wirePage(root, openPhoto) {
   root.querySelectorAll('.nb-photo-btn').forEach((b) => b.addEventListener('click', () => openPhoto(b)));
 }
 
+// 표지(10/11 표지 고도화 — 사용자 결정): 크라프트 표지 위쪽 가운데에 두 줄 테두리가 인쇄된 이름표 하나(제목만)와,
+// 이름표 모서리에 붙인 클루 얼굴 스티커. 끈 · 밀랍 봉인 · '함부로 열람 금지!' 도장은 '수첩에 봉인은 이상하다'는 사용자 판단으로 뺐다.
+// 소개 줄과 괄호 문장도 '글 상자가 너무 크다'며 뺐다
 function pageCover(c) {
-  const seal = c.seal.main.split('|').map(esc).join('<br>');
   return `
   <section class="nb-page" data-ch="cover">
     <div class="nb-paper nb-cover">
       <div class="nb-spiral"></div>
       <div class="nb-cover-label">
-        <div class="nb-tape top"></div>
-        <div class="nb-cover-kicker">${esc(c.kicker)}</div>
         <h1 class="nb-cover-title">${esc(c.title)}</h1>
-        <div class="nb-cover-sub">${esc(c.sub)}</div>
-        <div class="nb-stamp">${esc(c.stamp)}</div>
-        <div class="nb-seal">
-          <span class="nb-seal-top">${esc(c.seal.top)}</span>
-          <span class="nb-seal-main">${seal}</span>
-          <span class="nb-seal-bottom">${esc(c.seal.bottom)}</span>
-        </div>
+        <span class="nb-sticker" aria-hidden="true"><img src="${SPRITES.sd.normal}" alt=""></span>
       </div>
     </div>
   </section>`;
@@ -625,7 +630,7 @@ function pageBackCover() {
 }
 
 // 마지막 쪽 — 사건 종결(10/11 수첩 끝): 편지 끝의 서명과 작은 얼굴 도장, 클립에 물린 명함(연락처 · PDF), 돌아가기,
-// 둥근 붉은 'CASE CLOSED' 도장과 방문한 날짜. 표지의 '함부로 열람 금지!'와 짝을 이뤄 사건 파일이 여기서 닫힌다.
+// 둥근 붉은 'CASE CLOSED' 도장과 방문한 날짜. 사건 파일이 여기서 닫힌다.
 // 도장은 찍혀 있을 뿐 연출을 두지 않는다(7/30 'case close 연출'은 넣지 않기로 한 결정).
 function pageFolded(f) {
   // line은 여러 문단(\n 구분) — 문단마다 간격을 두어 쪽지처럼 읽히게 한다

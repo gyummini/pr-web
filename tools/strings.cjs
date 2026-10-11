@@ -333,8 +333,9 @@ function check() {
     .map((s) => Number(s.slice(1))).sort((a, b) => a - b).join(',');
   const listSaid = /E(\d+)\s*[–~-]\s*E(\d+)(?:\s*[,·]\s*E\d+(?:\s*[–~-]\s*E\d+)?)*/g;
   const drafting = new Set(ledger.filter((r) => r.status === 'DRAFT').map((r) => r.key));
-  // 사용자가 지금 조건과 다른 줄 알고도 그대로 확정한 문구는 검사하지 않는다 — 수첩 봉인 맨 아랫줄은 두 번 물어 두 번 '그대로'(10/11 결정 노트)
-  const KEEP_AS_DECIDED = new Set(['notebook.cover.seal.bottom']);
+  // 사용자가 지금 조건과 다른 줄 알고도 그대로 확정한 문구는 여기에 올려 검사하지 않는다. 지금은 없다
+  // (수첩 봉인 맨 아랫줄이 있었는데 10/11 표지에서 봉인을 뺐다)
+  const KEEP_AS_DECIDED = new Set([]);
   if (baseIds) for (const s of all) {
     if (drafting.has(s.key) || !L.shown(s.key) || KEEP_AS_DECIDED.has(s.key)) continue; // 화면에 나가지 않는 문구(옛 해금 조건 설명 등)는 뺀다
     for (const m of s.text.matchAll(listSaid)) {
