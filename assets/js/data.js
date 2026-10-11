@@ -20,7 +20,8 @@ async function fetchJSON(path) {
 async function fetchText(path) {
   const r = await fetch(path);
   if (!r.ok) throw new Error(`로드 실패: ${path} (${r.status})`);
-  return r.text();
+  // 윈도우 작업본은 git이 줄 끝을 CRLF로 바꿔 꺼낸다(core.autocrlf) — 그대로 두면 빈 줄로 문단을 나누지 못해 로컬 화면만 깨진다
+  return (await r.text()).replace(/\r\n/g, '\n');
 }
 
 export async function loadAll() {
