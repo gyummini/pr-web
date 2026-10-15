@@ -10,6 +10,7 @@ import { playRetro } from '../briefs/retro.js';
 import { evidenceHeader } from '../motion/evidence-header.js';
 import { animate, effects, reducedMotion } from '../motion/animate.js';
 import { T } from '../text.js';
+import { hasDocMap, renderDocMap } from '../docmap.js';
 
 // 증거 상세 · Interactive Brief (/evidence/:id/brief).
 //
@@ -135,7 +136,9 @@ export function renderBrief(view, eid) {
   // 원본은 머리말에 상시 둔다. 결론까지 내려가야만 닿으면, 브리프를 건너뛰고
   // 문서만 보려는 검토자에게 인터랙션이 통행료가 된다.
   // 브리프가 곧 원문인 증거(E3)는 따로 열 원본이 없다
-  if (ev.url) view.querySelector('.brief-head-doc').appendChild(docLink(T('brief.original_doc'), 'ghost', ev.url));
+  // 문서 지도가 있는 증거(E6)는 원본 문서 단추 대신 머리말 아래의 지도에서 연다 — 두 문서와 엑셀이 한 그림에 있다
+  if (hasDocMap(ev)) view.querySelector('.brief-lead').appendChild(renderDocMap(ev));
+  else if (ev.url) view.querySelector('.brief-head-doc').appendChild(docLink(T('brief.original_doc'), 'ghost', ev.url));
 
   const recapEl = view.querySelector('.brief-recap');
   const status = view.querySelector('.brief > [role="status"]');

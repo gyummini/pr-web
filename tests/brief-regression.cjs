@@ -33,14 +33,15 @@ const UNLOCK = UI.popup.unlock.replace('{action}', UI.common.to_interactive);
     await page.goForward(); await page.locator('.fx').waitFor();
     await page.waitForTimeout(500);
     assert.equal(await page.locator('.fx-node').count(), 13);
-    assert.equal(await page.locator('.fx-master-table').count(), 4);
+    assert.equal(await page.locator('.fx-master-table').count(), 6, 'the master tables are the six sheets of the improved workbook');
     // 처음에는 조작 칸만 — 차트 · 표는 첫 스킬을 누를 때 펼쳐진다(10/06)
     assert.equal(await page.locator('.fx.fx-closed').count(), 1, 'E6 opens with the skill panel only');
     assert.equal(await page.locator('.fx-chartcol').isVisible(), false);
     assert.equal(await page.locator('.fx-card').first().isVisible(), true);
     // 원본 문서는 버튼이 아니라 새 탭으로 여는 링크다(10/06 — 가운데 클릭 · 주소 복사가 되게)
-    assert.equal(await page.locator('.brief-head-doc a[target="_blank"]').count(), 1, 'Original is always reachable');
-    assert.notEqual(await page.locator('.brief-head-doc a').getAttribute('href'), '#', 'Original link has a real address');
+    // E6는 문서 두 개가 엑셀 하나를 함께 쓰는 증거라, 원본은 머리말 아래 문서 지도의 왼쪽 칸에서 연다(10/15 — 지도의 칸 셋과 데이터 정의 모두 새 탭 링크)
+    assert.equal(await page.locator('.docmap a[target="_blank"]').count(), 4, 'Original is always reachable — two documents, the workbook and its definitions');
+    assert.equal(await page.locator('.docmap a.docmap-doc').first().getAttribute('href'), E2card.url, 'Original link has a real address');
     // 결론 칸(원본 문서 · 첨부)은 처음부터 열지 않는다 — 첫 시전의 흐름이 끝난 뒤에 연다(10/10 마4)
     assert.equal(await page.locator('.brief-recap').isHidden(), true, 'E6 conclusion box waits for the first cast');
     // 첫 시전(움직임 줄이기 — 흐름이 한 번에 끝난다): 결론 한 줄은 덱 아래(조작 칸 안)에서 첫 화면 안에, 켜진 칸은 자기 상자 안에 다 보이고
@@ -49,7 +50,7 @@ const UNLOCK = UI.popup.unlock.replace('{action}', UI.common.to_interactive);
     await page.waitForFunction(() => document.querySelector('.fx-card[data-sid="himari"]')?.classList.contains('ready'));
     await page.locator('.fx-card[data-sid="himari"]').click();
     assert.equal(await page.locator('.brief-recap').isVisible(), true, 'the first cast opens the conclusion box');
-    assert.deepEqual(await page.locator('.brief-docs a, .brief-docs button').allInnerTexts(), [UI.brief.original_doc, E2card.attachments[0].label], 'original and attachment only — no restart (10/10)');
+    assert.deepEqual(await page.locator('.brief-docs a, .brief-docs button').allInnerTexts(), [UI.brief.original_doc, ...E2card.attachments.map((a) => a.label)], 'original and attachments only — no restart (10/10)');
     assert.equal(await page.locator('.fx-side .fx-concl .fx-caption').innerText(), E2card.brief.captions.complete, 'the conclusion line sits under the deck');
     assert.equal(await page.locator('.fx-concl .brief-concl-key').innerText(), UI.brief.conclusion);
     assert.ok(await page.evaluate(() => { const r = document.querySelector('.fx-concl').getBoundingClientRect(); return r.top >= 0 && r.bottom <= innerHeight; }), 'the conclusion line is on screen when the flow ends');
@@ -134,9 +135,23 @@ const UNLOCK = UI.popup.unlock.replace('{action}', UI.common.to_interactive);
     await mountFlow({ hand: ['ui', 'hoshino', 'cherino'], deck: ['himari', 'tomoe', 'haruka'] });
     await test.locator('.fx-card[data-sid="ui"]').evaluate(el => el.click());
     assert.equal(await test.locator('[data-t="runtime"] tr[data-sid="hoshino"] [data-c="ex_skill_cost"]').getAttribute('data-v'), '3');
+    // 우이의 감소는 대상의 다음 EX 2회에만 — 깎인 카드에 남은 횟수, 두 번 쓰면 원래 코스트(10/15 개선본 BUFF_USE_COUNT)
+    assert.equal(await test.locator('.fx-card[data-sid="hoshino"] .fx-card-left').count(), 1, 'the reduced card shows its remaining uses');
+    await test.locator('.fx-card[data-sid="hoshino"]').evaluate(el => el.click());
+    assert.equal(await test.locator('[data-t="runtime"] tr[data-sid="hoshino"] [data-c="ex_skill_cost"]').getAttribute('data-v'), '3', 'one use left keeps the reduced cost');
+    // 우이 → 호시노(1회) → 히마리(호시노가 덱에서 손패로 돌아온다) → 호시노(2회)
+    await mountFlow({ hand: ['ui', 'hoshino', 'cherino'], deck: ['himari'], max_cost: 30, start_cost: 30 });
+    for (const sid of ['ui', 'hoshino', 'himari', 'hoshino']) await test.locator(`.fx-card[data-sid="${sid}"]`).evaluate(el => el.click());
+    assert.equal(await test.locator('[data-t="runtime"] tr[data-sid="hoshino"] [data-c="ex_skill_cost"]').getAttribute('data-v'), '6', 'after two uses the cost returns to 6');
     await mountFlow({ hand: ['hoshino', 'ui', 'cherino'], deck: ['himari', 'tomoe', 'haruka'] });
     await test.locator('.fx-card[data-sid="hoshino"]').evaluate(el => el.click());
     assert.match(await test.locator('.fx-rate').innerText(), /0\.6660/);
+    // 호시노의 회복력 증가는 EX가 지속되는 동안만 — 지나면 원래 회복 속도(10/15 개선본 210501 DURATION)
+    await mountFlow({ hand: ['hoshino', 'ui', 'cherino'], deck: ['himari', 'tomoe', 'haruka'], boost_duration: 0.6, rate: 0.5838 });
+    await test.locator('.fx-card[data-sid="hoshino"]').evaluate(el => el.click());
+    assert.equal(await test.locator('.fx-boost').isVisible(), true, 'the remaining boost time is shown');
+    await page.waitForFunction(() => /0\.5838/.test(document.querySelector('#regression-host .fx-rate').textContent), null, { timeout: 4000 });
+    assert.equal(await test.locator('.fx-boost').isHidden(), true, 'the boost time leaves when the boost ends');
     await page.emulateMedia({ reducedMotion: 'no-preference' });
     await mountFlow();
     await test.locator('.fx-card').first().evaluate(el => el.click());
