@@ -83,6 +83,27 @@ const UNLOCK = UI.popup.unlock.replace('{action}', UI.common.to_interactive);
       assert.ok(onScreen, `the conclusion line is on screen after the first cast at ${w}x${h}`);
       await lap.close();
     }
+    // E6 데이터 테이블 설계도 E7과 같은 인터랙티브를 연다(10/15 사용자 결정 — 데이터 brief_from: E7). 머리말과 짝 지도의 '지금'은 E6의 것
+    {
+      const E6card = EVS.find((e) => e.id === 'E6');
+      const t6 = await browser.newPage({ viewport: { width: 1440, height: 1000 }, reducedMotion: 'reduce' });
+      await t6.route('**/_vercel/**', (r) => r.abort());
+      t6.on('pageerror', (e) => errors.push(e.message));
+      await t6.goto(origin + '/evidence/E6', { waitUntil: 'networkidle' });
+      await t6.getByRole('button', { name: UNLOCK, exact: true }).click(); // 모으기 전 상세 화면 — E7과 같은 '잠금해제하고 요약 인터랙티브 페이지 보기'
+      await t6.waitForURL('**/evidence/E6/interactive');
+      await t6.locator('.fx-card').first().waitFor();
+      assert.equal(await t6.locator('.view-brief .ev-title').innerText(), E6card.title, 'the E6 page keeps its own heading');
+      assert.equal(await t6.locator('.brief-head-doc a').getAttribute('href'), E6card.url, 'the E6 original is the table design deck');
+      assert.equal(await t6.locator('.brief-lead-title').innerText(), E2card.brief.lead.title, 'the lead is the shared E7 interactive');
+      assert.equal(await t6.locator('.brief-lead .docmap .docmap-doc.is-current .docmap-eid').innerText(), 'E6', 'the map marks E6 as the current evidence');
+      assert.equal(await t6.locator('.brief-lead .docmap a.docmap-doc').getAttribute('href'), '/evidence/E7', 'the partner is E7');
+      await t6.waitForFunction(() => document.querySelector('.fx-card[data-sid="himari"]')?.classList.contains('ready'));
+      await t6.locator('.fx-card[data-sid="himari"]').click();
+      assert.equal(await t6.locator('.fx-master-table').count(), 6, 'the same six master tables open on the E6 page');
+      assert.equal(await t6.locator('.brief-recap').isVisible(), true, 'the first cast opens the conclusion box on the E6 page too');
+      await t6.close();
+    }
     const envVisible = await page.evaluate(() => {
       const sc = document.querySelector('.fx-table[data-t="env"] .fx-tscroll');
       const a = sc.getBoundingClientRect(), r = sc.querySelector('td[data-c="current_cost"]').getBoundingClientRect();
@@ -390,6 +411,6 @@ const UNLOCK = UI.popup.unlock.replace('{action}', UI.common.to_interactive);
     await page.waitForTimeout(600);
     assert.equal(await page.evaluate(() => document.getAnimations().filter(a => a.playState === 'running').length), 0);
     assert.deepEqual(errors, []);
-    console.log('PASS: navigation, interruption, cost/queue/reduction/boost, hidden-tab recovery, E7 conclusion after the first cast (under the deck, used cell shown in its box), E7 section labels in soft ink, E1 help bubble that leaves with the cue, one sentence per episode, drag/keyboard, rewind lands on the first call (desktop and phone)/facets, closing line without a left band, end buttons without restart, phone sheets, back to the portfolio lands on the card, reduced motion, fallback.');
+    console.log('PASS: navigation, interruption, cost/queue/reduction/boost, hidden-tab recovery, E6 opens the same interactive under its own heading, E7 conclusion after the first cast (under the deck, used cell shown in its box), E7 section labels in soft ink, E1 help bubble that leaves with the cue, one sentence per episode, drag/keyboard, rewind lands on the first call (desktop and phone)/facets, closing line without a left band, end buttons without restart, phone sheets, back to the portfolio lands on the card, reduced motion, fallback.');
   } finally { await browser.close(); }
 })().catch(e => { console.error(e); process.exitCode = 1; });

@@ -27,8 +27,20 @@ const PLAYS = {
   retro: playRetro, // E3 — 인터랙션 없이 읽는 개발 회고. 브리프가 곧 원문이다
 };
 
+// 인터랙티브를 다른 증거에서 빌려 쓰는 증거가 있다 — 데이터의 brief_from이 그 증거를 가리킨다(10/15 사용자 결정:
+// E6 데이터 테이블 설계를 눌러도 E7 Cost 역기획서와 같은 인터랙티브가 나온다. 둘은 엑셀 하나를 함께 쓰는 짝이다).
+// 본체와 문구는 빌려 온 증거의 것이고, 머리말(번호 · 제목 · 표지 · 원본 문서)과 짝 지도의 '지금 보는 증거'는 이 증거의 것이다.
+// 본체는 설정을 읽기만 하므로 두 증거가 같은 객체를 써도 된다
+export function briefOf(ev) {
+  if (!ev) return null;
+  if (ev.brief) return ev.brief;
+  const src = ev.brief_from ? getCard(ev.brief_from) : null;
+  return (src && src.brief) || null;
+}
+
 export function hasBrief(ev) {
-  return !!(ev && ev.brief && PLAYS[ev.brief.kind]);
+  const b = briefOf(ev);
+  return !!(b && PLAYS[b.kind]);
 }
 
 // 누른 뒤에 볼 것(결론 한 줄 · 다음에 누를 것)이 화면 밖이면 보일 만큼만 화면을 옮긴다(10/11 사용자 결정 재5 —
@@ -77,7 +89,7 @@ function loadMonoKo() {
 // 브리프로 가는 이름표(10/07 사용자 결정): 해 보는 페이지(E1 · E7 · E5 · E2)와 읽는 회고(E3 — 페이지가 곧 원문)를 가른다.
 // 보관함 카드는 evidence.open_*, 진술 팝업 · 증거 상세는 common.to_interactive(같은 문구)
 export function briefOpenKey(ev, where = 'card') {
-  if (ev?.brief?.kind === 'retro') return 'evidence.open_retro';
+  if (briefOf(ev)?.kind === 'retro') return 'evidence.open_retro';
   return where === 'card' ? 'evidence.open_interactive' : 'common.to_interactive';
 }
 
@@ -87,7 +99,7 @@ export function renderBrief(view, eid) {
     navigate('/evidence', { replace: true });
     return {};
   }
-  const b = ev.brief;
+  const b = briefOf(ev);
   const lead = b.lead || {};
   loadMonoKo();
 

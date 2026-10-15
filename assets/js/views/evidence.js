@@ -2,7 +2,7 @@ import { DB, groupCards } from '../data.js';
 import { BASE_EVIDENCE_IDS, state, baseUnlocked } from '../state.js';
 import { addPending, landOne, flyFromRect, openDoc, unlanded, dismissUnlockToast } from '../ui.js';
 import { checkChapterToasts, fmtCase } from '../collect.js';
-import { hasBrief, briefOpenKey } from './brief.js';
+import { hasBrief, briefOf, briefOpenKey } from './brief.js';
 import { landAt, takeLanding } from '../landing.js';
 import { openEvidencePopup, CLOSE_ICON, keepFocusInside } from '../popup.js';
 import { navigate } from '../router.js';
@@ -113,8 +113,8 @@ function esc(s) {
   return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
-// 페이지 안에서 직접 플레이할 수 있는 증거 — 브리프에 플레이 주소(play.href)가 있다(E3). E7의 brief.play는 체험 설정이라 주소가 없다
-const canPlay = (ev) => hasBrief(ev) && !!ev.brief.play?.href;
+// 페이지 안에서 직접 플레이할 수 있는 증거 — 브리프에 플레이 주소(play.href)가 있다(E3). E7의 brief.play는 체험 설정이라 주소가 없다(E6도 E7 것을 빌려 쓴다)
+const canPlay = (ev) => hasBrief(ev) && !!briefOf(ev).play?.href;
 
 // 카드는 철해 둔 파일철이다(10/10 라5 시안 — 종류 태그는 파일철 탭 위, 표지는 클립으로 물린 종이 한 장).
 // 표지는 4:3 칸 안에 통째로 놓는다(10/10 라2 가안 — 전에는 칸을 꽉 채우고 위를 기준으로 잘라 양옆 25~37%가 잘렸다).
