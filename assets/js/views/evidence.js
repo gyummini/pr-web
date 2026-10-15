@@ -7,6 +7,7 @@ import { landAt, takeLanding } from '../landing.js';
 import { openEvidencePopup, CLOSE_ICON, keepFocusInside } from '../popup.js';
 import { navigate } from '../router.js';
 import { T, TH } from '../text.js';
+import { pairMap } from '../docmap.js';
 
 // 수집된 증거 — 증거 보관함 (명세서 2-4)
 export function renderEvidence(view) {
@@ -68,7 +69,37 @@ function groupHtml(g) {
     ? `<h3 class="ev-group-h">${esc(g.label)} <span class="ev-group-n">${g.cards.length}</span></h3>`
     : '';
   return `<section class="ev-group${g.minor ? ' minor' : ''}" data-group="${esc(g.id)}">${head}
-    <div class="ev-cards">${g.cards.map((ev) => cardHtml(ev)).join('')}</div></section>`;
+    <div class="ev-cards">${cardsHtml(g.cards)}</div></section>`;
+}
+
+// 엑셀 하나를 함께 쓰는 짝 증거(E6 데이터 테이블 설계 · E7 Cost 역기획서)는 한 바인더에 철한다(10/15 사용자 제안
+// "두 개의 파일철이 하나를 묶는 느낌"). 두 카드가 번호 순으로 붙어 있을 때만 묶는다 — 격자에서 두 칸을 차지하고, 가운데 등받이에 그 엑셀을 단다
+function cardsHtml(cards) {
+  let out = '';
+  for (let i = 0; i < cards.length; i += 1) {
+    const a = cards[i];
+    const b = cards[i + 1];
+    if (b && a.pair === b.id && b.pair === a.id && pairMap(a)) {
+      out += bundleHtml(a, b);
+      i += 1;
+    } else out += cardHtml(a);
+  }
+  return out;
+}
+
+function bundleHtml(a, b) {
+  const m = pairMap(a);
+  return `
+    <div class="ev-bundle" data-pair="${esc(a.id)} ${esc(b.id)}">
+      <p class="ev-bundle-h">${esc(m.title)}</p>
+      <div class="ev-bundle-row">${cardHtml(a)}
+        <div class="ev-spine">
+          <span class="ev-ring" aria-hidden="true"></span>
+          <a class="ev-spine-hub" href="${esc(m.hub.url)}" target="_blank" rel="noopener"><span class="ev-spine-n">${esc(m.hub.name)}</span><span class="ev-spine-go" aria-hidden="true">↗</span></a>
+          <span class="ev-ring" aria-hidden="true"></span>
+        </div>${cardHtml(b)}
+      </div>
+    </div>`;
 }
 
 // '추가'로 내린 묶음은 따로 센다 — 수집·엔딩 조건과는 별개인 표시일 뿐이다
@@ -82,7 +113,7 @@ function esc(s) {
   return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
-// 페이지 안에서 직접 플레이할 수 있는 증거 — 브리프에 플레이 주소(play.href)가 있다(E3). E6의 brief.play는 체험 설정이라 주소가 없다
+// 페이지 안에서 직접 플레이할 수 있는 증거 — 브리프에 플레이 주소(play.href)가 있다(E3). E7의 brief.play는 체험 설정이라 주소가 없다
 const canPlay = (ev) => hasBrief(ev) && !!ev.brief.play?.href;
 
 // 카드는 철해 둔 파일철이다(10/10 라5 시안 — 종류 태그는 파일철 탭 위, 표지는 클립으로 물린 종이 한 장).
@@ -96,6 +127,9 @@ function cardHtml(ev) {
   // 자기소개서에 나오지 않는 추가 포트폴리오(E4)는 장 이름 없이 번호만. 모으지 않은 카드는 도장이 상태를 말하므로 번호만
   const chs = (ev.chapters || []).map(fmtCase).join(', ');
   const code = got ? (chs ? T('evidence.code', { id: ev.id, chapters: chs }) : ev.id) : ev.id;
+  // 짝 증거의 공유 엑셀은 바인더 등받이에 한 번만 — 카드의 첨부 칩에서는 뺀다(칩 번호 data-att는 원래 자리 그대로)
+  const hubUrl = ev.pair || ev.doc_map ? (pairMap(ev) || { hub: {} }).hub.url : null;
+  const atts = (ev.attachments || []).map((att, i) => ({ att, i })).filter(({ att }) => !hubUrl || att.url !== hubUrl);
   return `
     <div class="ev-card ${got ? 'collected' : 'unknown'}" data-eid="${ev.id}" tabindex="0" role="button">
       <span class="ev-tab"><span class="ev-type"></span></span>
@@ -110,9 +144,9 @@ function cardHtml(ev) {
           // 첨부(실측 데이터·플레이 링크 등)는 목록에서 바로 열 수 있어야 한다.
           // 카드 본체 클릭은 본문 열기이므로 칩은 이벤트를 가로챈다.
           // 페이지 안에서 직접 플레이할 수 있는 증거(E3)는 '직접 플레이' 칩 — E5의 플레이 링크 칩과 같은 자리(10/07)
-          (ev.attachments || []).length || (canPlay(ev))
-            ? `<div class="ev-card-atts">${(ev.attachments || [])
-                .map((_, i) => `<button type="button" class="att-chip card" data-att="${i}"></button>`)
+          atts.length || (canPlay(ev))
+            ? `<div class="ev-card-atts">${atts
+                .map(({ i }) => `<button type="button" class="att-chip card" data-att="${i}"></button>`)
                 .join('')}${canPlay(ev) ? `<button type="button" class="att-chip card play-chip">${TH('evidence.play')}</button>` : ''}</div>`
             : ''
         }
@@ -123,7 +157,7 @@ function cardHtml(ev) {
             // 원본 문서로 바로 가는 길은 카드 안에 남겨둔다.
             // 행동 문구와 한 묶음(.ev-acts) — 자리가 모자라면 묶음째 다음 줄로 내려간다(10/07: 긴 문구에 밀려 카드 밖으로 잘렸다).
             // 수집 여부와 상관없이 원본이 있으면 붙인다(10/07 사용자 요청 — 전에는 수집한 카드에만)
-            // 다만 모은 뒤 주 단추가 이미 원본 문서를 열면(브리프 없는 문서 — E7 · E4) 같은 곳으로 가는 칩은 뺀다(10/11 사용자 결정, 작은 정리 1)
+            // 다만 모은 뒤 주 단추가 이미 원본 문서를 열면(브리프 없는 문서 — E8 · E4) 같은 곳으로 가는 칩은 뺀다(10/11 사용자 결정, 작은 정리 1)
             ev.url && !(got && !hasBrief(ev)) ? `<button type="button" class="ev-direct" title="${TH('evidence.direct_title')}">${TH('evidence.direct')}</button>` : ''
           }</span>
         </div>
@@ -247,7 +281,7 @@ function wireCard(el, view) {
   });
 }
 
-// 보너스 칸(히든 E8 — 클루의 수사 수첩). 위에 두는 것은 일부러다(10/10 사용자 — 해금하자마자 보이게).
+// 보너스 칸(히든 E9 — 클루의 수사 수첩). 위에 두는 것은 일부러다(10/10 사용자 — 해금하자마자 보이게).
 // 대신 상태에 따라 크기를 바꾼다(10/10 라1 다안): 잠겨 있으면 한 줄 띠로 줄여 작업물 카드가 첫 화면에 들어오고,
 // 해금되면 같은 자리에서 짙은 파일철로 펼친다(라4 시안 가 — 금빛 칸 · 자물쇠 대신 파일철과 붉은 도장).
 function renderHiddenSlot(wrap, view, hidden) {
@@ -305,7 +339,7 @@ function renderHiddenSlot(wrap, view, hidden) {
 
   const slot = wrap.querySelector('.hidden-slot');
   const act = () => {
-    // 처음 해금하면 엔딩 대화부터, 이미 본 뒤에는 E8로 바로
+    // 처음 해금하면 엔딩 대화부터, 이미 본 뒤에는 E9로 바로
     if (state.endingSeen) navigate(e7Target);
     else navigate('/ending');
   };

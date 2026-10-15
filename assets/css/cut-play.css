@@ -168,7 +168,7 @@
 .cp[data-phase="final"] .cp-zones { grid-template-columns: minmax(0, .5fr) minmax(0, .5fr) minmax(0, 2fr); }
 
 /* 판단 — 처음 게임을 해 본 뒤에 열린다. 칸은 바탕과 여백으로 갈린다 — 굵은 왼쪽 띠는 절 제목 · 알림 전용 표시라 뺐고(10/11 작은 정리 4),
-   모서리는 위의 게임 판 · 다른 페이지의 칸(E6 조작 칸 등)과 같은 카드 단계다 */
+   모서리는 위의 게임 판 · 다른 페이지의 칸(E7 조작 칸 등)과 같은 카드 단계다 */
 .cp-judge { margin-top: 18px; padding: 18px 20px; background: #f0f1ed; border-radius: var(--radius-card); }
 .cp-judge-eyebrow { display: block; font: 600 var(--text-xs) ui-monospace, Consolas, "Noto Sans KR", monospace; letter-spacing: .04em; color: var(--rd-mute); margin-bottom: 10px; }
 .cp-evidence { display: grid; gap: 6px; margin: 0 0 14px; }

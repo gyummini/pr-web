@@ -5,7 +5,7 @@ import { sdSprite } from '../sprites.js';
 import { figureHtml } from '../figures.js';
 import { navigate } from '../router.js';
 
-// E8 히든 포트폴리오 — 제작기 열람 페이지 (/making).
+// E9 히든 포트폴리오 — 제작기 열람 페이지 (/making).
 // 외부 문서가 아니라 사이트 내 페이지. 원고는 콘텐츠_제작기.md에서 로드.
 // 각 장: [요약] 상시 노출 + [상세] 아코디언(기본 접힘). 상세 없는 장은 전문 노출.
 export function renderMaking(view) {

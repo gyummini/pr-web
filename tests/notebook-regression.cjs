@@ -385,10 +385,15 @@ const IMG = /memo_\d|notebook_photo_\d/;
         BASE_EVIDENCE_IDS.forEach((id) => state.collected.add(id));
         (await import('/assets/js/router.js')).navigate('/ending');
       });
+      // 장면 위에서는 지금 탭 아래 종이 띠(::after)를 그리지 않는다 — 10/15 사용자 지적: 엔딩 그림 위로 6px 삐져나왔다
+      const tabTail = () => page.evaluate(() => getComputedStyle(document.querySelector('#tabs a.active'), '::after').content);
+      await page.locator('.view-ending').waitFor();
+      assert.equal(await tabTail(), 'none', 'no paper strip under the active tab over the ending scene');
       await page.locator('.view-ending .skip-btn').click();
       await page.waitForURL('**/notebook');
       await page.locator('.nb-page.active').first().waitFor();
-      assert.match(await page.locator('#badge').innerText(), /8\/8/);
+      assert.equal(await tabTail(), 'none', 'no paper strip under the active tab over the notebook desk');
+      assert.match(await page.locator('#badge').innerText(), /9\/9/); // 10/15 E6(데이터 테이블 설계)을 더해 기본 여덟 + 히든
       await page.close();
     }
 

@@ -190,7 +190,7 @@ const ch = (no) => `.lg-ch[data-chapter="${no}"]`;
       assert.deepEqual(narrow, { stacked: true, columns: true, joins: true }, `the map stacks on phones (${width}px)`);
     }
 
-    // 보관함 · 진술 팝업의 이름표 — 해 보는 페이지(E1 · E6 · E5 · E2)와 읽는 회고(E3)를 가른다(10/07 사용자 확정 문구).
+    // 보관함 · 진술 팝업의 이름표 — 해 보는 페이지(E1 · E7 · E5 · E2)와 읽는 회고(E3)를 가른다(10/07 사용자 확정 문구).
     // E3 카드의 '직접 플레이' 칩은 키를 발급하지 않고 E3 페이지의 직접 플레이 버튼으로 데려가 초점과 표시를 둔다(버튼은 누르지 않는다)
     const UI = JSON.parse(fs.readFileSync(path.join(__dirname, '..', '콘텐츠_화면문구.json'), 'utf8'));
     const shelf = await browser.newPage({ viewport: { width: 1440, height: 900 } });
@@ -200,12 +200,12 @@ const ch = (no) => `.lg-ch[data-chapter="${no}"]`;
     await shelf.goto(origin + '/evidence');
     await shelf.locator('.ev-grid').waitFor();
     // 아직 모으지 않은 카드는 블러 그대로 '요약 확인' — 누르면 수집하지 않고 요약 팝업이 뜬다(10/07 사용자 결정)
-    for (const id of ['E1', 'E6', 'E5', 'E2', 'E7', 'E3', 'E4']) assert.equal(await shelf.locator(`.ev-card[data-eid="${id}"] .ev-open`).innerText(), UI.evidence.open_summary, id);
+    for (const id of ['E1', 'E7', 'E5', 'E2', 'E8', 'E3', 'E4']) assert.equal(await shelf.locator(`.ev-card[data-eid="${id}"] .ev-open`).innerText(), UI.evidence.open_summary, id);
     assert.equal(await shelf.locator('.play-chip').count(), 1, 'only E3 plays inside its page');
     const unlock = (action) => UI.popup.unlock.replace('{action}', action);
     const badge = () => shelf.locator('#badge').innerText();
     const before = await badge();
-    for (const [id, action] of [['E2', UI.common.to_interactive], ['E3', UI.evidence.open_retro], ['E7', UI.common.open_doc]]) {
+    for (const [id, action] of [['E2', UI.common.to_interactive], ['E3', UI.evidence.open_retro], ['E8', UI.common.open_doc]]) {
       await shelf.locator(`.ev-card[data-eid="${id}"]`).click();
       assert.deepEqual(await shelf.locator('.popup-actions .btn').allInnerTexts(), [UI.popup.to_statement, unlock(action)], `${id} shelf popup buttons`);
       assert.equal(await shelf.locator('.popup .ev-memo .memo').count(), 1, `${id} shows the summary memo`);
@@ -241,27 +241,27 @@ const ch = (no) => `.lg-ch[data-chapter="${no}"]`;
     // 장을 떠나면 그 장의 증거는 자동 수집된다(원래 규칙) — 보관함으로 돌아오면 E1이 수집돼 있다
     await shelf.locator('#tabs a[data-tab="evidence"]').click();
     await shelf.locator('.ev-card.collected[data-eid="E1"]').waitFor();
-    // 잠금해제하고 ○○ — 수집하고 바로 연다: 원본 문서(E7 — 10/10 E4를 뺀 뒤 같은 종류)는 새 탭 + 카드가 수집으로 뒤집힌다, 인터랙티브(E6)는 그 페이지로
+    // 잠금해제하고 ○○ — 수집하고 바로 연다: 원본 문서(E8 — 10/10 E4를 뺀 뒤 같은 종류)는 새 탭 + 카드가 수집으로 뒤집힌다, 인터랙티브(E7)는 그 페이지로
     await shelf.evaluate(() => { window.__opened = []; window.open = (u) => { window.__opened.push(u); return null; }; });
-    await shelf.locator('.ev-card[data-eid="E7"]').click();
+    await shelf.locator('.ev-card[data-eid="E8"]').click();
     await shelf.getByRole('button', { name: unlock(UI.common.open_doc), exact: true }).click();
-    await shelf.locator('.ev-card.collected[data-eid="E7"]').waitFor();
-    assert.deepEqual(await shelf.evaluate(() => window.__opened), [EVS.find((e) => e.id === 'E7').url]);
-    assert.equal(await shelf.locator('.ev-card[data-eid="E7"] .ev-open').innerText(), UI.common.open_doc);
-    // 숨은 증거 칸의 8칸 눈금(10/10 라3) — 모은 증거 칸이 채워지고, 묶음 이름이 '증거 n / 7 수집'을 읽는다
+    await shelf.locator('.ev-card.collected[data-eid="E8"]').waitFor();
+    assert.deepEqual(await shelf.evaluate(() => window.__opened), [EVS.find((e) => e.id === 'E8').url]);
+    assert.equal(await shelf.locator('.ev-card[data-eid="E8"] .ev-open').innerText(), UI.common.open_doc);
+    // 숨은 증거 칸의 눈금(10/10 라3) — 모은 증거 칸이 채워지고, 묶음 이름이 '증거 n / 8 수집'을 읽는다(10/15 E6 데이터 테이블 설계를 더해 기본 증거 여덟)
     const meterIs = async (n) => {
-      assert.equal(await shelf.locator('.hidden-meter').getAttribute('aria-label'), UI.evidence.hidden_progress.replace('{n}', String(n)).replace('{total}', '7'));
+      assert.equal(await shelf.locator('.hidden-meter').getAttribute('aria-label'), UI.evidence.hidden_progress.replace('{n}', String(n)).replace('{total}', '8'));
       assert.equal(await shelf.locator('.hidden-meter .hm-cell.on').count(), n, `${n} cells filled`);
     };
     await meterIs(2);
-    // 10/11(2) 사용자 결정 — 잠긴 띠는 종이(마닐라) 톤, 눈금 칸은 둥근 번호 도장, 주 단추가 이미 원본을 여는 카드(E7)에는 '원본' 칩이 없다
+    // 10/11(2) 사용자 결정 — 잠긴 띠는 종이(마닐라) 톤, 눈금 칸은 둥근 번호 도장, 주 단추가 이미 원본을 여는 카드(E8)에는 '원본' 칩이 없다
     const locked = await shelf.locator('.hidden-slot.locked').evaluate((el) => getComputedStyle(el).backgroundColor);
     assert.equal(locked, 'rgb(241, 233, 214)', 'the locked bonus strip is manila paper, not the dark folder');
     const onCell = await shelf.locator('.hidden-meter .hm-cell.on').first().evaluate((el) => ({ radius: getComputedStyle(el).borderTopLeftRadius, color: getComputedStyle(el).borderTopColor, text: el.textContent }));
     assert.equal(onCell.radius, '50%', 'a filled meter cell is a round seal');
     assert.equal(onCell.color, 'rgb(178, 58, 47)');
     assert.match(onCell.text, /^E\d+$/, 'the seal carries the evidence number');
-    assert.equal(await shelf.locator('.ev-card[data-eid="E7"] .ev-direct').count(), 0, 'no duplicate original chip when the main button already opens the original');
+    assert.equal(await shelf.locator('.ev-card[data-eid="E8"] .ev-direct').count(), 0, 'no duplicate original chip when the main button already opens the original');
     // E4(추가 포트폴리오, 10/08) — 10/09부터 에필로그 끝 '참고' 줄에 나오고 센다(사용자 결정): 보관함 요약에서 그 줄로 갈 수 있고 머리글은 EPILOGUE,
     // 잠금해제하면 배지로 날아 수집 개수(배지 · 수첩 진행)에 든다
     const bump = (b) => b.replace(/^\d+/, (n) => String(Number(n) + 1));
@@ -304,12 +304,12 @@ const ch = (no) => `.lg-ch[data-chapter="${no}"]`;
       assert.equal(await done.count(), 1, `epilogue chapter-complete toast once (${press ? 'pressed' : 'left the chapter'})`);
       await ep.close();
     }
-    await shelf.locator('.ev-card[data-eid="E6"]').click();
+    await shelf.locator('.ev-card[data-eid="E7"]').click();
     await shelf.getByRole('button', { name: unlock(UI.common.to_interactive), exact: true }).click();
-    await shelf.waitForURL('**/evidence/E6/interactive');
+    await shelf.waitForURL('**/evidence/E7/interactive');
     await shelf.locator('#tabs a[data-tab="evidence"]').click();
-    await shelf.locator('.ev-card.collected[data-eid="E6"]').waitFor();
-    assert.equal(await shelf.locator('.ev-card[data-eid="E6"] .ev-open').innerText(), UI.evidence.open_interactive);
+    await shelf.locator('.ev-card.collected[data-eid="E7"]').waitFor();
+    assert.equal(await shelf.locator('.ev-card[data-eid="E7"] .ev-open').innerText(), UI.evidence.open_interactive);
     // '원본 ↗'은 수집하지 않은 카드에도 — 원본이 있는 증거 전부(E3은 페이지가 곧 원문이라 없다)(10/07 사용자 요청)
     const unknownIds = await shelf.locator('.ev-card.unknown').evaluateAll((els) => els.map((e) => e.dataset.eid));
     assert.equal(await shelf.locator('.ev-card.unknown .ev-direct').count(), unknownIds.filter((id) => EVS.find((e) => e.id === id).url).length, 'every uncollected card with an original has the shortcut');
@@ -322,7 +322,7 @@ const ch = (no) => `.lg-ch[data-chapter="${no}"]`;
     for (const [w, h] of [[1440, 900], [390, 844]]) {
       const det = await browser.newPage({ viewport: { width: w, height: h } });
       await det.route('**/_vercel/**', (r) => r.abort());
-      await det.goto(origin + '/evidence/E6', { waitUntil: 'networkidle' });
+      await det.goto(origin + '/evidence/E7', { waitUntil: 'networkidle' });
       await det.locator('.detail-cover img').waitFor();
       const at = await det.evaluate(() => {
         const c = document.querySelector('.detail-cover').getBoundingClientRect();
@@ -357,7 +357,7 @@ const ch = (no) => `.lg-ch[data-chapter="${no}"]`;
     // 종이와 문장 사이에 위치 기준이 되는 상자가 없어야 포스트잇이 글 칸 안으로 들어오지 않는다
     for (const width of [1440, 390]) {
       await shelf.setViewportSize({ width, height: 900 });
-      const flags = await shelf.evaluate(() => ['E3', 'E6'].map((id) => {
+      const flags = await shelf.evaluate(() => ['E3', 'E7'].map((id) => {
         const a = document.querySelector(`.essay-body .anchor[data-eid="${id}"]`);
         a.scrollIntoView({ block: 'center' });
         const paper = a.closest('.paper');
@@ -370,7 +370,7 @@ const ch = (no) => `.lg-ch[data-chapter="${no}"]`;
       }));
       assert.deepEqual(flags, [
         { id: 'E3', staticPath: true, onFlag: true, color: 'rgb(178, 58, 47)', check: true },
-        { id: 'E6', staticPath: true, onFlag: true, color: 'rgb(178, 58, 47)', check: false },
+        { id: 'E7', staticPath: true, onFlag: true, color: 'rgb(178, 58, 47)', check: false },
       ], `[new] a red flag peeks out left of the paper beside each evidence sentence, checked once collected (${width}px)`);
     }
     await shelf.setViewportSize({ width: 1440, height: 900 });

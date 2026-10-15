@@ -33,7 +33,7 @@
   --text-2xl: 1.6rem;  /* 25.6px — 장 제목 */
   --text-3xl: 2rem;    /* 32px — 큰 제목(수첩 쪽 제목 · E3 첫 줄) */
   --text-4xl: 3rem;    /* 48px — 가장 큰 단계(10/11 수첩 표지가 이름표 하나가 되며 3xl로 내려 지금은 쓰는 곳이 없다) */
-  /* 모서리 5단계(10/09 — 22가지를 정리). 여러 값으로 모양을 만드는 것(탭 끝 · 수첩 종이 · 말풍선 · E6 도표 기호 · E5 돌)은 단계 밖 */
+  /* 모서리 5단계(10/09 — 22가지를 정리). 여러 값으로 모양을 만드는 것(탭 끝 · 수첩 종이 · 말풍선 · E7 도표 기호 · E5 돌)은 단계 밖 */
   --radius-tag: 3px;      /* 태그 · 작은 칸 · 그림 모서리 */
   --radius-button: 6px;   /* 버튼 · 탭 · 목차 줄 · 말풍선 */
   --radius-card: 8px;     /* 카드 · 패널 · 팝업 · 대사창 */
@@ -53,7 +53,7 @@
      수집 비행 · E1 비행)은 단계 밖 — 값을 바꾸면 JS와 어긋난다 */
   --motion-fast: 180ms;   /* 마우스 올림 · 누름 · 페이지 바뀜 */
   --motion-page: 380ms;   /* 칸 · 알림 · 강조가 나타나고 사라짐 */
-  --motion-slow: 560ms;   /* 판 · 칸의 배치가 바뀜(E6 판 펼침과 같은 길이) */
+  --motion-slow: 560ms;   /* 판 · 칸의 배치가 바뀜(E7 판 펼침과 같은 길이) */
   --motion-ease: cubic-bezier(.22,.61,.36,1);
   /* 종이 재질(10/10 나1 · 나2) — 오프닝 표지의 결을 본편 종이에 옅게 잇는다. 그림 파일 없이 SVG 잡음 한 칸(160px)을 깔아 되풀이한다.
      글자 대비에 닿지 않을 만큼 옅다(가장 진한 점도 알파 .09 안팎) */
@@ -135,6 +135,8 @@ button { font-family: inherit; }
 #tabs a.active { color: var(--ink); font-weight: 700; background: var(--paper-dark); box-shadow: inset 0 3px 0 var(--accent); }
 /* 머리말 아래 그림자가 탭과 종이 사이를 가르지 않게, 탭 아래를 몇 px 더 칠한다 */
 #tabs a.active::after { content: ''; position: absolute; left: 0; right: 0; bottom: -6px; height: 6px; background: var(--paper-dark); }
+/* 아래가 종이 바탕이 아닌 화면(인터랙티브 페이지 · 엔딩 장면 · 수첩)에는 이어 칠할 종이가 없다 — 띠가 장면 그림이나 흰 바탕 위로 삐져나와 보였다(10/15 사용자 지적) */
+:root:has(.view-brief, .view-ending, .view-notebook) #tabs a.active::after { content: none; }
 #tabs a.active:hover { background: var(--paper-dark); }
 /* 배지 — 도장 찍힌 숫자(10/11 재3): 붉은 칸 안쪽에 얇은 흰 고리, 가장자리는 잉크 번짐(#ink-rough), 살짝 기울인 도장. 전에는 알약 */
 .badge {
@@ -223,7 +225,7 @@ button { font-family: inherit; }
 .btn.accent { background: var(--accent); border-color: var(--accent); color: var(--on-fill); }
 .btn.accent:hover { background: var(--accent-hover); }
 .btn.ghost { background: transparent; }
-/* 증거 머리 줄('증거 E6 · 시스템 역기획서') — 한글이 섞여 대문자 변환은 소용이 없고 넓은 자간은 글자를 흩어 놓는다(10/06, DESIGN.md 3절).
+/* 증거 머리 줄('증거 E7 · 시스템 역기획서') — 한글이 섞여 대문자 변환은 소용이 없고 넓은 자간은 글자를 흩어 놓는다(10/06, DESIGN.md 3절).
    영문(CASE 01 · EPILOGUE)은 데이터가 이미 대문자다 */
 .ev-kicker {
   font-size: var(--text-sm); font-weight: 700; letter-spacing: .04em;
@@ -597,7 +599,7 @@ html.night .scene { background-image: url('../img/bg_office_night.jpg'); }
 /* ---------- 기본 사항 (조서) ---------- */
 /* 제목 '이력서'는 종이 위에 걸친 탭(10/10 나2 추가 시안 다) — 한글이라 자간은 넓히지 않는다(DESIGN.md 3절) */
 .paper.record.filed { margin-top: 62px; }
-/* 요약 화면(10/11 재2 · 재3) — 머리 줄('증거 E7 · 첫 등장: CASE 04')이 종이 위 탭, 클립, 표지는 카드와 같은 클립에 물린 종이 한 장 */
+/* 요약 화면(10/11 재2 · 재3) — 머리 줄('증거 E8 · 첫 등장: CASE 04')이 종이 위 탭, 클립, 표지는 카드와 같은 클립에 물린 종이 한 장 */
 .paper.detail.filed { margin-top: 62px; }
 .detail .file-tab.detail-tab { font-size: var(--text-sm); letter-spacing: .02em; } /* 한글이 든 탭 — 자간을 넓히지 않는다 */
 .detail-cover { position: relative; width: min(400px, 100%); aspect-ratio: 4 / 3; margin: 4px 0 18px; }
@@ -816,7 +818,7 @@ html.night .scene { background-image: url('../img/bg_office_night.jpg'); }
   font-size: var(--text-xs); font-weight: 800; letter-spacing: .04em;
 }
 .hidden-slot.unlocked .hidden-kicker { margin-bottom: 4px; }
-/* 봉인 도장 — 잠김은 작은 붉은 고리(가로줄 하나로 닫힘), 해금은 종이 원 위의 겹고리 + 체크. 글자 없이 모양으로 말한다 */
+/* 봉인 도장 — 잠김은 작은 붉은 고리 안의 열쇠 구멍, 해금은 종이 원 위의 겹고리 + 열린 자물쇠. 글자 없이 모양으로 말한다 */
 .hidden-seal {
   position: relative; flex: none; width: 28px; height: 28px; border-radius: var(--radius-circle);
   border: 2px solid var(--accent); box-shadow: inset 0 0 0 3px var(--manila), inset 0 0 0 4.5px var(--accent); /* 고리 사이는 띠의 종이색 */
@@ -825,15 +827,23 @@ html.night .scene { background-image: url('../img/bg_office_night.jpg'); }
 /* 잠김 — 열쇠 구멍(위 원 + 아래로 벌어진 다리). 가로줄 하나는 '진입 금지' 표지처럼 읽혔다(10/10 재채점) */
 .hidden-seal::after { content: ''; position: absolute; left: 50%; top: 6px; width: 7px; height: 7px; margin-left: -3.5px; border-radius: var(--radius-circle); background: var(--accent); }
 .hidden-seal::before { content: ''; position: absolute; left: 50%; top: 11px; width: 6px; height: 8px; margin-left: -3px; background: var(--accent); clip-path: polygon(30% 0, 70% 0, 100% 100%, 0 100%); }
-.hidden-seal.open::before { content: none; }
 .hidden-seal.open {
   width: 58px; height: 58px; border-width: 2.5px; background: var(--manila);
   box-shadow: inset 0 0 0 4px var(--manila), inset 0 0 0 5.5px var(--accent), var(--shadow-card);
   filter: url(#ink-rough);
 }
+/* 해금 — 열린 자물쇠. 잠김 쪽의 열쇠 구멍, 진행 칸 끝의 잠긴 자물쇠와 짝이다. 고리의 왼쪽 다리는 몸통에 꽂힌 채 오른쪽이 들린다.
+   10/15 사용자 지적 — 전에는 체크였는데, 잉크 번짐과 기울기 때문에 'J'자처럼 보여 무슨 표시인지 읽히지 않았다.
+   크기는 도장 안쪽에 대한 비율이라 휴대폰의 작은 도장(46px)에서도 같은 모양이다 */
+.hidden-seal.open::before {
+  content: ''; left: 35.8%; top: 24.5%; width: 28.3%; height: 26.4%; margin: 0; box-sizing: border-box;
+  background: none; clip-path: none;
+  border: 3px solid var(--accent); border-bottom: 0; border-radius: 999px 999px 0 0;
+  transform: rotate(-24deg); transform-origin: 1.5px 100%;
+}
 .hidden-seal.open::after {
-  left: 20px; right: auto; top: 13px; width: 12px; height: 22px; margin: 0; background: none;
-  border: solid var(--accent); border-width: 0 3px 3px 0; transform: rotate(42deg);
+  left: 50%; top: 47.2%; width: 41.5%; height: 32%; margin: 0 0 0 -20.75%; border-radius: 3px;
+  background: var(--accent);
 }
 /* 진행 칸 여덟 개(10/10 라3) — 기본 증거 일곱 + 잠긴 수첩 하나. 배지 n/8과 같은 것을 센다. 빈 칸은 누르면 그 증거의 요약 팝업 */
 /* 눈금 칸 — 목차 칸과 같은 둥근 칸(10/11 기회 1). 모은 칸은 번호 도장, 빈 칸은 점선 원 안의 흐린 번호(누르면 그 증거의 요약 팝업) */
@@ -992,7 +1002,7 @@ button.hm-cell:hover { border-style: solid; border-color: var(--ink-soft); color
 .view-detail .ev-sub, .view-making .ev-sub { margin: 0; color: var(--ink-soft); }
 .making-divider { border: none; border-top: 1px dashed var(--line); margin: 34px 0 6px; }
 
-/* ---------- E8 제작기 문서 ---------- */
+/* ---------- E9 제작기 문서 ---------- */
 .making-doc { max-width: 780px; }
 .mk-doc-title { margin: 8px 0 2px; font-size: var(--text-2xl); }
 .mk-chapters { margin-top: 30px; }
@@ -1271,7 +1281,7 @@ button.hm-cell:hover { border-style: solid; border-color: var(--ink-soft); color
   .hidden-slot-actions { margin-left: 0; }
   .hidden-slot.unlocked { padding: 18px; align-items: flex-start; }
   .hidden-slot.unlocked .hidden-seal { width: 46px; height: 46px; }
-  .hidden-slot.unlocked .hidden-seal::after { left: 15px; top: 9px; width: 10px; height: 18px; }
+  .hidden-slot.unlocked .hidden-seal::before { border-width: 2.5px; }
   .hidden-slot.unlocked .hidden-info { flex: 1 1 calc(100% - 66px); } /* 봉인(46px)과 사이(20px) 옆의 한 줄을 다 쓴다 */
   .hidden-slot.unlocked .ev-open { flex: 1 1 100%; margin-left: 0; text-align: center; white-space: normal; }
   /* 알림은 화면 위쪽(머리말 아래)에 — 아래에 두면 다음 장 단추를 덮었다(10/10 휴대폰 — 단추의 72%를 3.2초) */
@@ -1352,7 +1362,7 @@ body.plain-mode #view { min-height: 100vh; }
   .docs-actions .btn { width: 100%; justify-content: center; }
 }
 
-/* ==================== E8 클루의 수사 수첩 (/notebook) ==================== */
+/* ==================== E9 클루의 수사 수첩 (/notebook) ==================== */
 /* 클루의 손글씨 — 교보 손글씨 2025 lyb (자체 호스팅, 상용 한글 서브셋 WOFF2) */
 @font-face {
   font-family: 'Kyobo Handwriting 2025 lyb';
@@ -2091,7 +2101,7 @@ body.plain-mode #view { min-height: 100vh; }
 }
 
 /* ---------- 증거 요약 메모 (팝업) ----------
-   수사 수첩(E8)의 시각 언어를 축소해 가져온다: 괘선 종이 / 좌측 붉은 마진선 /
+   수사 수첩(E9)의 시각 언어를 축소해 가져온다: 괘선 종이 / 좌측 붉은 마진선 /
    인덱스 탭 / 포스트잇. 다만 손글씨 폰트는 수첩 전용으로 남기고 본문 서체를 쓴다. */
 .ev-memo:empty { display: none; }
 .memo {
@@ -2371,19 +2381,26 @@ body.plain-mode #view { min-height: 100vh; }
 .memo-cmp-core { grid-row: 2; grid-column: 1 / -1; justify-self: center; max-width: 16em; margin-top: 10px; text-align: center; }
 .memo-cmp-core::before { content: ''; display: block; width: 22px; height: 2px; margin: 0 auto 6px; background: var(--nb-red); }
 
-/* E6 mapping — 요소마다 요구되는 것으로 화살표, 세 줄을 아래에서 묶는 괄호가 결론으로 모인다 */
-.memo-map-head, .memo-map-row {
-  display: grid; grid-template-columns: 5.6em 20px minmax(0, 1fr); column-gap: 8px; align-items: center;
+/* E7 · E6 mapping — 요소마다 요구되는 것으로 화살표, 줄들을 아래에서 묶는 괄호가 결론으로 모인다.
+   왼쪽 칸은 가장 긴 이름에 맞춰 넓어지되 상자의 40%에서 멈추고, 5.6em보다 좁아지지는 않는다(10/15 — E6은 '캐릭터 스킬' 이름이 길다).
+   줄마다 칸이 어긋나지 않게 상자 하나의 격자를 머리줄과 각 줄이 subgrid로 나눠 쓴다 */
+.memo-map { display: grid; grid-template-columns: fit-content(40%) 20px minmax(0, 1fr); column-gap: 8px; }
+.memo-map > * { grid-column: 1 / -1; }
+.memo-map-head, .memo-map-rows, .memo-map-row {
+  display: grid; grid-column: 1 / -1; column-gap: 8px;
+  grid-template-columns: 5.6em 20px minmax(0, 1fr); /* subgrid를 모르는 브라우저는 예전 칸 너비 */
+  grid-template-columns: subgrid;
 }
+.memo-map-head, .memo-map-row { align-items: center; }
 .memo-map-head { margin-bottom: 4px; }
 .memo-map-h { font-size: var(--text-xs); color: var(--nb-muted); }
 .memo-map-h + .memo-map-h { grid-column: 3; }
-.memo-map-rows { position: relative; display: grid; gap: 4px; padding-bottom: 14px; }
+.memo-map-rows { position: relative; row-gap: 4px; padding-bottom: 14px; }
 .memo-map-rows::after {
   content: ''; position: absolute; left: 4px; right: 4px; bottom: 0; height: 9px;
   border: 1.5px solid var(--nb-red); border-top: 0; border-radius: 0 0 8px 8px;
 }
-.memo-map-l { font-size: var(--text-sm); font-weight: 700; color: var(--nb-ink); }
+.memo-map-l { min-width: 5.6em; font-size: var(--text-sm); font-weight: 700; color: var(--nb-ink); text-wrap: balance; }
 .memo-map-r { font-size: var(--text-sm); color: var(--nb-ink-soft); }
 .memo-map-conv { position: relative; margin-top: 18px; text-align: center; }
 /* 괄호 가운데에서 결론으로 내려오는 줄기와 꺾쇠 */
@@ -2459,7 +2476,7 @@ body.plain-mode #view { min-height: 100vh; }
 }
 .memo-gra-label { font-size: var(--text-xs); color: var(--nb-muted); margin-top: 5px; }
 
-/* E7 split — 한 줄의 막대(같은 일)를 두 칸으로. 칸 사이 꺾쇠가 진행 방향, 무게를 옮긴 칸이 더 넓다 */
+/* E8 split — 한 줄의 막대(같은 일)를 두 칸으로. 칸 사이 꺾쇠가 진행 방향, 무게를 옮긴 칸이 더 넓다 */
 .memo-spl-title {
   font-size: var(--text-sm); font-weight: 700; text-align: center; margin-bottom: 6px; color: var(--nb-ink-soft);
 }
@@ -2500,7 +2517,9 @@ body.plain-mode #view { min-height: 100vh; }
   .memo-bri-link.from::before, .memo-bri-link.to::after { left: 0; right: auto; width: 2px; height: 11.5px; }
   .memo-bri-link.from::before { top: auto; bottom: 100%; }
   .memo-bri-link.to::after { top: 100%; }
-  .memo-map-head, .memo-map-row { grid-template-columns: 5.2em 16px minmax(0, 1fr); column-gap: 6px; }
+  .memo-map { grid-template-columns: fit-content(42%) 16px minmax(0, 1fr); column-gap: 6px; }
+  .memo-map-head, .memo-map-rows, .memo-map-row { column-gap: 6px; }
+  .memo-map-l { min-width: 5.2em; }
   /* 나침반: 팩 → 기준 → 줄기가 두 갈래로 갈라져 갈림길을 반씩 매단다(┌─┴─┐). 줄기 끝 화살촉은 위(기준 쪽) — E3 페이지 지도의 좁은 칸과 같다 */
   .memo-cmp { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
   .memo-cmp-pack { grid-row: 1; grid-column: 1 / -1; justify-self: center; width: 46px; }
@@ -2793,11 +2812,11 @@ body.plain-mode #view { min-height: 100vh; }
 .brief-docs { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 20px; }
 
 /* ---------- 결론 한 줄 — 다섯 페이지 공통 부품(10/10 사용자 동의 마6) ----------
-   조작 바로 뒤에 오는 한 줄 결론(DESIGN.md 13절 원칙 3). 같은 역할의 줄이 E1 34.5px 큰 제목 · E6 붉은 왼쪽 띠 13.8px ·
+   조작 바로 뒤에 오는 한 줄 결론(DESIGN.md 13절 원칙 3). 같은 역할의 줄이 E1 34.5px 큰 제목 · E7 붉은 왼쪽 띠 13.8px ·
    E5 굵은 16px · E2 초록 네모 14.7px로 달랐다 → 작은 이름표 아래 17px(--text-lg) 굵은(800) 한 줄. 크기 · 표시는 같고 색만 페이지 색을 따른다
    (--concl-key 이름표 · --concl-ink 글 — 페이지 팔레트가 정한다). 붉은 왼쪽 띠는 절 제목 · 알림 전용이라 쓰지 않는다.
    줄이 비어 있는 동안(조작 전)은 이름표까지 통째로 숨는다.
-   기본(E6 팔레트)의 이름표는 보조 글자색 — 10/11 작은 정리 2(전에는 도장 레드라 E6 구역 이름표와 함께 붉은 이름표가 다섯이었다). E1 · E5 · E2는 각자 정한다 */
+   기본(E7 팔레트)의 이름표는 보조 글자색 — 10/11 작은 정리 2(전에는 도장 레드라 E7 구역 이름표와 함께 붉은 이름표가 다섯이었다). E1 · E5 · E2는 각자 정한다 */
 .view-brief { --concl-key: var(--fx-soft); --concl-ink: var(--fx-ink); }
 .brief-concl:has(> .brief-concl-line:empty) { display: none; }
 .brief-concl-key {
@@ -3593,7 +3612,7 @@ body.plain-mode #view { min-height: 100vh; }
 ::view-transition-old(evidence-title), ::view-transition-new(evidence-title) { height: 100%; }
 ::view-transition { pointer-events: none; }
 @media (prefers-reduced-motion: reduce) {
-  /* body에 바로 붙는 연출(E1 되감기 막 · 날아가는 명찰, E6 날아가는 카드, 수집 비행)은 #view 밖이라 빠져 있었다(10/06 점검) */
+  /* body에 바로 붙는 연출(E1 되감기 막 · 날아가는 명찰, E7 날아가는 카드, 수집 비행)은 #view 밖이라 빠져 있었다(10/06 점검) */
   #view, #view *, #view *::before, #view *::after,
   #fly-root *, #toast-root *, .cc-flyer, .cc-token, .cc-rewinding, .fx-ghost { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
   ::view-transition-group(*) { animation-duration: 0s !important; }
@@ -3695,7 +3714,7 @@ body.plain-mode #view { min-height: 100vh; }
 }
 .fx-node[data-k='state'] .fx-node-n { color: var(--fx-state-ink); }
 
-/* ---------- E6 · 처음에는 조작 칸만(10/06 사용자 결정) ----------
+/* ---------- E7 · 처음에는 조작 칸만(10/06 사용자 결정) ----------
    플레이어가 보는 화면(Cost · 손패 · 덱)을 판 가운데에 먼저 세운다. 스킬을 처음 누르면 .fx-closed가 빠지며
    칸은 왼쪽 첫 열로 옮겨 가고, 그 오른쪽으로 플로우 차트와 두 표 무리가 펼쳐진다(flow.js open()).
    닫힌 동안의 칸은 넓으니 글자를 하한(12px) 위로 올려 둔다 — 펼쳐지면 원래 배치 그대로
@@ -3742,7 +3761,7 @@ body.plain-mode #view { min-height: 100vh; }
 .cc-quiz { margin-top: 20px; gap: 48px; }
 .cc-quiz-side .cc-cards { flex-direction: column; align-items: stretch; width: auto; gap: 10px; margin-top: 18px; }
 .cc-quiz-side .cc-plate { text-align: left; }
-.cc-quiz-side .cc-cards + .cc-match-help { margin-top: 16px; } /* 꼬리 끝이 '지금 누를 것' 테두리(카드 묶음 바깥 7px)에 닿지 않게 — E6 손패 위 말풍선과 같은 간격 */
+.cc-quiz-side .cc-cards + .cc-match-help { margin-top: 16px; } /* 꼬리 끝이 '지금 누를 것' 테두리(카드 묶음 바깥 7px)에 닿지 않게 — E7 손패 위 말풍선과 같은 간격 */
 .cc-quiz-side .cc-quiz-count { margin-top: 14px; padding-top: 10px; font-size: var(--text-xl); }
 .cc-quiz-side .cc-skip { margin-top: 10px; }
 .cc-match .cc-slot-face { aspect-ratio: 4 / 3; object-position: 50% 22%; }
@@ -3844,7 +3863,7 @@ body.plain-mode #view { min-height: 100vh; }
   .cc-fig img { max-height: 24vh; }
 }
 
-/* ---------- 문서 지도(10/15 — E6: 문서 두 개가 엑셀 하나를 함께 쓴다) ----------
+/* ---------- 짝 증거 지도(10/15 — E6 데이터 테이블 설계 · E7 Cost 역기획서가 엑셀 하나를 함께 쓴다) ----------
    두 문서는 종이 한 장(접힌 모서리), 가운데 엑셀은 칸 무늬가 비치는 시트. 잇는 선은 점선 실(수사 보드의 실과 같은 결).
    칸마다 누르면 그 문서가 새 탭으로 열린다. 좁은 화면에서는 세로로 쌓고 실도 세로로 */
 .docmap { margin: 18px 0 4px; display: grid; gap: 10px; }
@@ -3876,8 +3895,11 @@ body.plain-mode #view { min-height: 100vh; }
 .docmap-name { font-size: var(--text-ui); line-height: 1.35; }
 .docmap-note { font-size: var(--text-sm); color: var(--ink-soft); line-height: 1.4; }
 .docmap-go { position: absolute; right: 11px; bottom: 10px; font-size: var(--text-sm); color: var(--accent); font-weight: 700; }
-.docmap-hub { display: grid; gap: 6px; justify-items: center; }
-.docmap-hub .docmap-sheet { width: 100%; }
+/* 칸 위 작은 줄 — 증거 번호와 '지금 보는 증거' / '함께 묶인 증거'. 지금 보는 증거는 링크가 아니라 표시라 들리지 않는다 */
+.docmap-tag { display: flex; align-items: baseline; gap: 6px; font-size: var(--text-xs); color: var(--ink-soft); margin-bottom: 2px; }
+.docmap-eid { color: var(--accent); letter-spacing: .06em; }
+.docmap-doc.is-current { cursor: default; border-color: var(--ink); box-shadow: inset 0 0 0 1px var(--ink); }
+.docmap-doc.is-current:hover { transform: none; box-shadow: inset 0 0 0 1px var(--ink); border-color: var(--ink); }
 .docmap-link { height: 0; border-top: 2px dashed var(--accent); opacity: .55; margin: 0 2px; }
 @media (max-width: 720px) {
   .docmap-row { grid-template-columns: 1fr; justify-items: stretch; }
@@ -3887,6 +3909,42 @@ body.plain-mode #view { min-height: 100vh; }
 .view-brief .brief-lead .docmap { max-width: 760px; }
 /* 상세 화면 — 첨부 줄 자리 */
 .detail .ev-attachments .docmap { margin-top: 6px; }
-/* 깎인 카드의 남은 감소 횟수와 회복력 증가의 남은 시간(E6 인터랙티브) */
+/* 깎인 카드의 남은 감소 횟수와 회복력 증가의 남은 시간(E7 인터랙티브) */
 .fx-card-left { display: block; margin-top: 4px; font-size: var(--text-xs); font-weight: 700; color: var(--fx-accent, var(--accent)); }
 .fx-boost { margin: 4px 0 0; font-size: var(--text-xs); font-weight: 700; color: var(--fx-accent, var(--accent)); text-align: right; }
+
+/* ---------- 짝 증거 바인더(10/15 사용자 제안 "두 개의 파일철이 하나를 묶는 느낌") ----------
+   엑셀 하나를 함께 쓰는 두 파일철(E6 · E7)을 한 바인더 표지 위에 나란히 철한다. 가운데 등받이에 고리 셋과 그 엑셀 이름표.
+   격자에서 두 칸을 차지하고(카드 폭은 조금 좁아진다), 휴대폰처럼 한 칸뿐인 폭에서는 위아래로 쌓고 등받이를 가로로 눕힌다 */
+.ev-bundle {
+  --binder: #3d372f; --binder-edge: #2b2721; --ring: #d9d4c9; --ring-shade: #9d968a;
+  grid-column: span 2; display: grid; gap: 8px; align-content: start; min-width: 0;
+}
+.ev-bundle-h { margin: 0; font-size: var(--text-xs); font-weight: 700; color: var(--ink-soft); letter-spacing: .02em; }
+.ev-bundle-row {
+  display: grid; grid-template-columns: minmax(0, 1fr) 56px minmax(0, 1fr); align-items: stretch;
+  padding: 32px 14px 14px; border-radius: var(--radius-card);
+  background: var(--binder) var(--grain); border: 1px solid var(--binder-edge); box-shadow: var(--shadow-paper);
+}
+.ev-bundle-row > .ev-card { height: auto; }
+.ev-spine { display: flex; flex-direction: column; align-items: center; justify-content: space-between; gap: 12px; padding: 18px 0; }
+.ev-ring {
+  width: 30px; height: 12px; border-radius: var(--radius-pill);
+  background: linear-gradient(180deg, var(--ring), var(--ring-shade)); box-shadow: 0 1px 2px rgba(0, 0, 0, .45), inset 0 1px 0 rgba(255, 255, 255, .5);
+}
+.ev-spine-hub {
+  writing-mode: vertical-rl; display: flex; align-items: center; gap: 6px;
+  padding: 12px 6px; border-radius: var(--radius-tag); text-decoration: none;
+  background: var(--surface); color: var(--ink); border: 1px solid var(--manila-edge);
+  font-size: var(--text-sm); font-weight: 700; letter-spacing: .02em; box-shadow: var(--shadow-card);
+  transition: border-color var(--motion-fast) ease, color var(--motion-fast) ease;
+}
+.ev-spine-hub:hover, .ev-spine-hub:focus-visible { border-color: var(--accent); color: var(--accent); }
+.ev-spine-hub:focus-visible { outline: 2px solid var(--accent-on-dark, var(--accent)); outline-offset: 3px; }
+.ev-spine-go { color: var(--accent); }
+@media (max-width: 640px) {
+  .ev-bundle { grid-column: auto; }
+  .ev-bundle-row { grid-template-columns: 1fr; gap: 0; padding: 30px 10px 10px; }
+  .ev-spine { flex-direction: row; justify-content: center; padding: 12px 0 34px; }
+  .ev-spine-hub { writing-mode: horizontal-tb; padding: 6px 12px; }
+}
