@@ -3843,3 +3843,55 @@ body.plain-mode #view { min-height: 100vh; }
   .cc-ep-need { font-size: var(--text-xl); }
   .cc-fig img { max-height: 24vh; }
 }
+
+/* ---------- 문서 지도(10/15 — E6: 문서 두 개가 엑셀 하나를 함께 쓴다) ----------
+   두 문서는 종이 한 장(접힌 모서리), 가운데 엑셀은 칸 무늬가 비치는 시트. 잇는 선은 점선 실(수사 보드의 실과 같은 결).
+   칸마다 누르면 그 문서가 새 탭으로 열린다. 좁은 화면에서는 세로로 쌓고 실도 세로로 */
+.docmap { margin: 18px 0 4px; display: grid; gap: 10px; }
+.docmap-title { font-size: var(--text-sm); font-weight: 700; color: var(--ink-soft); letter-spacing: .02em; }
+.docmap-row { display: grid; grid-template-columns: minmax(0, 1fr) 28px minmax(0, 1.15fr) 28px minmax(0, 1fr); align-items: center; }
+.docmap-doc, .docmap-sheet {
+  position: relative; display: grid; gap: 3px; align-content: start; text-align: left; cursor: pointer; text-decoration: none;
+  font: inherit; color: var(--ink); background: var(--surface);
+  border: 1px solid var(--line); border-radius: var(--radius-tag); padding: 12px 30px 12px 14px;
+  box-shadow: var(--shadow-card); transition: border-color .15s, transform .15s, box-shadow .15s;
+}
+/* 종이의 접힌 모서리 */
+.docmap-doc::after {
+  content: ''; position: absolute; top: -1px; right: -1px; width: 14px; height: 14px;
+  background: linear-gradient(225deg, var(--paper-dark) 50%, var(--line) 50% calc(50% + 1px), var(--surface) calc(50% + 1px));
+}
+.docmap-sheet {
+  border: 1.5px solid var(--ink); padding: 14px 30px 14px 16px;
+  background:
+    linear-gradient(var(--line) 1px, transparent 1px) 0 0 / 100% 12px,
+    linear-gradient(90deg, var(--line) 1px, transparent 1px) 0 0 / 34px 100%,
+    var(--surface);
+  background-blend-mode: normal;
+}
+.docmap-sheet .docmap-name, .docmap-sheet .docmap-note { background: var(--surface); justify-self: start; padding: 0 3px; margin-left: -3px; }
+.docmap-doc:hover, .docmap-sheet:hover, .docmap-doc:focus-visible, .docmap-sheet:focus-visible {
+  border-color: var(--accent); transform: translateY(-1px); box-shadow: var(--shadow-lift);
+}
+.docmap-name { font-size: var(--text-ui); line-height: 1.35; }
+.docmap-note { font-size: var(--text-sm); color: var(--ink-soft); line-height: 1.4; }
+.docmap-go { position: absolute; right: 11px; bottom: 10px; font-size: var(--text-sm); color: var(--accent); font-weight: 700; }
+.docmap-hub { display: grid; gap: 6px; justify-items: center; }
+.docmap-hub .docmap-sheet { width: 100%; }
+.docmap-sub {
+  font: inherit; font-size: var(--text-xs); color: var(--ink-soft); background: none; border: 0; cursor: pointer;
+  text-decoration: underline; text-underline-offset: 3px; padding: 2px 4px;
+}
+.docmap-sub:hover, .docmap-sub:focus-visible { color: var(--accent); }
+.docmap-link { height: 0; border-top: 2px dashed var(--accent); opacity: .55; margin: 0 2px; }
+@media (max-width: 720px) {
+  .docmap-row { grid-template-columns: 1fr; justify-items: stretch; }
+  .docmap-link { width: 0; height: 18px; border-top: 0; border-left: 2px dashed var(--accent); justify-self: center; margin: 2px 0; }
+}
+/* 인터랙티브 머리말 아래에 둘 때는 머리말 글 폭에 맞춘다 */
+.view-brief .brief-lead .docmap { max-width: 760px; }
+/* 상세 화면 — 첨부 줄 자리 */
+.detail .ev-attachments .docmap { margin-top: 6px; }
+/* 깎인 카드의 남은 감소 횟수와 회복력 증가의 남은 시간(E6 인터랙티브) */
+.fx-card-left { display: block; margin-top: 4px; font-size: var(--text-xs); font-weight: 700; color: var(--fx-accent, var(--accent)); }
+.fx-boost { margin: 4px 0 0; font-size: var(--text-xs); font-weight: 700; color: var(--fx-accent, var(--accent)); text-align: right; }

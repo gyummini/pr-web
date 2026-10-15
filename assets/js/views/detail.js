@@ -5,6 +5,7 @@ import { fmtCase, casePath, checkChapterToasts } from '../collect.js';
 import { navigate } from '../router.js';
 import { hasBrief, briefOpenKey } from './brief.js';
 import { hasMemo, renderMemo } from '../memo.js';
+import { hasDocMap, renderDocMap } from '../docmap.js';
 import { T, TH, setLabel } from '../text.js';
 
 // 증거 상세(명세서 2-4) — 수첩의 증거 링크로 오는 완주자와, 주소를 직접 연 방문자가 본다.
@@ -59,7 +60,9 @@ export function renderDetail(view, eid) {
   }
 
   const attWrap = view.querySelector('.ev-attachments');
-  (ev.attachments || []).forEach((att) => {
+  // 문서 두 개가 엑셀 하나를 함께 쓰는 증거는 첨부 칩 대신 문서 지도(원본 문서까지 한 그림에)
+  if (hasDocMap(ev)) attWrap.appendChild(renderDocMap(ev));
+  else (ev.attachments || []).forEach((att) => {
     const a = document.createElement('button');
     a.type = 'button';
     a.className = 'att-chip';

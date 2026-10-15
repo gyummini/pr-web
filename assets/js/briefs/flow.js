@@ -38,6 +38,8 @@ export function playFlow(host, cfg, onComplete) {
   const max = Number(play.max_cost) || 10;
   const baseRate = Number(play.rate) || 0;
   const boostRate = Number(play.boosted_rate) || baseRate;
+  // 호시노(수영복) EX가 지속되는 시간(개선본 210501 DURATION) — 지나면 회복력 증가가 끝난다(10/15, 전에는 끝나지 않았다)
+  const boostDur = Number(play.boost_duration) || 0;
   // 흐름 속도 — 처음에는 천천히 짚어주고, 반복될수록 빨라진다.
   // 첫 흐름은 판이 펼쳐지는 0.56초 + 12걸음 × 0.37초 ≈ 5초(10/10 — 0.62초씩 8.1초였다. 걸음 간격 0.2~0.6초 원칙)
   const stepStart = Number(play.step_ms_start) || 370;
@@ -51,6 +53,9 @@ export function playFlow(host, cfg, onComplete) {
   let opened = false; // 처음에는 손패 칸만 — 첫 시전이 판을 연다(10/06 사용자 결정)
   let cost = 0;
   let boosted = false;
+  let boostLeft = 0; // 회복력 증가가 끝나기까지 남은 초
+  // 우이에게 코스트를 깎인 카드의 남은 사용 횟수(개선본 200021 BUFF_USE_COUNT) — 0이 되면 원래 코스트로 돌아간다
+  let reduceLeft = new Map();
   let used = 0;
   let running = false;
   let last = 0;
@@ -88,6 +93,7 @@ export function playFlow(host, cfg, onComplete) {
           <span class="fx-sec fx-sec-play"></span>
           <div class="fx-meter">
             <div class="fx-meter-head"><span class="fx-cost"></span><span class="fx-rate"></span></div>
+            <p class="fx-boost" hidden></p>
             <div class="fx-bar"><div class="fx-bar-fill"></div></div>
             <p class="fx-rate-note"></p>
           </div>
@@ -324,7 +330,7 @@ export function playFlow(host, cfg, onComplete) {
     out.textContent = '';
     if (!rows || !rows.string) return;
     const tpl = rows.string[1] || '';
-    const vals = new Map((rows.detail || []).map((r) => [r[6], Number(r[7])]));
+    const vals = new Map((rows.detail || []).map((r) => [r[2], Number(r[4])])); // 수치 표 — 변수 이름, 변수 값
     const re = /\{([A-Z0-9_]+)\}(%?)/g;
     let at = 0;
     let m;
@@ -431,6 +437,9 @@ export function playFlow(host, cfg, onComplete) {
     hand = (play.hand || []).map((id) => byId.get(id)).filter(Boolean);
     deck = (play.deck || []).map((id) => byId.get(id)).filter(Boolean);
     costs = new Map((play.students || []).map((x) => [x.id, Number(x.cost) || 0]));
+    reduceLeft = new Map();
+    boosted = false;
+    boostLeft = 0;
     cost = Number(play.start_cost) || 0;
     last = Date.now();
     drawHand();
@@ -495,6 +504,15 @@ export function playFlow(host, cfg, onComplete) {
     last = now;
     if (!dt) return;
     cost = Math.min(max, cost + rate() * dt);
+    if (boosted && boostDur) {
+      boostLeft = Math.max(0, boostLeft - dt);
+      // 흐름이 걷는 동안 끝나면 흐름이 끝난 뒤의 첫 틱에서 거둔다(걸음의 캡션을 덮지 않게)
+      if (!boostLeft && !running) {
+        boosted = false;
+        paintTables();
+        setCaption((cfg.captions || {}).boost_end || caption.textContent);
+      }
+    }
     paint();
   }
 
@@ -504,6 +522,9 @@ export function playFlow(host, cfg, onComplete) {
     root.querySelector('.fx-cost').textContent = fillText(labels.cost, { cost: cost.toFixed(2), max });
     root.querySelector('.fx-rate').textContent = fillText(labels.rate, { rate: rate().toFixed(4) });
     root.querySelector('.fx-bar-fill').style.width = `${(cost / max) * 100}%`;
+    const boostEl = root.querySelector('.fx-boost');
+    boostEl.hidden = !(boosted && boostDur && labels.boost_left);
+    if (!boostEl.hidden) boostEl.textContent = fillText(labels.boost_left, { sec: Math.ceil(boostLeft) });
     // 시전 가능 여부는 Cost가 차오르는 순간 뒤집힌다. 손패 카드만 반응하고 표는 굳어 있으면
     // 이 열이 무엇을 보는 값인지 드러나지 않는다 — 표 쪽도 같이 뒤집는다.
     // paintTables()를 부르지 않는 이유: 100ms마다 전 칸이 다시 그려져 변화 강조가 계속 터진다.
@@ -537,7 +558,7 @@ export function playFlow(host, cfg, onComplete) {
   }
 
   function drawHand() {
-    const { hand, costs } = presentation || snapshot();
+    const { hand, costs, reduceLeft } = presentation || snapshot();
     // 흐름의 걸음마다 버튼을 새로 만든다 — 그대로 두면 키보드 초점이 페이지 밖으로 빠진다(10/06 점검: 7.5초).
     // 초점이 있던 카드를 기억했다가 같은 카드(쓰여서 덱으로 갔으면 같은 자리의 새 카드)로 돌려준다.
     const focused = handWrap.contains(document.activeElement) ? document.activeElement.closest('.fx-card') : null;
@@ -555,6 +576,12 @@ export function playFlow(host, cfg, onComplete) {
       b.querySelector('.fx-card-name').textContent = s.name;
       b.querySelector('.fx-card-cost').textContent = costOf(s, costs);
       b.querySelector('.fx-card-ex').textContent = s.ex || '';
+      if (reduceLeft.has(s.id) && labels.reduce_left) {
+        const left = document.createElement('span');
+        left.className = 'fx-card-left';
+        left.textContent = fillText(labels.reduce_left, { n: reduceLeft.get(s.id) });
+        b.querySelector('.fx-card-ex').after(left);
+      }
       b.addEventListener('click', () => use(s));
       handWrap.appendChild(b);
     });
@@ -711,8 +738,9 @@ export function playFlow(host, cfg, onComplete) {
         const h = concl.offsetHeight;
         root.classList.add('fx-tracing');
         line.textContent = was;
-        // 흐름 동안 손패 카드가 바뀌며 설명이 한 줄씩 늘 수 있다(1366에서 30px 밀렸다) — 카드마다 한 줄을 미리 셈한다
-        if (h) top = Math.max(top, y + h + 16 * hand.length + 16 - window.innerHeight);
+        // 흐름 동안 손패 카드가 바뀌며 설명이 한 줄씩 늘 수 있다(1366에서 30px 밀렸다) — 카드마다 한 줄을 미리 셈한다.
+        // offsetTop은 정수라, 위에 놓인 것(E6 문서 지도)의 높이에 소수점이 있으면 반 픽셀 모자랄 수 있다 — 4px 더 둔다(10/15)
+        if (h) top = Math.max(top, y + h + 16 * hand.length + 20 - window.innerHeight);
       }
       window.scrollTo({ top: Math.max(0, top), behavior: reducedMotion() ? 'instant' : 'smooth' });
     }
@@ -764,20 +792,22 @@ export function playFlow(host, cfg, onComplete) {
     else walk();
   }
 
-  function snapshot() { return { hand: [...hand], deck: [...deck], costs: new Map(costs), cost, boosted, used }; }
+  function snapshot() { return { hand: [...hand], deck: [...deck], costs: new Map(costs), reduceLeft: new Map(reduceLeft), cost, boosted, used }; }
 
   function okPath(s) {
     const p = [
       // ① 읽기 — FK를 타고 마스터 데이터를 훑는다
       { m: 'student' },
       { m: 'skill' },
+      { m: 'excost' },
+      { m: 'effect' },
       { m: 'detail' },
       { m: 'string', assembled: true },
       // ② 쓰기 — 플로우 차트를 지나며 상태 데이터가 바뀐다
       { n: 'env' },
       { n: 'runtime', sid: s.id, t: 'runtime' },
       { n: 'q_cost', arm: 'yes', t: 'env', c: 'current_cost' },
-      { n: 'spend', do: () => (cost -= costOf(s)), t: 'env', c: 'current_cost' },
+      { n: 'spend', do: () => spend(s), t: 'env', c: 'current_cost' },
       { n: 'q_draw', arm: 'no' },
       { n: 'to_bottom', do: () => cycle(s), t: 'queue', fly: s.id },
       { n: 'draw', t: 'runtime' },
@@ -790,7 +820,7 @@ export function playFlow(host, cfg, onComplete) {
       p.push(
         { n: 'q_change' },
         { n: 'skilltable' },
-        { n: 'reset', do: () => (boosted = true), t: 'env', c: 'cost_recovery_speed' }
+        { n: 'reset', do: () => { boosted = true; boostLeft = boostDur; }, t: 'env', c: 'cost_recovery_speed' }
       );
     }
     return p;
@@ -800,6 +830,8 @@ export function playFlow(host, cfg, onComplete) {
     return [
       { m: 'student' },
       { m: 'skill' },
+      { m: 'excost' },
+      { m: 'effect' },
       { m: 'detail' },
       { m: 'string', assembled: true },
       { n: 'env' },
@@ -809,14 +841,30 @@ export function playFlow(host, cfg, onComplete) {
     ];
   }
 
-  // 예외 4 — 손패에서 가장 비싼 다른 스킬의 EX_스킬_Cost_소모를 깎는다.
-  // 감소량은 소수점 이하 절삭 (Skill_String에 명시된 규칙).
+  // 예외 4 — 손패에서 가장 비싼 다른 스킬의 EX_스킬_Cost_소모를 깎는다(원본은 플레이어가 고르고, 체험은 자동으로 고른다).
+  // 감소량은 원래 코스트에서 소수점 이하 절삭 (Skill_String에 명시된 규칙).
+  // 같은 카드에 다시 걸면 덮어쓴다 — 감소량은 쌓이지 않고 남은 횟수만 처음으로(개선본 Skill_Effect 겹침 규칙 3 덮어쓰기)
   function applyReduce(s) {
     const r = Number(s.reduce) || 0;
     const target = hand.filter((x) => x.id !== s.id).sort((a, b) => costOf(b) - costOf(a))[0];
     if (!target) return;
-    const cut = Math.floor(costOf(target) * r);
-    if (cut > 0) costs.set(target.id, costOf(target) - cut);
+    const base = Number(target.cost) || 0;
+    const cut = Math.floor(base * r);
+    if (cut <= 0) return;
+    costs.set(target.id, base - cut);
+    if (Number(s.reduce_uses)) reduceLeft.set(target.id, Number(s.reduce_uses));
+  }
+
+  // Cost를 쓰고, 깎인 카드였다면 남은 횟수를 하나 줄인다 — 다 쓰면 원래 코스트로 돌아간다
+  function spend(s) {
+    cost -= costOf(s);
+    if (!reduceLeft.has(s.id)) return;
+    const left = reduceLeft.get(s.id) - 1;
+    if (left > 0) reduceLeft.set(s.id, left);
+    else {
+      reduceLeft.delete(s.id);
+      costs.set(s.id, Number(s.cost) || 0);
+    }
   }
 
   // 순환 구조 — 쓴 스킬은 덱 최후미로, 빈 핸드 자리에 덱 최상단이 들어온다
