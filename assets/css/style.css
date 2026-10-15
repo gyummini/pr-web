@@ -3878,11 +3878,6 @@ body.plain-mode #view { min-height: 100vh; }
 .docmap-go { position: absolute; right: 11px; bottom: 10px; font-size: var(--text-sm); color: var(--accent); font-weight: 700; }
 .docmap-hub { display: grid; gap: 6px; justify-items: center; }
 .docmap-hub .docmap-sheet { width: 100%; }
-.docmap-sub {
-  font: inherit; font-size: var(--text-xs); color: var(--ink-soft); background: none; border: 0; cursor: pointer;
-  text-decoration: underline; text-underline-offset: 3px; padding: 2px 4px;
-}
-.docmap-sub:hover, .docmap-sub:focus-visible { color: var(--accent); }
 .docmap-link { height: 0; border-top: 2px dashed var(--accent); opacity: .55; margin: 0 2px; }
 @media (max-width: 720px) {
   .docmap-row { grid-template-columns: 1fr; justify-items: stretch; }

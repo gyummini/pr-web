@@ -47,11 +47,6 @@ function hub(h) {
   const wrap = document.createElement('div');
   wrap.className = 'docmap-hub';
   wrap.appendChild(doc(h, 'docmap-sheet'));
-  if (h.sub && h.sub.url) {
-    const sub = docAnchor(h.sub.url, 'docmap-sub');
-    sub.textContent = h.sub.name || '';
-    wrap.appendChild(sub);
-  }
   return wrap;
 }
 
