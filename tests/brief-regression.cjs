@@ -39,8 +39,8 @@ const UNLOCK = UI.popup.unlock.replace('{action}', UI.common.to_interactive);
     assert.equal(await page.locator('.fx-chartcol').isVisible(), false);
     assert.equal(await page.locator('.fx-card').first().isVisible(), true);
     // 원본 문서는 버튼이 아니라 새 탭으로 여는 링크다(10/06 — 가운데 클릭 · 주소 복사가 되게)
-    // E6는 문서 두 개가 엑셀 하나를 함께 쓰는 증거라, 원본은 머리말 아래 문서 지도의 왼쪽 칸에서 연다(10/15 — 지도의 칸 셋과 데이터 정의 모두 새 탭 링크)
-    assert.equal(await page.locator('.docmap a[target="_blank"]').count(), 4, 'Original is always reachable — two documents, the workbook and its definitions');
+    // E6는 문서 두 개가 엑셀 하나를 함께 쓰는 증거라, 원본은 머리말 아래 문서 지도의 왼쪽 칸에서 연다(10/15 — 지도의 칸 셋 모두 새 탭 링크. 데이터 정의 PDF는 같은 날 사용자 결정으로 뺐다)
+    assert.equal(await page.locator('.docmap a[target="_blank"]').count(), 3, 'Original is always reachable — two documents and the workbook');
     assert.equal(await page.locator('.docmap a.docmap-doc').first().getAttribute('href'), E2card.url, 'Original link has a real address');
     // 결론 칸(원본 문서 · 첨부)은 처음부터 열지 않는다 — 첫 시전의 흐름이 끝난 뒤에 연다(10/10 마4)
     assert.equal(await page.locator('.brief-recap').isHidden(), true, 'E6 conclusion box waits for the first cast');

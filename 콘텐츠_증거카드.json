@@ -400,10 +400,6 @@
         {
           "label": "첨부: 스킬 데이터 테이블 설계 (PDF)",
           "url": "https://drive.google.com/file/d/1h9w1x8gxhX9E9fpuI9e9zAV7UK6rVPVq/view?usp=sharing"
-        },
-        {
-          "label": "첨부: 데이터 정의 (PDF)",
-          "url": "https://drive.google.com/file/d/1W5ws7OcGl7cguU4530IVH3j1OCOCFYQr/view?usp=sharing"
         }
       ],
       "sd_dialogue": "요약해뒀어요, 탐정님! 특히 데이터 테이블이 꼼꼼하게 짜여 있어서 인상 깊었어요!",
@@ -1244,11 +1240,7 @@
         "hub": {
           "name": "스킬 데이터 테이블 (xlsx)",
           "note": "두 문서가 함께 쓰는 엑셀",
-          "url": "https://drive.google.com/file/d/1NcUBi_mxsF_R_WuIBoUOCGs2b3DDVuUD/view?usp=sharing",
-          "sub": {
-            "name": "데이터 정의 (PDF)",
-            "url": "https://drive.google.com/file/d/1W5ws7OcGl7cguU4530IVH3j1OCOCFYQr/view?usp=sharing"
-          }
+          "url": "https://drive.google.com/file/d/1NcUBi_mxsF_R_WuIBoUOCGs2b3DDVuUD/view?usp=sharing"
         }
       }
     },
