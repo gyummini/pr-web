@@ -3,7 +3,7 @@ import { fromRect } from '../motion/flip.js';
 import { flowPaths } from '../motion/flow-paths.js';
 import { revealOnce } from '../motion/reveal.js';
 import { fill as fillText, T } from '../text.js'; // 이 파일에는 표 행을 채우는 fill이 따로 있다
-// E6 · Cost 스킬 시스템 — 한 번의 클릭이 읽는 데이터와 쓰는 데이터.
+// E7 · Cost 스킬 시스템 — 한 번의 클릭이 읽는 데이터와 쓰는 데이터.
 //
 //   ① 읽기 — 마스터 데이터(하늘). 기획자가 정의한 정적 데이터.
 //      Student_Master → Skill_Master → Skill_Level_Detail → Skill_String
@@ -739,7 +739,7 @@ export function playFlow(host, cfg, onComplete) {
         root.classList.add('fx-tracing');
         line.textContent = was;
         // 흐름 동안 손패 카드가 바뀌며 설명이 한 줄씩 늘 수 있다(1366에서 30px 밀렸다) — 카드마다 한 줄을 미리 셈한다.
-        // offsetTop은 정수라, 위에 놓인 것(E6 문서 지도)의 높이에 소수점이 있으면 반 픽셀 모자랄 수 있다 — 4px 더 둔다(10/15)
+        // offsetTop은 정수라, 위에 놓인 것(E7 문서 지도)의 높이에 소수점이 있으면 반 픽셀 모자랄 수 있다 — 4px 더 둔다(10/15)
         if (h) top = Math.max(top, y + h + 16 * hand.length + 20 - window.innerHeight);
       }
       window.scrollTo({ top: Math.max(0, top), behavior: reducedMotion() ? 'instant' : 'smooth' });

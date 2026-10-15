@@ -28,9 +28,9 @@ export function renderEnding(view) {
 
   const finish = () => {
     state.endingSeen = true;
-    state.collected.add('E8'); // 히든 증거 수집 완료 → 8/8
+    state.collected.add('E9'); // 히든 증거 수집 완료 → 9/9
     syncBadge();
-    // on_complete: open_evidence E8 — 목적지는 E8 카드의 내부 라우트
+    // on_complete: open_evidence E9 — 목적지는 E9 카드의 내부 라우트
     const hidden = DB.cards.find((c) => c.hidden);
     // 내부 라우트는 '/'로 시작한다 (외부 문서는 https://...)
     navigate(hidden && hidden.url && hidden.url.startsWith('/') ? hidden.url : '/notebook');

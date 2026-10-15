@@ -6,7 +6,7 @@ const path = require('node:path');
 // 화면 문구는 GPT가 바꿀 수 있다 — 버튼 이름은 데이터에서 읽는다
 const UI = JSON.parse(fs.readFileSync(path.join(__dirname, '..', '콘텐츠_화면문구.json'), 'utf8'));
 const EVS = JSON.parse(fs.readFileSync(path.join(__dirname, '..', '콘텐츠_증거카드.json'), 'utf8')).evidences;
-const E2card = EVS.find((e) => e.id === 'E6');
+const E2card = EVS.find((e) => e.id === 'E7');
 const E1card = EVS.find((e) => e.id === 'E1');
 const origin = process.env.TEST_ORIGIN || 'http://127.0.0.1:4173';
 // 보관함의 아직 모으지 않은 카드는 요약 팝업을 연다 — '잠금해제하고 요약 인터랙티브 페이지 보기'로 넘어간다(10/07)
@@ -25,7 +25,13 @@ const UNLOCK = UI.popup.unlock.replace('{action}', UI.common.to_interactive);
     });
     await page.waitForTimeout(600);
     assert.equal(await page.locator('.ev-grid').count(), 1, 'Cancel pending route back to source');
-    await page.locator('.ev-card[data-eid="E6"]').click();
+    // 짝 증거 바인더(10/15 사용자 제안 — 두 파일철이 엑셀 하나를 묶는다): E6 · E7이 한 묶음에, 가운데 등받이의 엑셀은 새 탭, 카드에는 엑셀 칩이 없다
+    assert.deepEqual(await page.locator('.ev-bundle .ev-card').evaluateAll((els) => els.map((e) => e.dataset.eid)), ['E6', 'E7'], 'E6 and E7 sit in one binder');
+    assert.equal(await page.locator('.ev-bundle .ev-spine-hub[target="_blank"]').getAttribute('href'), E2card.attachments[0].url, 'the binder spine opens the shared workbook');
+    assert.equal(await page.locator('.ev-bundle .att-chip').count(), 0, 'the shared workbook is not repeated on the cards');
+    // 종이 바탕(보관함)에서는 지금 탭이 아래 종이와 이어진다 — 장면 화면에서만 띠를 뺀다(10/15, 수첩 테스트가 엔딩 · 수첩 쪽을 본다)
+    assert.equal(await page.evaluate(() => getComputedStyle(document.querySelector('#tabs a.active'), '::after').content), '""', 'the active tab still runs into the paper on the shelf');
+    await page.locator('.ev-card[data-eid="E7"]').click();
     await page.getByRole('button', { name: UNLOCK, exact: true }).click();
     await page.locator('.fx-card').first().waitFor();
     await page.waitForTimeout(500);
@@ -35,15 +41,18 @@ const UNLOCK = UI.popup.unlock.replace('{action}', UI.common.to_interactive);
     assert.equal(await page.locator('.fx-node').count(), 13);
     assert.equal(await page.locator('.fx-master-table').count(), 6, 'the master tables are the six sheets of the improved workbook');
     // 처음에는 조작 칸만 — 차트 · 표는 첫 스킬을 누를 때 펼쳐진다(10/06)
-    assert.equal(await page.locator('.fx.fx-closed').count(), 1, 'E6 opens with the skill panel only');
+    assert.equal(await page.locator('.fx.fx-closed').count(), 1, 'E7 opens with the skill panel only');
     assert.equal(await page.locator('.fx-chartcol').isVisible(), false);
     assert.equal(await page.locator('.fx-card').first().isVisible(), true);
     // 원본 문서는 버튼이 아니라 새 탭으로 여는 링크다(10/06 — 가운데 클릭 · 주소 복사가 되게)
-    // E6는 문서 두 개가 엑셀 하나를 함께 쓰는 증거라, 원본은 머리말 아래 문서 지도의 왼쪽 칸에서 연다(10/15 — 지도의 칸 셋 모두 새 탭 링크. 데이터 정의 PDF는 같은 날 사용자 결정으로 뺐다)
-    assert.equal(await page.locator('.docmap a[target="_blank"]').count(), 3, 'Original is always reachable — two documents and the workbook');
-    assert.equal(await page.locator('.docmap a.docmap-doc').first().getAttribute('href'), E2card.url, 'Original link has a real address');
+    assert.equal(await page.locator('.brief-head-doc a[target="_blank"]').count(), 1, 'Original is always reachable');
+    assert.equal(await page.locator('.brief-head-doc a').getAttribute('href'), E2card.url, 'Original link has a real address');
+    // 짝 증거 지도(10/15 — E6 데이터 테이블 설계와 E7 Cost 역기획서가 엑셀 하나를 묶는다): 지금 보는 E7은 표시만, 짝 E6은 그 상세 화면, 가운데 엑셀은 새 탭
+    assert.equal(await page.locator('.brief-lead .docmap .docmap-doc.is-current[aria-current="page"]').count(), 1, 'the current evidence is marked, not linked');
+    assert.equal(await page.locator('.brief-lead .docmap a.docmap-doc').getAttribute('href'), '/evidence/E6', 'the partner evidence opens its detail page');
+    assert.equal(await page.locator('.brief-lead .docmap a.docmap-sheet[target="_blank"]').count(), 1, 'the shared workbook opens in a new tab');
     // 결론 칸(원본 문서 · 첨부)은 처음부터 열지 않는다 — 첫 시전의 흐름이 끝난 뒤에 연다(10/10 마4)
-    assert.equal(await page.locator('.brief-recap').isHidden(), true, 'E6 conclusion box waits for the first cast');
+    assert.equal(await page.locator('.brief-recap').isHidden(), true, 'E7 conclusion box waits for the first cast');
     // 첫 시전(움직임 줄이기 — 흐름이 한 번에 끝난다): 결론 한 줄은 덱 아래(조작 칸 안)에서 첫 화면 안에, 켜진 칸은 자기 상자 안에 다 보이고
     // 페이지는 옆으로 움직이지 않는다(마1 · 마6)
     await page.emulateMedia({ reducedMotion: 'reduce' });
@@ -60,13 +69,13 @@ const UNLOCK = UI.popup.unlock.replace('{action}', UI.common.to_interactive);
       const ink = (v) => { const p = document.createElement('i'); p.style.color = `var(${v})`; document.querySelector('.view-brief').append(p); const c = getComputedStyle(p).color; p.remove(); return c; };
       return { soft: ink('--fx-soft'), accent: ink('--accent'), rate: getComputedStyle(document.querySelector('#view .fx-rate')).color, labels: [...document.querySelectorAll('#view .fx-sec, #view .fx-concl .brief-concl-key')].map((n) => getComputedStyle(n).color) };
     });
-    assert.deepEqual(labelInk.labels, Array(5).fill(labelInk.soft), `the five E6 section labels are the soft ink ${JSON.stringify(labelInk)}`);
+    assert.deepEqual(labelInk.labels, Array(5).fill(labelInk.soft), `the five E7 section labels are the soft ink ${JSON.stringify(labelInk)}`);
     assert.equal(labelInk.rate, labelInk.accent, 'the Cost gauge stays red');
     // 노트북 높이(1366×768 · 1280×720)에서도 — 첫 시전 때 화면을 맞추는 양을 결론 줄까지 넓힌다(10/11 사용자 결정 재5. 전에는 결론 줄의 아래 절반 · 전체가 화면 밖)
     for (const [w, h] of [[1366, 768], [1280, 720]]) {
       const lap = await browser.newPage({ viewport: { width: w, height: h }, reducedMotion: 'reduce' });
       await lap.route('**/_vercel/**', (r) => r.abort());
-      await lap.goto(origin + '/evidence/E6/interactive', { waitUntil: 'networkidle' });
+      await lap.goto(origin + '/evidence/E7/interactive', { waitUntil: 'networkidle' });
       await lap.waitForFunction(() => document.querySelector('.fx-card[data-sid="himari"]')?.classList.contains('ready'));
       await lap.locator('.fx-card[data-sid="himari"]').click();
       await lap.waitForTimeout(400);
@@ -99,7 +108,7 @@ const UNLOCK = UI.popup.unlock.replace('{action}', UI.common.to_interactive);
         window.testFlow?.destroy();
         const { DB } = await import('/assets/js/data.js');
         const { playFlow } = await import('/assets/js/briefs/flow.js');
-        const cfg = structuredClone(DB.cards.find(c => c.id === 'E6').brief);
+        const cfg = structuredClone(DB.cards.find(c => c.id === 'E7').brief);
         Object.assign(cfg.play, { start_cost: 10, rate: 0, step_ms_start: 30, step_ms_min: 30 }, overrides);
         let host = document.getElementById('regression-host');
         if (!host) { host = document.createElement('div'); host.id = 'regression-host'; document.body.append(host); }
@@ -374,13 +383,13 @@ const UNLOCK = UI.popup.unlock.replace('{action}', UI.common.to_interactive);
       return { inView: r.top >= head && r.bottom <= innerHeight, centered: Math.abs((r.top + r.bottom) / 2 - (head + innerHeight) / 2) <= 24, marked: card.classList.contains('is-back'), focused: document.activeElement === card };
     });
     assert.deepEqual(backAt, { inView: true, centered: true, marked: true, focused: false }, `back to the portfolio lands on the E1 card ${JSON.stringify(backAt)}`);
-    await page.locator('.ev-card[data-eid="E6"]').click();
+    await page.locator('.ev-card[data-eid="E7"]').click();
     await page.getByRole('button', { name: UNLOCK, exact: true }).click(); await page.locator('.fx').waitFor();
     assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);
     assert.equal(await page.locator('.fx-concept b').allTextContents().then(x => x.join(' ')), 'READ WRITE');
     await page.waitForTimeout(600);
     assert.equal(await page.evaluate(() => document.getAnimations().filter(a => a.playState === 'running').length), 0);
     assert.deepEqual(errors, []);
-    console.log('PASS: navigation, interruption, cost/queue/reduction/boost, hidden-tab recovery, E6 conclusion after the first cast (under the deck, used cell shown in its box), E6 section labels in soft ink, E1 help bubble that leaves with the cue, one sentence per episode, drag/keyboard, rewind lands on the first call (desktop and phone)/facets, closing line without a left band, end buttons without restart, phone sheets, back to the portfolio lands on the card, reduced motion, fallback.');
+    console.log('PASS: navigation, interruption, cost/queue/reduction/boost, hidden-tab recovery, E7 conclusion after the first cast (under the deck, used cell shown in its box), E7 section labels in soft ink, E1 help bubble that leaves with the cue, one sentence per episode, drag/keyboard, rewind lands on the first call (desktop and phone)/facets, closing line without a left band, end buttons without restart, phone sheets, back to the portfolio lands on the card, reduced motion, fallback.');
   } finally { await browser.close(); }
 })().catch(e => { console.error(e); process.exitCode = 1; });

@@ -20,7 +20,7 @@ import { hasDocMap, renderDocMap } from '../docmap.js';
 // 껍데기(머리말·도입·결론·하단 액션)만 공통이고, 가운데는 증거마다 완전히 다르다.
 // 브리프 화면은 사이트의 종이 톤을 따르지 않는다 — 팔레트를 그 증거 문서에서 가져온다.
 const PLAYS = {
-  flow: playFlow, // E6 — 원칙 → 요소 → 플로우 차트 → 데이터
+  flow: playFlow, // E7 — 원칙 → 요소 → 플로우 차트 → 데이터
   character_call: playCharacterCall, // E1 — 각인 → 호출 → 되감기 → 입체감
   cut_play: playCutPlay, // E5 — 처음 게임을 해 보고, 채굴·경제를 덜어내고, 출시한 게임을 해 본다
   one_card: playOneCard, // E2 — 같은 여정 두 개, 카드 한 장 차이
@@ -32,7 +32,7 @@ export function hasBrief(ev) {
 }
 
 // 누른 뒤에 볼 것(결론 한 줄 · 다음에 누를 것)이 화면 밖이면 보일 만큼만 화면을 옮긴다(10/11 사용자 결정 재5 —
-// E6가 첫 시전에 판을 화면에 맞추듯, 방문자가 직접 누른 뒤에만). 1366×768 노트북에서 셋을 맞힌 뒤의 결론 · 다음 단추(E1),
+// E7가 첫 시전에 판을 화면에 맞추듯, 방문자가 직접 누른 뒤에만). 1366×768 노트북에서 셋을 맞힌 뒤의 결론 · 다음 단추(E1),
 // 덜어내기 · 출시 게임의 강화 단추(E5), 결론 줄(E2)이 화면 아래로 떨어져 '눌러도 아무 일이 없는' 화면이 됐다.
 // 본체는 누른 직후 화면을 그린 다음에 부른다. 다 보이면 움직이지 않고, 아래로 넘쳤으면 아래 끝이 보일 만큼 내리고,
 // 머리띠 밑으로 사라졌으면 그만큼 올린다(휴대폰 E5 — 표시가 화면 위로 사라졌다). 한 화면에 다 들지 않으면 첫째 것부터 보인다.
@@ -74,7 +74,7 @@ function loadMonoKo() {
   document.head.appendChild(link);
 }
 
-// 브리프로 가는 이름표(10/07 사용자 결정): 해 보는 페이지(E1 · E6 · E5 · E2)와 읽는 회고(E3 — 페이지가 곧 원문)를 가른다.
+// 브리프로 가는 이름표(10/07 사용자 결정): 해 보는 페이지(E1 · E7 · E5 · E2)와 읽는 회고(E3 — 페이지가 곧 원문)를 가른다.
 // 보관함 카드는 evidence.open_*, 진술 팝업 · 증거 상세는 common.to_interactive(같은 문구)
 export function briefOpenKey(ev, where = 'card') {
   if (ev?.brief?.kind === 'retro') return 'evidence.open_retro';
@@ -136,13 +136,13 @@ export function renderBrief(view, eid) {
   // 원본은 머리말에 상시 둔다. 결론까지 내려가야만 닿으면, 브리프를 건너뛰고
   // 문서만 보려는 검토자에게 인터랙션이 통행료가 된다.
   // 브리프가 곧 원문인 증거(E3)는 따로 열 원본이 없다
-  // 문서 지도가 있는 증거(E6)는 원본 문서 단추 대신 머리말 아래의 지도에서 연다 — 두 문서와 엑셀이 한 그림에 있다
+  if (ev.url) view.querySelector('.brief-head-doc').appendChild(docLink(T('brief.original_doc'), 'ghost', ev.url));
+  // 엑셀 하나를 함께 쓰는 짝 증거가 있으면(E7 — 짝은 E6 데이터 테이블 설계) 머리말 아래에 짝 증거 지도를 둔다(10/15)
   if (hasDocMap(ev)) view.querySelector('.brief-lead').appendChild(renderDocMap(ev));
-  else if (ev.url) view.querySelector('.brief-head-doc').appendChild(docLink(T('brief.original_doc'), 'ghost', ev.url));
 
   const recapEl = view.querySelector('.brief-recap');
   const status = view.querySelector('.brief > [role="status"]');
-  // 결론은 조작을 마친 뒤에 열린다(10/10 — E6도 첫 시전 뒤로 옮겨 다섯 페이지가 같다).
+  // 결론은 조작을 마친 뒤에 열린다(10/10 — E7도 첫 시전 뒤로 옮겨 다섯 페이지가 같다).
   // 마운트 도중에 결론을 부르는 본체가 생겨도 렌더가 끊기지 않게, play가 생기기 전의 요청은 받아 두었다가 직후에 연다
   // (play를 바로 보면 초기화 전 접근(TDZ)으로 렌더가 중간에 끊기고 라우터가 렌더 중 상태로 굳는다).
   let play = null;
@@ -173,7 +173,7 @@ export function renderBrief(view, eid) {
   // opts.scroll === false — 결론을 열어도 화면을 결론으로 끌어내리지 않는다(본체가 결론 한 줄을 조작 곁에 따로 보여 줄 때)
   function showRecap(opts) {
     const r = b.recap || {};
-    // 결론 칸의 세 줄은 있는 것만 둔다 — 10/07 사용자 지시로 E6는 셋 다, E2는 마지막 줄을 뺐다(빈 줄의 여백이 남지 않게)
+    // 결론 칸의 세 줄은 있는 것만 둔다 — 10/07 사용자 지시로 E7는 셋 다, E2는 마지막 줄을 뺐다(빈 줄의 여백이 남지 않게)
     recapEl.replaceChildren();
     for (const [tag, cls, text] of [['h3', 'brief-recap-title', r.title], ['p', 'brief-recap-line', r.line], ['p', 'brief-closing', r.closing]]) {
       if (!text) continue;
@@ -182,7 +182,7 @@ export function renderBrief(view, eid) {
       node.textContent = text;
       recapEl.appendChild(node);
     }
-    // 원본 문서는 브리프의 끝에서만 연다 — 첨부(E6 스킬 데이터 테이블 · E5 플레이 링크)는 그 옆에 그대로
+    // 원본 문서는 브리프의 끝에서만 연다 — 첨부(E7 스킬 데이터 테이블 · E5 플레이 링크)는 그 옆에 그대로
     const docs = document.createElement('div');
     docs.className = 'brief-docs';
     if (ev.url) docs.appendChild(docLink(T('brief.original_doc'), 'accent', ev.url));

@@ -187,7 +187,7 @@ export function playCharacterCall(host, cfg, onComplete, _ev, kit = {}) {
   /* ---------- 첫인상 — 맞히기 ---------- */
 
   function buildMatch() {
-    // 머리말 오른쪽의 안내 알약은 10/10 사용자 결정(마3)으로 뺐다 — 데이터 lead.prompt_at: 'action'(E6 · E5 · E2와 같은 방식).
+    // 머리말 오른쪽의 안내 알약은 10/10 사용자 결정(마3)으로 뺐다 — 데이터 lead.prompt_at: 'action'(E7 · E5 · E2와 같은 방식).
     // 첫 행동(맞히기) 곁에는 이미 사용법 말풍선(match_help)과 '지금 누를 것' 표시가 있어 문구를 따로 옮겨 붙이지 않는다
     const m = cfg.match || {};
     // 왼쪽 칸에 '무엇을 하는 칸인지'와 카드 묶음을 세우고, 오른쪽에 초상 셋을 둔다 —

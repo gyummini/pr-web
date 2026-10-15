@@ -1,5 +1,5 @@
 {
-  "_readme": "증거 카드 데이터. E1~E7 url 실링크(E2는 아르카나 웹 페이지, E7은 노션, 나머지는 드라이브·anyone 열람 확인). E8은 사이트 내 라우트(/notebook). E3(PokeCollect 개발 회고)은 외부 원본 없이 브리프(kind retro)가 곧 원문이다(url null). doc_type=카드에 표시할 문서 유형 라벨, thumb=표지 썸네일 경로(파일이 없으면 카드가 자동으로 아이콘 폴백). sd_dialogue는 조수 캐릭터 '클루'의 확정 대사(캐릭터_조수_클루.md 톤 가이드 준수). sd_dialogue_revisit은 이미 수집된 증거의 앵커를 다시 클릭했을 때 대사(null이면 기본 sd_dialogue 재사용). memo=팝업 요약 메모. 모든 증거가 같은 뼈대를 공유한다 — rows는 반드시 관찰 → 판단 → block → 결과 순서로 쓴다. 증거를 여러 개 열어도 읽는 법을 다시 배우지 않게 하는 것이 목적이므로 앞의 두 칸(관찰·판단)은 고정하고, 세 번째 칸만 문서 성격에 맞춰 바꾼다 (적용/재구성/결과/제안/설계/정리 — 증거의 doc_type을 따라간다). 프로젝트마다 달라지는 것은 가운데 block 하나뿐이다: block.kind가 assets/js/memo.js의 렌더러를 고르고, block 안의 나머지 필드는 kind마다 자유다 (E5 = before_after). rows의 v는 본문, hl은 그 본문 안에서 형광펜을 그을 부분(없으면 생략). brief=증거 상세의 Interactive Brief. 뼈대는 메모와 같은 순서(관찰 → 판단 → 직접 해보기 → 재구성)이고, brief.kind가 assets/js/briefs/의 인터랙션 렌더러를 고른다. play 안의 값은 kind마다 자유이며, E6의 수치는 역기획서 원문(회복력 합계 4857 · 배율 1.202 · 회복속도 0.5838/sec · 시작 Cost 2.48)에서 그대로 가져왔다. brief가 없는 증거는 상세 페이지가 기존 요약 화면으로 동작한다. groups=증거 보관함과 /docs의 묶음(순서대로 그린다). 각 증거의 group이 id를 가리킨다. minor: true인 묶음은 \"추가\"로 세어 머리말 건수에서 따로 표시한다 — 수집·엔딩 조건에는 영향이 없다. 화면에서는 brief를 \"인터랙티브 페이지\"로 부르고 주소도 /evidence/:id/interactive를 쓴다(데이터·코드 키는 brief 그대로). [임시]로 시작하는 문구는 Claude가 넣은 임시 문구(DRAFT)다 — Text/strings.csv에 DRAFT로 올라 있고, 최종 문구로 바꾼 뒤 배포한다(커밋 훅이 막는다). 각 brief.labels에는 그 화면에만 붙는 고정 문구(버튼·머리글)가 있다 — 코드에 문구를 두지 않는다. lead.prompt_at=\"action\"이면 안내 문구를 머리말 대신 인터랙티브 페이지의 첫 행동 옆에 붙인다. E4(블루 아카이브 전술대회 전투 개선 제안서, 10/08 추가)는 추가 포트폴리오(group extra)다 — 10/09부터 에필로그 끝 '참고' 줄에 걸리고(chapters EPILOGUE), 수집 개수(배지 n/8)와 수첩 해금 조건에 든다(assets/js/state.js BASE_EVIDENCE_IDS, 사용자 결정). 옛 E4(에픽세븐 오토마톤 타워 개선 제안서)는 10/10 사용자 결정으로 뺐다. 10/11 사용자 결정으로 번호를 중요도 순으로 다시 매겼다(옛 번호 → 새 번호: E5→E2 · E8→E3 · E9→E4 · E3→E5 · E2→E6 · E6→E7 · E7→E8, E1은 그대로). 원본은 드라이브 김경민_포트폴리오 폴더(anyone 열람)에 있다 — 같은 폴더의 '[전투]블루아카이브 전술대회(비동기 PVP) 개선 제안서.pdf'는 2025.09 Canva 원본(E7 AI 활용기 초안의 근거)이라 새 버전으로 덮지 않고 따로 둔다.",
+  "_readme": "증거 카드 데이터. E1~E8 url 실링크(E2는 아르카나 웹 페이지, E8은 노션, 나머지는 드라이브·anyone 열람 확인). E9은 사이트 내 라우트(/notebook). E3(PokeCollect 개발 회고)은 외부 원본 없이 브리프(kind retro)가 곧 원문이다(url null). doc_type=카드에 표시할 문서 유형 라벨, thumb=표지 썸네일 경로(파일이 없으면 카드가 자동으로 아이콘 폴백). sd_dialogue는 조수 캐릭터 '클루'의 확정 대사(캐릭터_조수_클루.md 톤 가이드 준수). sd_dialogue_revisit은 이미 수집된 증거의 앵커를 다시 클릭했을 때 대사(null이면 기본 sd_dialogue 재사용). memo=팝업 요약 메모. 모든 증거가 같은 뼈대를 공유한다 — rows는 반드시 관찰 → 판단 → block → 결과 순서로 쓴다. 증거를 여러 개 열어도 읽는 법을 다시 배우지 않게 하는 것이 목적이므로 앞의 두 칸(관찰·판단)은 고정하고, 세 번째 칸만 문서 성격에 맞춰 바꾼다 (적용/재구성/결과/제안/설계/정리 — 증거의 doc_type을 따라간다). 프로젝트마다 달라지는 것은 가운데 block 하나뿐이다: block.kind가 assets/js/memo.js의 렌더러를 고르고, block 안의 나머지 필드는 kind마다 자유다 (E5 = before_after). rows의 v는 본문, hl은 그 본문 안에서 형광펜을 그을 부분(없으면 생략). brief=증거 상세의 Interactive Brief. 뼈대는 메모와 같은 순서(관찰 → 판단 → 직접 해보기 → 재구성)이고, brief.kind가 assets/js/briefs/의 인터랙션 렌더러를 고른다. play 안의 값은 kind마다 자유이며, E7의 수치는 역기획서 원문(회복력 합계 4857 · 배율 1.202 · 회복속도 0.5838/sec · 시작 Cost 2.48)에서 그대로 가져왔다. brief가 없는 증거는 상세 페이지가 기존 요약 화면으로 동작한다. groups=증거 보관함과 /docs의 묶음(순서대로 그린다). 각 증거의 group이 id를 가리킨다. minor: true인 묶음은 \"추가\"로 세어 머리말 건수에서 따로 표시한다 — 수집·엔딩 조건에는 영향이 없다. 화면에서는 brief를 \"인터랙티브 페이지\"로 부르고 주소도 /evidence/:id/interactive를 쓴다(데이터·코드 키는 brief 그대로). [임시]로 시작하는 문구는 Claude가 넣은 임시 문구(DRAFT)다 — Text/strings.csv에 DRAFT로 올라 있고, 최종 문구로 바꾼 뒤 배포한다(커밋 훅이 막는다). 각 brief.labels에는 그 화면에만 붙는 고정 문구(버튼·머리글)가 있다 — 코드에 문구를 두지 않는다. lead.prompt_at=\"action\"이면 안내 문구를 머리말 대신 인터랙티브 페이지의 첫 행동 옆에 붙인다. E4(블루 아카이브 전술대회 전투 개선 제안서, 10/08 추가)는 추가 포트폴리오(group extra)다 — 10/09부터 에필로그 끝 '참고' 줄에 걸리고(chapters EPILOGUE), 수집 개수(배지 n/8)와 수첩 해금 조건에 든다(assets/js/state.js BASE_EVIDENCE_IDS, 사용자 결정). 옛 E4(에픽세븐 오토마톤 타워 개선 제안서)는 10/10 사용자 결정으로 뺐다. 10/11 사용자 결정으로 번호를 중요도 순으로 다시 매겼다(옛 번호 → 새 번호: E5→E2 · E8→E3 · E9→E4 · E3→E5 · E2→E6 · E6→E7 · E7→E8, E1은 그대로). 10/15에는 데이터 테이블 설계를 새 E6으로 넣으며 Cost 역기획서, AI 보고서, 히든 수첩을 한 칸씩 내렸다(E6→E7 · E7→E8 · E8→E9). 원본은 드라이브 김경민_포트폴리오 폴더(anyone 열람)에 있다 — 같은 폴더의 '[전투]블루아카이브 전술대회(비동기 PVP) 개선 제안서.pdf'는 2025.09 Canva 원본(E8 AI 활용기 초안의 근거)이라 새 버전으로 덮지 않고 따로 둔다.",
   "groups": [
     {
       "id": "doc",
@@ -385,6 +385,67 @@
       "doc_type": "시스템 기획",
       "group": "doc",
       "thumb": "/assets/img/thumb_e6.jpg",
+      "title": "블루아카이브 스킬 데이터 테이블 설계",
+      "subtitle": "캐릭터를 만나며 구체화시킨 표 구조",
+      "chapters": [
+        "CASE02"
+      ],
+      "summary": "블루아카이브의 스킬 설명과 수치에서 거꾸로 출발해 스킬 데이터 테이블을 직접 구성했습니다. 캐릭터를 한 명씩 넣을 때마다 표의 구조를 어떻게, 왜 바꿨는지를 '표가 길어지더라도 실수를 막는다'는 기준으로 정리했고, 캐릭터 15명의 스킬 데이터를 담은 엑셀(xlsx)을 함께 첨부했습니다.",
+      "url": "https://drive.google.com/file/d/1h9w1x8gxhX9E9fpuI9e9zAV7UK6rVPVq/view?usp=sharing",
+      "attachments": [],
+      "sd_dialogue": "요약해뒀어요, 탐정님! 캐릭터를 한 명씩 넣을 때마다 표가 점점 완성되는 느낌이 들어서, 정리하는 내내 신났어요!",
+      "sd_dialogue_revisit": null,
+      "memo": {
+        "by": "클루의 요약",
+        "rows": [
+          {
+            "k": "관찰",
+            "v": "스킬마다 설명 속 숫자가 1개에서 14개까지 달라서, 모든 변수를 한 줄에 넣으면 같은 칸에 뜻이 다른 값이 섞였음.",
+            "hl": "같은 칸에 뜻이 다른 값이 섞였음"
+          },
+          {
+            "k": "판단",
+            "v": "표가 길어지더라도, 실수를 막는 쪽을 고른다."
+          },
+          {
+            "block": {
+              "kind": "mapping",
+              "left_label": "만난 스킬",
+              "right_label": "고른 구조",
+              "pairs": [
+                {
+                  "l": "토모에 EX, 변수 다섯 개",
+                  "r": "변수 하나를 한 줄에"
+                },
+                {
+                  "l": "우이 EX, 레벨마다 다른 코스트",
+                  "r": "계산식 대신 레벨마다 한 줄"
+                },
+                {
+                  "l": "라브 EX, 순번마다 다른 소환",
+                  "r": "갈래마다 효과 줄과 순번"
+                },
+                {
+                  "l": "미도리, 애용품으로 바뀐 스킬",
+                  "r": "바뀐 스킬 전체를 따로"
+                }
+              ],
+              "converge": "특이한 EX가 더 들어와도 칸이 늘지 않는 표"
+            }
+          },
+          {
+            "k": "결과",
+            "v": "캐릭터의 스킬을 표 네 개(캐릭터, 스킬, 효과, 수치)에 나눠 담아 번호로 이었고, 특이한 EX 세 개도 칸을 새로 만들지 않고 넣었음."
+          }
+        ]
+      },
+      "pair": "E7"
+    },
+    {
+      "id": "E7",
+      "doc_type": "시스템 기획",
+      "group": "doc",
+      "thumb": "/assets/img/thumb_e7.jpg",
       "title": "블루아카이브 Cost 시스템 역기획서",
       "subtitle": "설계 의도에서 데이터 테이블까지",
       "chapters": [
@@ -396,10 +457,6 @@
         {
           "label": "첨부: 스킬 데이터 테이블 (xlsx)",
           "url": "https://drive.google.com/file/d/1NcUBi_mxsF_R_WuIBoUOCGs2b3DDVuUD/view?usp=sharing"
-        },
-        {
-          "label": "첨부: 스킬 데이터 테이블 설계 (PDF)",
-          "url": "https://drive.google.com/file/d/1h9w1x8gxhX9E9fpuI9e9zAV7UK6rVPVq/view?usp=sharing"
         }
       ],
       "sd_dialogue": "요약해뒀어요, 탐정님! 특히 데이터 테이블이 꼼꼼하게 짜여 있어서 인상 깊었어요!",
@@ -457,7 +514,7 @@
           }
         ],
         "lead": {
-          "title": "스킬 하나를 누르면, 표 네 개가 움직인다",
+          "title": "스킬 하나를 누르면, 스킬 데이터 구조가 묘사된다.",
           "line": "역기획서가 그린 플로우 차트와 데이터 테이블을 그대로 옮겼습니다. 버튼 하나가 어떤 표를 읽고 어떤 값을 바꾸는지 따라가 볼 수 있습니다.",
           "prompt": "손패에서 스킬 하나를 눌러 보세요!",
           "prompt_at": "action",
@@ -1227,22 +1284,27 @@
         "title": "문서 두 개가 엑셀 하나를 함께 씁니다",
         "docs": [
           {
+            "eid": "E7",
             "name": "Cost 시스템 역기획서",
-            "note": "왜 이 규칙인지",
-            "url": "https://drive.google.com/file/d/1ZWscIIxWXjkZ-xEax9OnSbzlef25iZPQ/view?usp=sharing"
+            "note": "왜 이 규칙인지"
           },
           {
+            "eid": "E6",
             "name": "스킬 데이터 테이블 설계",
-            "note": "표를 왜 이렇게 나눴는지",
-            "url": "https://drive.google.com/file/d/1h9w1x8gxhX9E9fpuI9e9zAV7UK6rVPVq/view?usp=sharing"
+            "note": "표를 왜 이렇게 나눴는지"
           }
         ],
         "hub": {
           "name": "스킬 데이터 테이블 (xlsx)",
           "note": "두 문서가 함께 쓰는 엑셀",
           "url": "https://drive.google.com/file/d/1NcUBi_mxsF_R_WuIBoUOCGs2b3DDVuUD/view?usp=sharing"
+        },
+        "labels": {
+          "current": "지금 보는 증거",
+          "partner": "공유하는 증거"
         }
-      }
+      },
+      "pair": "E6"
     },
     {
       "id": "E5",
@@ -2213,7 +2275,7 @@
       "id": "E2",
       "doc_type": "시스템 기획",
       "group": "doc",
-      "thumb": "/assets/img/thumb_e7.jpg",
+      "thumb": "/assets/img/thumb_e8.jpg",
       "title": "스타세이비어 아르카나 세트 시스템 제안서",
       "subtitle": "기존 구조를 유지하면서 캐릭터의 매력을 더하는 신규 시스템",
       "chapters": [
@@ -2520,7 +2582,7 @@
       }
     },
     {
-      "id": "E7",
+      "id": "E8",
       "doc_type": "AI 활용",
       "group": "extra",
       "thumb": "/assets/img/thumb_e2.jpg",
@@ -3339,12 +3401,12 @@
       }
     },
     {
-      "id": "E8",
+      "id": "E9",
       "title": "클루의 수사 수첩",
       "subtitle": "히든 — 사건 밖에서 만난 의뢰인의 모습",
       "chapters": [],
       "hidden": true,
-      "unlock_condition": "기본 증거(E1~E7) 전부 수집",
+      "unlock_condition": "기본 증거(E1~E8) 전부 수집",
       "summary": "조수 클루가 수사 중 몰래 남긴 기록입니다. 클루의 프로필과 서류에는 없는 지원자의 취향을 담았습니다.",
       "url": "/notebook",
       "attachments": [],
