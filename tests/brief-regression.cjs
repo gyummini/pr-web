@@ -29,6 +29,14 @@ const UNLOCK = UI.popup.unlock.replace('{action}', UI.common.to_interactive);
     assert.deepEqual(await page.locator('.ev-bundle .ev-card').evaluateAll((els) => els.map((e) => e.dataset.eid)), ['E6', 'E7'], 'E6 and E7 sit in one binder');
     assert.equal(await page.locator('.ev-bundle .ev-spine-hub[target="_blank"]').getAttribute('href'), E2card.attachments[0].url, 'the binder spine opens the shared workbook');
     assert.equal(await page.locator('.ev-bundle .att-chip').count(), 0, 'the shared workbook is not repeated on the cards');
+    // 넓은 화면: '직접 만든 게임'은 기획 문서 옆 오른쪽 칸에 같은 높이로, 다른 색 파일철로(10/16 사용자 결정 — 게임이 화면 1.3장 아래로 밀렸다)
+    const shelfCols = await page.evaluate(() => {
+      const top = (g) => Math.round(document.querySelector(`.ev-group[data-group="${g}"]`).getBoundingClientRect().top);
+      const bg = (g) => getComputedStyle(document.querySelector(`.ev-group[data-group="${g}"] .ev-card`)).backgroundColor;
+      return { doc: top('doc'), game: top('game'), docBg: bg('doc'), gameBg: bg('game') };
+    });
+    assert.equal(shelfCols.game, shelfCols.doc, `the game group stands beside the documents ${JSON.stringify(shelfCols)}`);
+    assert.notEqual(shelfCols.gameBg, shelfCols.docBg, 'game folders have their own colour');
     // 종이 바탕(보관함)에서는 지금 탭이 아래 종이와 이어진다 — 장면 화면에서만 띠를 뺀다(10/15, 수첩 테스트가 엔딩 · 수첩 쪽을 본다)
     assert.equal(await page.evaluate(() => getComputedStyle(document.querySelector('#tabs a.active'), '::after').content), '""', 'the active tab still runs into the paper on the shelf');
     await page.locator('.ev-card[data-eid="E7"]').click();
