@@ -334,18 +334,64 @@ function setupNotebook(view) {
     const img = btn.querySelector('img');
     const ph = nb.part3.photos[Number(btn.dataset.i)];
     if (!ph || !img || !img.complete || !img.naturalWidth) return; // 아직 받지 못했거나 파일이 없으면 열지 않는다
+    const spots = Array.isArray(ph.spots) ? ph.spots : [];
+    const L = NL();
     const overlay = document.createElement('div');
     overlay.className = 'modal-overlay nb-zoom-overlay';
+    // 전체 사진 위의 네모(spots)를 누르면 그 자리의 세부 사진으로 바뀌고, '전체 사진으로'를 누르면 돌아온다
     overlay.innerHTML = `
       <div class="nb-zoom" role="dialog" aria-modal="true" aria-label="${esc(ph.label)}" tabindex="-1">
         <button type="button" class="popup-close nb-zoom-close" aria-label="${TH('popup.close')}">${CLOSE_ICON}</button>
         <p class="nb-zoom-cap">${esc(ph.caption)}</p>
-        <img class="nb-zoom-img" src="${esc(img.currentSrc || img.src)}" alt="${esc(ph.label)}">
+        ${spots.length ? `<p class="nb-zoom-hint">${esc(L.photo_hint)}</p>` : ''}
+        <div class="nb-zoom-stage">
+          <img class="nb-zoom-img" src="${esc(img.currentSrc || img.src)}" alt="${esc(ph.label)}">
+          ${spots
+            .map(
+              (sp, k) =>
+                `<button type="button" class="nb-zoom-spot" data-k="${k}" style="left:${Number(sp.x)}%;top:${Number(sp.y)}%;width:${Number(sp.w)}%;height:${Number(sp.h)}%" aria-label="${esc(sp.label)}"><span class="nb-zoom-spot-no" aria-hidden="true">${k + 1}</span></button>`
+            )
+            .join('')}
+        </div>
+        ${spots.length ? `<button type="button" class="nb-zoom-back" hidden>← ${esc(L.photo_back)}</button>` : ''}
       </div>`;
     document.getElementById('modal-root').appendChild(overlay);
     document.documentElement.classList.add('modal-open');
     const card = overlay.querySelector('.nb-zoom');
     card.focus({ preventScroll: true });
+    if (spots.length) {
+      const zImg = overlay.querySelector('.nb-zoom-img');
+      const cap = overlay.querySelector('.nb-zoom-cap');
+      const hint = overlay.querySelector('.nb-zoom-hint');
+      const back = overlay.querySelector('.nb-zoom-back');
+      const spotBtns = [...overlay.querySelectorAll('.nb-zoom-spot')];
+      const whole = zImg.getAttribute('src');
+      spots.forEach((sp) => {
+        new Image().src = sp.src; // 네모를 누르기 전에 미리 받아 둔다
+      });
+      const show = (k) => {
+        const sp = k === null ? null : spots[k];
+        zImg.src = sp ? sp.src : whole;
+        zImg.alt = sp ? sp.label : ph.label;
+        cap.textContent = sp ? sp.caption : ph.caption;
+        card.setAttribute('aria-label', sp ? sp.label : ph.label);
+        hint.hidden = !!sp;
+        back.hidden = !sp;
+        spotBtns.forEach((b) => (b.hidden = !!sp));
+      };
+      spotBtns.forEach((b) =>
+        b.addEventListener('click', () => {
+          show(Number(b.dataset.k));
+          back.dataset.k = b.dataset.k;
+          back.focus({ preventScroll: true });
+        })
+      );
+      back.addEventListener('click', () => {
+        const from = spotBtns[Number(back.dataset.k)];
+        show(null);
+        if (from) from.focus({ preventScroll: true });
+      });
+    }
     const onZoomKey = (e) => {
       if (e.key === 'Escape') {
         e.preventDefault();
@@ -606,7 +652,9 @@ function pagePart3(p, slice) {
         <div class="nb-polaroid photo p${i + 1}">
           <button type="button" class="nb-photo-btn" data-i="${i}" aria-haspopup="dialog">
             <span class="nb-polaroid-inner">
-              <span class="nb-photo-area"><img class="nb-photo-img" data-src="${esc(ph.src)}" alt="${esc(ph.label)}"><span class="nb-photo-label">${esc(ph.label)}</span></span>
+              <span class="nb-photo-area"><img class="nb-photo-img" data-src="${esc(ph.src)}" alt="${esc(ph.label)}">${(ph.spots || [])
+                .map((sp) => `<span class="nb-photo-spot" style="left:${Number(sp.x)}%;top:${Number(sp.y)}%;width:${Number(sp.w)}%;height:${Number(sp.h)}%" aria-hidden="true"></span>`)
+                .join('')}<span class="nb-photo-label">${esc(ph.label)}</span></span>
               <span class="nb-polaroid-cap">${esc(ph.caption)}</span>
             </span>
           </button>

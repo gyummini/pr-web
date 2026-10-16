@@ -1759,6 +1759,8 @@ body.plain-mode #view { min-height: 100vh; }
 .nb-photos { display: flex; gap: 28px 30px; justify-content: center; flex-wrap: wrap; padding: 10px 0 8px; }
 .nb-polaroid.photo { flex: 1 1 300px; max-width: 380px; min-width: 0; transform: rotate(-2.5deg); }
 .nb-polaroid.photo.p2 { transform: rotate(1.8deg); margin-top: 26px; }
+/* 사진이 하나(전체 사진 — 세부 사진은 그 안의 네모 칸으로 본다)면 크게 */
+.nb-polaroid.photo:only-child { flex-basis: 100%; max-width: 620px; transform: rotate(-1.5deg); }
 .nb-polaroid.photo .nb-tape.small { left: -22px; top: -13px; width: 104px; height: 28px; background: rgba(240,222,158,.7); transform: rotate(-40deg); }
 .nb-polaroid.photo.p2 .nb-tape.small { left: auto; right: -20px; transform: rotate(38deg); background: rgba(178,209,190,.65); }
 .nb-photo-btn {
@@ -1791,7 +1793,33 @@ body.plain-mode #view { min-height: 100vh; }
 .nb-zoom:focus { outline: none; }
 /* 설명 줄이 위(닫기 단추는 다른 팝업처럼 오른쪽 위), 그 아래 사진 */
 .nb-zoom-cap { margin: 0 44px 10px 4px; min-height: 30px; font-family: var(--nb-font-hand); font-size: var(--text-xl); line-height: 1.4; color: var(--nb-ink-soft); }
-.nb-zoom-img { display: block; width: 100%; height: auto; max-height: calc(100dvh - 140px); object-fit: contain; background: var(--nb-paper-dim); }
+/* 사진 틀은 4:3(전체 · 세부 사진 모두 4:3) — 네모 칸의 % 자리가 사진과 정확히 겹치게 틀째 화면에 맞춘다 */
+.nb-zoom-stage { position: relative; width: min(100%, calc((100dvh - 190px) * 4 / 3)); aspect-ratio: 4 / 3; margin: 0 auto; background: var(--nb-paper-dim); }
+.nb-zoom-img { position: absolute; inset: 0; display: block; width: 100%; height: 100%; object-fit: contain; }
+.nb-zoom-hint { margin: -6px 44px 10px 4px; font-size: var(--text-sm); color: var(--nb-muted); }
+/* 세부 사진 자리 — 누를 수 있는 네모 */
+.nb-zoom-spot {
+  position: absolute; padding: 0; border: 2px dashed rgba(255,255,255,.95); border-radius: 4px;
+  background: rgba(255,214,90,.12); box-shadow: 0 0 0 1px rgba(0,0,0,.45), inset 0 0 0 1px rgba(0,0,0,.35);
+  cursor: zoom-in; transition: background var(--motion-fast) ease, border-color var(--motion-fast) ease;
+}
+.nb-zoom-spot:hover, .nb-zoom-spot:focus-visible { background: rgba(255,214,90,.28); border-style: solid; border-color: #ffd65a; }
+.nb-zoom-spot:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.nb-zoom-spot[hidden] { display: none; }
+.nb-zoom-spot-no {
+  position: absolute; left: -2px; top: -2px; min-width: 24px; height: 24px; padding: 0 6px; border-radius: 4px 0 4px 0;
+  background: #ffd65a; color: #2a2418; font: 700 13px/24px ui-monospace, Menlo, Consolas, monospace;
+}
+.nb-zoom-back {
+  display: block; margin: 10px auto 0; padding: 8px 16px; border: 1px solid var(--nb-ink-faint); border-radius: var(--radius-tag);
+  background: var(--surface); color: var(--nb-ink-soft); font: inherit; cursor: pointer;
+}
+.nb-zoom-back:hover { background: var(--nb-paper-dim); }
+.nb-zoom-back:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.nb-zoom-back[hidden] { display: none; }
+/* 폴라로이드 위에도 세부 사진 자리를 옅게 표시해 둔다(누르면 사진 창이 열린다) */
+.nb-photo-spot { position: absolute; border: 1.5px dashed rgba(255,255,255,.9); box-shadow: 0 0 0 1px rgba(0,0,0,.35); border-radius: 2px; pointer-events: none; }
+.nb-photo-img[data-src] ~ .nb-photo-spot, .nb-photo-area.empty .nb-photo-spot { display: none; }
 
 /* ---- 마지막 쪽 — 사건 종결(10/11 수첩 끝) ---- */
 /* 문단 사이는 한 줄을 비운다(전에는 14px라 문단마다 글과 줄이 14px씩 어긋났다).
@@ -1964,6 +1992,8 @@ body.plain-mode #view { min-height: 100vh; }
   width: min(calc(380px + 24px), 100%, calc((100cqh - 6.5 * var(--nb-line) - 60px) * 4 / 3));
 }
 .nb-portrait .nb-polaroid.photo.p2 { margin-top: 0; }
+/* 사진이 하나면 칸 폭까지(높이가 허락하는 만큼) */
+.nb-portrait .nb-polaroid.photo:only-child { width: min(100%, calc((100cqh - 6.5 * var(--nb-line) - 60px) * 4 / 3)); }
 /* 마지막 면 — 왼쪽은 마지막 쪽, 오른쪽은 글자 없는 뒤표지(표지와 같은 재질 · 크기, 고리는 묶음 쪽 — notebook.js pageBackCover). 첫 면의 표지와 짝을 이룬다.
    마지막 쪽이 왼쪽 쪽이 되어 접힌 귀퉁이는 바깥쪽 아래(왼쪽)로 옮긴다 — 묶음 쪽 귀퉁이는 접히지 않는다 */
 .nb-spreads .at-l .nb-sheet.folded { clip-path: polygon(0 0, 100% 0, 100% 100%, var(--nb-corner) 100%, 0 calc(100% - var(--nb-corner))); }

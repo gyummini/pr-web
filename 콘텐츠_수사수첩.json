@@ -93,12 +93,45 @@
       {
         "src": "/assets/img/notebook_photo_1.jpg",
         "label": "굿즈 전시 사진 ①",
-        "caption": "진열장 한편."
-      },
-      {
-        "src": "/assets/img/notebook_photo_2.jpg",
-        "label": "굿즈 전시 사진 ②",
-        "caption": "2부의 기록과 대조해볼 것."
+        "caption": "진열장 한편.",
+        "spots": [
+          {
+            "src": "/assets/img/notebook_detail_4.jpg",
+            "label": "왼쪽 맨 윗칸",
+            "caption": "레코드판 아래, 피규어가 줄지어 섰다.",
+            "x": 7.6,
+            "y": 10.2,
+            "w": 25.7,
+            "h": 26.9
+          },
+          {
+            "src": "/assets/img/notebook_detail_3.jpg",
+            "label": "왼쪽 아랫칸",
+            "caption": "페르소나 설정집과 마케인. 2부에서 들은 이름들.",
+            "x": 9,
+            "y": 58.3,
+            "w": 24.3,
+            "h": 20.4
+          },
+          {
+            "src": "/assets/img/notebook_detail_2.jpg",
+            "label": "오른쪽 윗칸",
+            "caption": "토게나시 토게아리 칸. 배지는 기둥에까지 붙어 있음.",
+            "x": 69.4,
+            "y": 16.3,
+            "w": 22.2,
+            "h": 22.6
+          },
+          {
+            "src": "/assets/img/notebook_detail_1.jpg",
+            "label": "오른쪽 아랫칸",
+            "caption": "에반게리온 캔과 티셔츠. 다 마시지는 않은 듯.",
+            "x": 62.5,
+            "y": 41.7,
+            "w": 30.3,
+            "h": 51.9
+          }
+        ]
       }
     ]
   },
@@ -116,6 +149,8 @@
     "end_tab": "끝",
     "sd_alt": "조수 클루",
     "continued": "(계속)",
-    "memo_by": "클루 메모:"
+    "memo_by": "클루 메모:",
+    "photo_hint": "네모 칸을 누르면 그 자리를 크게 볼 수 있다.",
+    "photo_back": "전체 사진으로"
   }
 }

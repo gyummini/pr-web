@@ -126,10 +126,10 @@ const IMG = /memo_\d|notebook_photo_\d/;
       const shape = await paperFit(page);
       assert.ok(shape.ratio > 1.1, `[new] 1440×900: the paper stands upright (${shape.size})`);
 
-      // 여덟 면(2부 세 쪽 · 3부 두 쪽, 알약은 일곱 쪽) — 종이 크기 · 자리, 구멍 줄 자리, 제목 줄 자리가 모두 같다
+      // 일곱 면(2부 세 쪽 · 3부 한 쪽 — 세부 사진은 전체 사진 안의 네모 칸) — 종이 크기 · 자리, 구멍 줄 자리, 제목 줄 자리가 모두 같다
       const seen = [];
       const pills = [];
-      for (let i = 0; i < 8; i++) {
+      for (let i = 0; i < 7; i++) {
         seen.push(...(await geometry(page)));
         pills.push(await indicator(page));
         if (i === 4) {
@@ -137,7 +137,7 @@ const IMG = /memo_\d|notebook_photo_\d/;
           const v = await closingView(page);
           assert.ok(v.nth === 3 && v.top === 0 && v.closing && v.link, `[new] 1440×900: the closing note and the play record are on screen on the third 2부 page ${JSON.stringify(v)}`);
         }
-        if (i < 7) {
+        if (i < 6) {
           if (i === 0) {
             const mid = await midTurn(page, '.nb-next');
             assert.ok(mid.length >= 2 && mid.every((m) => m.opacity === 1), `turning pages stay opaque ${JSON.stringify(mid)}`);
@@ -148,9 +148,9 @@ const IMG = /memo_\d|notebook_photo_\d/;
       }
       assert.equal(new Set(seen.map((s) => s.paper.join())).size, 1, `one paper size and place ${JSON.stringify(seen.map((s) => s.paper))}`);
       assert.equal(new Set(seen.map((s) => s.holes[0])).size, 1, 'the holes are at the same place on every page');
-      assert.deepEqual(pills, ['1 / 7', '2 / 7', '3 / 7', '4 / 7', '5 / 7', '6 / 7', '6 / 7', '7 / 7'], '[new] eight views count the same seven pages');
+      assert.deepEqual(pills, ['1 / 7', '2 / 7', '3 / 7', '4 / 7', '5 / 7', '6 / 7', '7 / 7'], 'seven views, seven pages');
       const titles = seen.filter((s) => s.title).map((s) => s.title[1]);
-      assert.equal(titles.length, 6, 'titles on 1부, the three 2부 pages and the two 3부 pages');
+      assert.equal(titles.length, 5, 'titles on 1부, the three 2부 pages and the 3부 page');
       assert.equal(new Set(titles).size, 1, `titles on the same line ${titles}`);
       assert.equal(await overX(page), 0);
       await page.close();
@@ -193,7 +193,7 @@ const IMG = /memo_\d|notebook_photo_\d/;
       await page.waitForTimeout(760);
       assert.equal(await indicator(page), '6 / 7');
       assert.deepEqual(await page.locator('.nb-tab[aria-current="true"]').allInnerTexts(), [L.part3_tab]);
-      assert.ok(imgs.includes('notebook_photo_1.jpg') && imgs.includes('notebook_photo_2.jpg'));
+      assert.ok(imgs.includes('notebook_photo_1.jpg'));
       await page.keyboard.press('ArrowLeft');
       await page.waitForTimeout(760);
       assert.equal(await indicator(page), '5 / 7');
@@ -239,6 +239,29 @@ const IMG = /memo_\d|notebook_photo_\d/;
       await photo.click();
       await page.locator('.nb-zoom-close').click();
       assert.equal(await dialog.count(), 0, 'the close button closes');
+
+      // 전체 사진 위의 네모 칸 — 누르면 그 자리의 세부 사진, '전체 사진으로'를 누르면 돌아오고 초점은 누른 칸으로
+      const spots = NB.part3.photos[0].spots;
+      await photo.click();
+      await dialog.waitFor();
+      assert.equal(await page.locator('.nb-zoom-spot').count(), spots.length, 'one box per detail photo');
+      const fit = await page.evaluate(() => {
+        const st = document.querySelector('.nb-zoom-stage').getBoundingClientRect();
+        return [...document.querySelectorAll('.nb-zoom-spot')].every((b) => { const r = b.getBoundingClientRect(); return r.left >= st.left - 1 && r.right <= st.right + 1 && r.top >= st.top - 1 && r.bottom <= st.bottom + 1; });
+      });
+      assert.ok(fit, 'boxes lie inside the photo');
+      await page.locator('.nb-zoom-spot').nth(1).click();
+      await page.waitForFunction((src) => { const i = document.querySelector('.nb-zoom-img'); return i.src.endsWith(src) && i.complete && i.naturalWidth > 0; }, spots[1].src);
+      assert.equal(await dialog.getAttribute('aria-label'), spots[1].label);
+      assert.equal((await page.locator('.nb-zoom-cap').innerText()).trim(), spots[1].caption);
+      assert.equal(await page.locator('.nb-zoom-spot:visible').count(), 0, 'boxes hide on a detail photo');
+      assert.equal(await page.evaluate(() => document.activeElement.classList.contains('nb-zoom-back')), true, 'focus moves to the back button');
+      await page.keyboard.press('Enter');
+      assert.ok((await page.locator('.nb-zoom-img').getAttribute('src')).endsWith(NB.part3.photos[0].src), 'back to the overview');
+      assert.equal(await page.locator('.nb-zoom-spot:visible').count(), spots.length);
+      assert.equal(await page.evaluate(() => document.activeElement.dataset.k), '1', 'focus returns to the box');
+      await page.keyboard.press('Escape');
+      assert.equal(await dialog.count(), 0);
 
       // 마지막 쪽 — 서명, CASE CLOSED 도장(방문한 날짜), 명함(이메일 · 휴대폰 · PDF) 뒤에 돌아가기. 도장은 단추를 가리지 않는다
       await page.locator('.nb-tab[data-ch="end"]').click();
@@ -287,7 +310,7 @@ const IMG = /memo_\d|notebook_photo_\d/;
       assert.ok(mid.every((m) => m.lift >= 0) && mid.some((m) => m.lift > 0), `[new] the turning right page lifts toward the reader ${JSON.stringify(mid)}`);
       // 끝 면까지 넘기며 면마다 적는다 — 알약, 보이는 쪽, 지금 장 탭, 3부 사진 폭(흰 테두리 안의 사진, 기울이기 전), 받은 그림
       const views = [{ indicator: '1 / 7' }];
-      for (let i = 0; i < 8; i++) {
+      for (let i = 0; i < 7; i++) {
         const g = await geometry(page);
         const info = await page.evaluate(() => [...document.querySelectorAll('.nb-page.active')].map((p) => ({
           ch: p.dataset.ch, cont: !!p.querySelector('.nb-cont'), text: p.innerText.trim(),
@@ -302,36 +325,19 @@ const IMG = /memo_\d|notebook_photo_\d/;
         if (await page.locator('.nb-next').isDisabled()) break;
         await next(page);
       }
-      assert.deepEqual(views.map((v) => v.indicator), ['1 / 7', '2–3 / 7', '4–5 / 7', '6 / 7', '7 / 7'], '[new] five views, four turns — both screens count the same seven pages');
-      assert.deepEqual(views.slice(1).map((v) => v.tabs.map((s) => s.trim()).join()), [[L.part1_tab, L.part2_tab], [L.part2_tab], [L.part3_tab], [L.end_tab]].map((t) => t.map((s) => s.trim()).join()), 'the current chapter tabs');
-      // 3부 사진은 폭 380px 안팎(전에는 한 쪽에 둘을 쌓아 1920×1080에서 304px, 1920×937에서 208px)
+      assert.deepEqual(views.map((v) => v.indicator), ['1 / 7', '2–3 / 7', '4–5 / 7', '6–7 / 7'], 'four views, three turns — both screens count the same seven pages');
+      assert.deepEqual(views.slice(1).map((v) => v.tabs.map((s) => s.trim()).join()), [[L.part1_tab, L.part2_tab], [L.part2_tab], [L.part3_tab, L.end_tab]].map((t) => t.map((s) => s.trim()).join()), 'the current chapter tabs');
+      // 3부는 전체 사진 한 장(세부 사진은 그 안의 네모 칸) — 혼자라 크게
       const p3photos = views.slice(1).flatMap((v) => v.info.filter((x) => x.ch === 'p3').flatMap((x) => x.photos));
-      assert.ok(p3photos.length === 2 && p3photos.every((px) => px >= 360), `[new] 3부 photos are 380px or so at 1920×1080 ${p3photos}`);
-      // 마지막 면 — 왼쪽은 마지막 쪽, 오른쪽은 글자 없는 뒤표지(표지와 같은 크라프트)
+      assert.ok(p3photos.length === 1 && p3photos[0] >= 480, `3부 overview photo is large at 1920×1080 ${p3photos}`);
+      // 마지막 면 — 왼쪽은 3부, 오른쪽은 마지막 쪽(쪽 수가 짝이 맞아 뒤표지 없음)
       const last = views[views.length - 1];
-      assert.equal(last.chs, 'end|back', `[new] the last view is the last page and the back cover (${last.chs})`);
-      const cover = await page.evaluate(() => getComputedStyle(document.querySelector('.nb-page[data-ch="cover"] .nb-paper')).backgroundColor);
-      assert.equal(last.info[1].text, '', '[new] the back cover has no text');
-      assert.equal(last.info[1].kraft, cover, 'the back cover is the cover kraft');
+      assert.equal(last.chs, 'p3|end', `the last view is 3부 and the last page (${last.chs})`);
       assert.equal(await page.locator('.nb-next').isDisabled(), true);
-      // 3부는 두 쪽 — 사진마다 한 쪽, 오른쪽 쪽은 같은 제목 줄에 '(계속)'
-      const p3 = views.find((v) => v.chs === 'p3|p3');
-      assert.ok(p3, `[new] 3부 gets a spread of its own ${views.map((v) => v.chs)}`);
-      assert.deepEqual(p3.info.map((x) => x.photos.length), [1, 1], 'one photo on each 3부 page');
-      assert.deepEqual(p3.info.map((x) => x.cont), [false, true], 'the right 3부 page continues the title line');
-      assert.equal(p3.g[0].title[1], p3.g[1].title[1], 'both 3부 titles on the same line');
-      // 3부 앞 면에서 사진 두 장을 미리 받는다(지금 면과 다음 면)
-      const before3 = views[views.indexOf(p3) - 1];
-      assert.ok(['notebook_photo_1.jpg', 'notebook_photo_2.jpg'].every((f) => before3.imgs.includes(f)), 'the 3부 pictures load one view ahead');
-      // 왼쪽 쪽이 된 마지막 쪽 — 접힌 귀퉁이는 바깥쪽(왼쪽 아래), 도장은 링크를 가리지 않는다
-      const corner = await page.evaluate(() => {
-        const p = document.querySelector('.nb-page.active[data-ch="end"]');
-        const a = p.querySelector('.nb-paper').getBoundingClientRect();
-        const c = p.querySelector('.nb-corner').getBoundingClientRect();
-        return { left: Math.round(c.left - a.left), bottom: Math.round(a.bottom - c.bottom) };
-      });
-      assert.deepEqual(corner, { left: 0, bottom: 0 }, 'the folded corner is at the outer bottom corner of the left page');
-      assert.deepEqual(await stampCovers(page), [], 'the stamp covers no link on the left page');
+      // 3부 앞 면에서 3부 사진을 미리 받는다(지금 면과 다음 면)
+      const before3 = views[views.indexOf(last) - 1];
+      assert.ok(before3.imgs.includes('notebook_photo_1.jpg'), 'the 3부 picture loads one view ahead');
+      assert.deepEqual(await stampCovers(page), [], 'the stamp covers no link on the last page');
       const book = await page.evaluate(() => document.querySelector('.nb-book').getBoundingClientRect().width / innerWidth);
       assert.ok(book > 0.6 && book < 0.72, `the spread is about 65% of the screen (${book.toFixed(2)})`);
       assert.equal(await overX(page), 0);
@@ -341,30 +347,29 @@ const IMG = /memo_\d|notebook_photo_\d/;
       // 넘기는 동안 누른 넘김 하나를 기억한다 — 새 면에서도(4–5에서 두 번 누르면 3부를 지나 마지막 면)
       await page.locator('.nb-tab[data-ch="p1"]').click();
       await page.waitForTimeout(760);
-      await next(page);
-      assert.equal(await indicator(page), '4–5 / 7');
+      assert.equal(await indicator(page), '2–3 / 7');
       await page.locator('.nb-next').click();
       await page.waitForTimeout(120);
       await page.locator('.nb-next').click();
       await page.waitForTimeout(1600);
-      assert.equal(await indicator(page), '7 / 7', 'one turn pressed during a turn is kept');
+      assert.equal(await indicator(page), '6–7 / 7', 'one turn pressed during a turn is kept');
       // 화면이 낮아지면 한 쪽씩 — 보던 3부가 그대로 보이고(3부 두 쪽 = 한 쪽 화면의 3부 한 쪽), 다시 넓어지면 3부 면
       await page.locator('.nb-tab[data-ch="p3"]').click();
       await page.waitForTimeout(760);
       await page.setViewportSize({ width: 1366, height: 768 });
       await page.waitForTimeout(300);
       assert.equal(await indicator(page), '6 / 7', 'same chapter after leaving the spread');
-      assert.equal(await page.locator('.nb-page.active .nb-photo-btn').count(), 1, 'the single 3부 page is the first photo page');
+      assert.equal(await page.locator('.nb-page.active .nb-photo-btn').count(), 1, 'the single 3부 page holds the overview photo');
       await page.setViewportSize({ width: 1920, height: 1080 });
       await page.waitForTimeout(300);
-      assert.equal(await indicator(page), '6 / 7', 'same chapter after coming back to the spread');
+      assert.equal(await indicator(page), '6–7 / 7', 'same chapter after coming back to the spread');
       await page.close();
     }
 
     // ── 키 큰 화면 — 종이 높이 ÷ 폭은 1.45까지(10/11(2) 작은 정리 5 — 2560×1300 펼침은 640×1148, 1.8이었다). 남는 높이의 가운데, 단추 · 알약 · 탭은 종이 밖 ──
     for (const [w, h] of [[2560, 1300], [900, 1600]]) {
       const { page } = await open({ width: w, height: h });
-      for (let i = 0; i < 8; i++) {
+      for (let i = 0; i < 7; i++) {
         const fit = await paperFit(page);
         assert.ok(fit.ratio <= 1.455, `[new] ${w}×${h} ${await indicator(page)}: paper ${fit.size} keeps height ÷ width at 1.45 or less (${fit.ratio.toFixed(2)})`);
         assert.ok(Math.abs(fit.above - fit.below) <= 1, `${w}×${h}: the notebook sits in the middle of the room left (${fit.above} above, ${fit.below} below)`);
@@ -398,7 +403,7 @@ const IMG = /memo_\d|notebook_photo_\d/;
     }
 
     assert.deepEqual(errors, []);
-    console.log('PASS notebook: ending → notebook after the last line, one paper size · binding · title line on every page (seven pages, 2부 in three), upright pages from 821px (cover: title label and sticker only), opaque turns that lift toward the reader (also under reduced motion), four index tabs with the current chapter, keys scroll inside first, pictures only for the current and next page, the 2부 closing note on screen at 1366×768 (with the play record at 1440×900), 3부 photo window (focus kept, Esc · outside · close, focus back), weight of the conclusion, last page (signature · CASE CLOSED stamp with the visit date · card · back, stamp covers nothing, phones not longer than before), spreads at 1920×1080 (five views, four turns, 3부 photo per page, blank back cover, outer folded corner, kept turn) and back to single pages on a low screen, paper height ÷ width 1.45 or less on tall screens (phones not capped).');
+    console.log('PASS notebook: ending → notebook after the last line, one paper size · binding · title line on every page (seven pages, 2부 in three), upright pages from 821px (cover: title label and sticker only), opaque turns that lift toward the reader (also under reduced motion), four index tabs with the current chapter, keys scroll inside first, pictures only for the current and next page, the 2부 closing note on screen at 1366×768 (with the play record at 1440×900), 3부 photo window (focus kept, Esc · outside · close, focus back; boxes on the overview open each detail photo and come back), weight of the conclusion, last page (signature · CASE CLOSED stamp with the visit date · card · back, stamp covers nothing, phones not longer than before), spreads at 1920×1080 (four views, three turns, one large 3부 overview photo, kept turn) and back to single pages on a low screen, paper height ÷ width 1.45 or less on tall screens (phones not capped).');
   } finally {
     await browser.close();
   }
