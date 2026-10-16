@@ -373,7 +373,7 @@ function setupNotebook(view) {
         const sp = k === null ? null : spots[k];
         zImg.src = sp ? sp.src : whole;
         zImg.alt = sp ? sp.label : ph.label;
-        cap.textContent = sp ? sp.caption : ph.caption;
+        cap.textContent = sp ? sp.caption || '' : ph.caption; // 세부 사진은 설명 없이(10/16 사용자 결정)
         card.setAttribute('aria-label', sp ? sp.label : ph.label);
         hint.hidden = !!sp;
         back.hidden = !sp;

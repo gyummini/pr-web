@@ -253,7 +253,7 @@ const IMG = /memo_\d|notebook_photo_\d/;
       await page.locator('.nb-zoom-spot').nth(1).click();
       await page.waitForFunction((src) => { const i = document.querySelector('.nb-zoom-img'); return i.src.endsWith(src) && i.complete && i.naturalWidth > 0; }, spots[1].src);
       assert.equal(await dialog.getAttribute('aria-label'), spots[1].label);
-      assert.equal((await page.locator('.nb-zoom-cap').innerText()).trim(), spots[1].caption);
+      assert.equal((await page.locator('.nb-zoom-cap').innerText()).trim(), spots[1].caption || '', 'detail photos carry no caption');
       assert.equal(await page.locator('.nb-zoom-spot:visible').count(), 0, 'boxes hide on a detail photo');
       assert.equal(await page.evaluate(() => document.activeElement.classList.contains('nb-zoom-back')), true, 'focus moves to the back button');
       await page.keyboard.press('Enter');

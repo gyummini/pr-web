@@ -98,7 +98,6 @@
           {
             "src": "/assets/img/notebook_detail_4.jpg",
             "label": "왼쪽 맨 윗칸",
-            "caption": "레코드판 아래, 피규어가 줄지어 섰다.",
             "x": 7.6,
             "y": 10.2,
             "w": 25.7,
@@ -107,7 +106,6 @@
           {
             "src": "/assets/img/notebook_detail_3.jpg",
             "label": "왼쪽 아랫칸",
-            "caption": "페르소나 설정집과 마케인. 2부에서 들은 이름들.",
             "x": 9,
             "y": 58.3,
             "w": 24.3,
@@ -116,7 +114,6 @@
           {
             "src": "/assets/img/notebook_detail_2.jpg",
             "label": "오른쪽 윗칸",
-            "caption": "토게나시 토게아리 칸. 배지는 기둥에까지 붙어 있음.",
             "x": 69.4,
             "y": 16.3,
             "w": 22.2,
@@ -125,7 +122,6 @@
           {
             "src": "/assets/img/notebook_detail_1.jpg",
             "label": "오른쪽 아랫칸",
-            "caption": "에반게리온 캔과 티셔츠. 다 마시지는 않은 듯.",
             "x": 62.5,
             "y": 41.7,
             "w": 30.3,
