@@ -273,9 +273,10 @@ const IMG = /memo_\d|notebook_photo_\d/;
       assert.ok(stamp.startsWith(NB.folded.closed) && /\d{4}\.\d{2}\.\d{2}$/.test(stamp), stamp);
       const links = await end.locator('.nb-card a, .nb-back').evaluateAll((as) => as.map((a) => {
         const h = a.getAttribute('href') || '';
-        return h.startsWith('mailto:') ? 'mailto' : h.startsWith('tel:') ? 'tel' : a.hasAttribute('download') ? 'download' : h;
+        return h.startsWith('mailto:') ? 'mailto' : h.startsWith('tel:') ? 'tel' : a.hasAttribute('download') ? 'download' : a.target === '_blank' ? 'new-tab:' + h : h;
       }));
-      assert.deepEqual(links, ['mailto', 'tel', 'download', '/evidence'], 'card (email · phone · PDF) then back, in focus order');
+      // 10/19 포트폴리오 PDF 단추를 더했다 — 내려받기가 아니라 새 창
+      assert.deepEqual(links, ['mailto', 'tel', 'download', 'new-tab:/포트폴리오.pdf', '/evidence'], 'card (email · phone · two PDFs) then back, in focus order');
       assert.equal(await end.locator('.nb-back').getAttribute('href'), '/evidence');
       assert.deepEqual(await stampCovers(page), [], 'the stamp covers no link');
       assert.equal(await page.locator('.nb-next').isDisabled(), true);

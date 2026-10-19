@@ -2,6 +2,7 @@
 //
 //   이력서.pdf            ← data/resume.json
 //   이력서_자기소개서.pdf  ← data/resume.json + 콘텐츠_자기소개서.md
+//   포트폴리오.pdf         ← 콘텐츠_증거카드.json (tools/portfolio-pdf.cjs, A4 가로)
 //
 // 사이트의 컨셉(사건 파일·클루)을 걷어낸 열람용이다. 기본 사항·세부 사항과 같은 데이터를 읽으므로
 // 원고나 이력을 고친 뒤 이것만 돌리면 웹과 PDF가 어긋나지 않는다.
@@ -15,6 +16,7 @@ const { createRequire } = require('node:module');
 
 // playwright는 tests/의 개발 의존성이다. 저장소 루트에 package.json을 두지 않는다(Vercel이 Node 빌드로 바꾼다).
 const { chromium } = createRequire(path.join(__dirname, '..', 'tests', 'package.json'))('playwright');
+const { portfolioHtml } = require('./portfolio-pdf.cjs');
 
 const root = path.resolve(__dirname, '..');
 const read = (f) => fs.readFileSync(path.join(root, f), 'utf8');
@@ -235,6 +237,8 @@ const page = (title, inner) => `<!doctype html><html lang="ko"><head><meta chars
   const targets = [
     ['이력서.pdf', page(fill(ui.pdf.resume_doc_title, { name: resume.name }), resumeHtml(resume))],
     ['이력서_자기소개서.pdf', page(fill(ui.pdf.full_doc_title, { name: resume.name }), resumeHtml(resume) + essayHtml(essay))],
+    // 포트폴리오만 모은 A4 가로 PDF(10/19) — 증거 데이터에서 만들므로 증거를 고치면 이것도 같이 다시 만든다
+    ['포트폴리오.pdf', portfolioHtml({ root, data: JSON.parse(read('콘텐츠_증거카드.json')), ui, resume })],
   ];
   for (const [file, html] of targets) {
     await tab.setContent(html, { waitUntil: 'load' });
