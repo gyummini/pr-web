@@ -106,7 +106,7 @@ function xlsxHtml(ev) {
 const PLAY_IC = '<svg class="ev-play-ic" viewBox="0 0 24 16" aria-hidden="true" focusable="false"><path d="M6.5 1h11a5.5 5.5 0 0 1 5.4 6.6l-1 5a3 3 0 0 1-5.2 1.3L14.5 11h-5l-2.2 2.9a3 3 0 0 1-5.2-1.3l-1-5A5.5 5.5 0 0 1 6.5 1Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M7 4.5v4M5 6.5h4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="16.5" cy="5.2" r="1.1" fill="currentColor"/><circle cx="18.6" cy="7.6" r="1.1" fill="currentColor"/></svg>';
 
 // 대표작(SSR) — 보관함 맨 위 한 줄(10/19 사용자 결정: PokeCollect · 캐릭터 분석서 · 데이터 테이블 설계).
-// 수사 파일 위에 SSR 특별 도장. 큰 단추는 완성된 결과물(원본 PDF, 원본이 따로 없는 E3는 회고 페이지),
+// 수사 파일 위에 '클루 추천' 도장(조수 클루의 얼굴 도장 + 글자 도장, 10/19 사용자 — 처음엔 SSR 도장이었다). 큰 단추는 완성된 결과물(원본 PDF, 원본이 따로 없는 E3는 회고 페이지),
 // 작은 단추는 그 결과물에서 가장 인상적인 한 가지를 해 보는 인터랙티브(E6은 Cost 역기획서와 함께 쓰는 체험 — '연계' 이름표).
 // 표지는 흐리게 가리지 않는다 — 가장 먼저 보여 주려는 작품이다. 어느 단추로 열든 그 증거는 모은 것이 된다
 function pickHtml(ev) {
@@ -123,7 +123,7 @@ function pickHtml(ev) {
   return `
     <article class="ev-pick" data-eid="${esc(ev.id)}">
       <span class="ev-tab"><span class="ev-type">${esc(ev.doc_type || '')}</span></span>
-      <span class="ssr-seal" aria-hidden="true"><b>SSR</b></span>
+      <span class="clue-seal"><span class="clue-seal-face" aria-hidden="true"><img src="/assets/img/SD.webp" alt=""></span><span class="clue-seal-t">${TH('evidence.pick_seal')}</span></span>
       <a class="ev-pick-thumb" href="${esc(thumbHref)}"${ev.url ? ' target="_blank" rel="noopener"' : ''} tabindex="-1" aria-hidden="true">
         <img src="${esc(ev.thumb)}" alt="" loading="lazy"><span class="clip" aria-hidden="true"></span></a>
       <h3 class="ev-title">${esc(ev.title)}</h3>
