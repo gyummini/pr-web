@@ -756,7 +756,7 @@ function contactLinks() {
   if (r.email) lines.push(`<a class="nb-contact" href="mailto:${esc(r.email)}">${esc(r.email)}</a>`);
   if (r.phone) lines.push(`<a class="nb-contact" href="tel:${esc(r.phone.replace(/-/g, ''))}">${esc(r.phone)}</a>`);
   const pdf = r.fullPdf ? `<a class="nb-contact nb-pdf" href="${esc(r.fullPdf)}" download>${TH('common.full_pdf')}</a>` : '';
-  // 포트폴리오만 모은 PDF는 새 창(10/19 사용자 요청) — 두 단추를 한 묶음으로 세운다
-  const pf = r.portfolioPdf ? `<a class="nb-contact nb-pdf" href="${esc(r.portfolioPdf)}" target="_blank" rel="noopener">${TH('common.portfolio_pdf')}</a>` : '';
+  // 포트폴리오만 모은 PDF도 바로 내려받는다(10/19 사용자 요청) — 두 단추를 한 묶음으로 세운다
+  const pf = r.portfolioPdf ? `<a class="nb-contact nb-pdf" href="${esc(r.portfolioPdf)}" download>${TH('common.portfolio_pdf')}</a>` : '';
   return `<div class="nb-card-lines">${lines.join('')}</div>${pdf || pf ? `<div class="nb-pdfs">${pdf}${pf}</div>` : ''}`;
 }
