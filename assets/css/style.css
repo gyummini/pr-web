@@ -1890,6 +1890,10 @@ body.plain-mode #view { min-height: 100vh; }
   border: 1.5px solid var(--nb-navy); border-radius: var(--radius-tag); background: var(--nb-paper);
 }
 .nb-contact.nb-pdf:hover { background: var(--surface); text-decoration: none; }
+/* PDF 단추 둘(이력서·자기소개서 내려받기, 포트폴리오 새 창)을 한 묶음으로 세운다(10/19) */
+.nb-pdfs { flex: none; display: flex; flex-direction: column; align-items: stretch; gap: 6px; }
+/* 둘이 되며 명함이 길어져 1180×820에서 마지막 쪽이 5px 넘쳤다 — 단추 위아래 여백만 줄인다 */
+.nb-pdfs .nb-contact.nb-pdf { padding-block: 6px; }
 .nb-back {
   display: inline-flex; align-items: center; gap: 8px; max-width: 100%;
   font-size: var(--text-ui); letter-spacing: 1px; line-height: 1.4; padding: 12px 22px; border-radius: var(--radius-tag);

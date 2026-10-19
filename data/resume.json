@@ -129,5 +129,6 @@
     ]
   },
   "pdf": "/이력서.pdf",
-  "fullPdf": "/이력서_자기소개서.pdf"
+  "fullPdf": "/이력서_자기소개서.pdf",
+  "portfolioPdf": "/포트폴리오.pdf"
 }
