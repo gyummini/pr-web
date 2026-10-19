@@ -203,7 +203,7 @@ const ch = (no) => `.lg-ch[data-chapter="${no}"]`;
     for (const id of ['E7', 'E5', 'E2', 'E8', 'E4']) assert.equal(await shelf.locator(`.ev-card[data-eid="${id}"] .ev-open`).innerText(), UI.evidence.open_summary, id);
     // 대표작(SSR) 셋은 맨 위 줄의 수사 파일 — 큰 단추는 원본(E3은 회고), 작은 단추는 체험(10/19 사용자 결정)
     assert.deepEqual(await shelf.locator('.ev-picks .ev-pick').evaluateAll((els) => els.map((e) => e.dataset.eid)), ['E1', 'E3', 'E6'], 'the three SSR picks lead the shelf');
-    assert.equal(await shelf.locator('.ev-pick .ssr-seal').count(), 3, 'each pick carries the SSR seal');
+    assert.equal(await shelf.locator('.ev-pick .clue-seal').count(), 3, "each pick carries Clue's recommendation seal");
     assert.equal(await shelf.locator('.ev-pick[data-eid="E1"] .ev-pick-doc').getAttribute('href'), EVS.find((e) => e.id === 'E1').url, 'the big button opens the original');
     assert.equal(await shelf.locator('.ev-pick[data-eid="E3"] .ev-pick-doc span').innerText(), UI.evidence.open_retro);
     assert.equal(await shelf.locator('.play-chip').count(), 0, 'no play chip left on ordinary cards — E3 plays from its pick card');

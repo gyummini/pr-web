@@ -38,13 +38,15 @@ function portfolioHtml({ root, data, ui, resume }) {
   function pick(ev) {
     const p = ev.pick || {};
     return `<div class="card pick">
-      <span class="tab">${esc(ev.doc_type || '')}</span><span class="seal">SSR</span>
+      <span class="tab">${esc(ev.doc_type || '')}</span><span class="seal"><span class="seal-t">${esc(ui.evidence.pick_seal)}</span><span class="seal-face"><img src="${face}" alt=""></span></span>
       <a class="thumb" href="${esc(target(ev))}"><img src="${img(ev.thumb)}" alt=""><span class="chip">${esc(ev.url ? ui.evidence.direct : ui.evidence.open_retro)}</span></a>
       <div class="info"><h3>${esc(ev.title)}</h3><p>${esc(p.question || ev.subtitle || '')}</p><p class="note">${esc(p.doc_note || '')}</p></div>${xlsx(ev)}
       <span class="code">${esc(ev.id)}</span>
     </div>`;
   }
   const picks = cards.filter((c) => c.rank === 'SSR').sort(byNo);
+  // 대표작 도장 — 조수 클루 얼굴(붉은 선) + '클루 추천' 글자 도장(사이트 보관함과 같다, 10/19 SSR 도장 대신)
+  const face = 'data:image/webp;base64,' + fs.readFileSync(path.join(root, 'assets/img/SD.webp')).toString('base64');
   const shelf = data.groups.map((g) => ({ ...g, cards: cards.filter((c) => c.group === g.id && c.rank !== 'SSR').sort(byNo) })).filter((g) => g.cards.length);
   const group = (g) => `<section class="group g-${g.id}${g.minor ? ' minor' : ''}"><h2>${esc(g.label)} <span>${g.cards.length}</span></h2><div class="cards">${g.cards.map(card).join('')}</div></section>`;
   const doc = shelf.find((g) => g.id === 'doc');
@@ -92,10 +94,11 @@ function portfolioHtml({ root, data, ui, resume }) {
   .picks .cards { grid-template-columns: repeat(3, 1fr); gap: 9mm 7mm; }
   .card.pick { border: 1.6pt solid #8c1d16; box-shadow: 0 0 0 0.8pt #d9b45a inset, 0 1mm 3mm rgba(140,29,22,.18); padding: 4mm 4mm 3.5mm; gap: 2.5mm; }
   .card.pick .tab { border: 1.6pt solid #8c1d16; border-bottom: 0; left: -1.6pt; }
-  .seal { position: absolute; top: -6mm; right: -4mm; z-index: 2; width: 17mm; height: 17mm; border-radius: 50%; display: grid; place-items: center;
-          background: radial-gradient(circle at 35% 30%, #fbe9a9, #d9b45a 55%, #a97c1f); border: 0.9mm solid #8c1d16;
-          box-shadow: inset 0 0 0 1.1mm rgba(255,246,214,.75), inset 0 0 0 1.5mm #8c1d16; transform: rotate(-12deg);
-          font-size: 13pt; font-weight: 900; color: #8c1d16; }
+  .seal { position: absolute; top: -6.5mm; right: -3mm; z-index: 2; display: flex; align-items: center; transform: rotate(-9deg); }
+  .seal-face { position: relative; width: 15mm; height: 15mm; border-radius: 50%; overflow: hidden; isolation: isolate; border: 0.7mm solid #b23a2f; background: #f5f3ef; }
+  .seal-face img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: 50% 16%; filter: grayscale(1) brightness(.92) contrast(3.2); }
+  .seal-face::after { content: ''; position: absolute; inset: 0; background: #b23a2f; mix-blend-mode: screen; }
+  .seal-t { margin-right: -1.5mm; padding: 0.8mm 2.2mm; border: 0.5mm solid #b23a2f; color: #b23a2f; background: rgba(245,243,239,.92); font-size: 8pt; font-weight: 800; white-space: nowrap; }
   .card.pick h3 { font-size: 11pt; }
   .card.pick .info p { font-size: 8.5pt; }
   .card.pick .info .note { margin-top: 1.5mm; font-size: 7.5pt; color: #8c1d16; font-weight: 700; }
