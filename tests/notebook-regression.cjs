@@ -275,8 +275,8 @@ const IMG = /memo_\d|notebook_photo_\d/;
         const h = a.getAttribute('href') || '';
         return h.startsWith('mailto:') ? 'mailto' : h.startsWith('tel:') ? 'tel' : a.hasAttribute('download') ? 'download' : a.target === '_blank' ? 'new-tab:' + h : h;
       }));
-      // 10/19 포트폴리오 PDF 단추를 더했다 — 내려받기가 아니라 새 창
-      assert.deepEqual(links, ['mailto', 'tel', 'download', 'new-tab:/포트폴리오.pdf', '/evidence'], 'card (email · phone · two PDFs) then back, in focus order');
+      // 10/19 포트폴리오 PDF 단추를 더했다 — 둘 다 바로 내려받기
+      assert.deepEqual(links, ['mailto', 'tel', 'download', 'download', '/evidence'], 'card (email · phone · two PDFs) then back, in focus order');
       assert.equal(await end.locator('.nb-back').getAttribute('href'), '/evidence');
       assert.deepEqual(await stampCovers(page), [], 'the stamp covers no link');
       assert.equal(await page.locator('.nb-next').isDisabled(), true);

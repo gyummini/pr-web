@@ -32,8 +32,8 @@ export function renderEvidence(view) {
         DB.resume && DB.resume.fullPdf
           ? `<div class="ev-doc-actions">
                <a class="btn ghost" href="${DB.resume.fullPdf}" download>${TH('common.full_pdf')}</a>${
-                 // 포트폴리오만 모은 PDF(10/19 사용자 요청) — 내려받기가 아니라 새 창에서 연다(썸네일을 누르면 원본이 열리는 PDF라 바로 보게)
-                 DB.resume.portfolioPdf ? `<a class="btn ghost" href="${DB.resume.portfolioPdf}" target="_blank" rel="noopener">${TH('common.portfolio_pdf')}</a>` : ''
+                 // 포트폴리오만 모은 PDF(10/19 사용자 요청) — 옆 단추처럼 바로 내려받는다(처음엔 새 창이었다가 같은 날 사용자 지시로 바꿈)
+                 DB.resume.portfolioPdf ? `<a class="btn ghost" href="${DB.resume.portfolioPdf}" download>${TH('common.portfolio_pdf')}</a>` : ''
                }
              </div>`
           : ''

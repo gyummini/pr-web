@@ -8,7 +8,7 @@
     "to_interactive": "요약 인터랙티브 페이지 보기 →",
     "open_doc": "문서 열기 ↗",
     "full_pdf": "이력서·자기소개서 PDF ⬇",
-    "portfolio_pdf": "포트폴리오 PDF ↗",
+    "portfolio_pdf": "포트폴리오 PDF ⬇",
     "portfolio_count": "포트폴리오 {main}건",
     "portfolio_count_minor": "포트폴리오 {main}건 · 추가 {minor}건"
   },
