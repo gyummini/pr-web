@@ -25,10 +25,10 @@ const UNLOCK = UI.popup.unlock.replace('{action}', UI.common.to_interactive);
     });
     await page.waitForTimeout(600);
     assert.equal(await page.locator('.ev-grid').count(), 1, 'Cancel pending route back to source');
-    // 짝 증거 바인더(10/15 사용자 제안 — 두 파일철이 엑셀 하나를 묶는다): E6 · E7이 한 묶음에, 가운데 등받이의 엑셀은 새 탭, 카드에는 엑셀 칩이 없다
-    assert.deepEqual(await page.locator('.ev-bundle .ev-card').evaluateAll((els) => els.map((e) => e.dataset.eid)), ['E6', 'E7'], 'E6 and E7 sit in one binder');
-    assert.equal(await page.locator('.ev-bundle .ev-spine-hub[target="_blank"]').getAttribute('href'), E2card.attachments[0].url, 'the binder spine opens the shared workbook');
-    assert.equal(await page.locator('.ev-bundle .att-chip').count(), 0, 'the shared workbook is not repeated on the cards');
+    // 짝 증거(E6 · E7)는 두 파일철에 같은 엑셀 쪽지를 각각 붙인다(10/19 — 전에는 한 바인더). 쪽지는 새 탭, 카드의 엑셀 칩은 없다
+    const slips = await page.locator('.ev-xlsx').evaluateAll((els) => els.map((a) => [a.closest('[data-eid]').dataset.eid, a.getAttribute('href'), a.target]));
+    assert.deepEqual(slips, [['E6', E2card.attachments[0].url, '_blank'], ['E7', E2card.attachments[0].url, '_blank']], 'each partner folder carries the shared workbook slip');
+    assert.equal(await page.locator('.ev-card[data-eid="E7"] .att-chip').count(), 0, 'the shared workbook is not repeated as a chip');
     // 넓은 화면: '직접 만든 게임'은 기획 문서 옆 오른쪽 칸에 같은 높이로, 다른 색 파일철로(10/16 사용자 결정 — 게임이 화면 1.3장 아래로 밀렸다)
     const shelfCols = await page.evaluate(() => {
       const top = (g) => Math.round(document.querySelector(`.ev-group[data-group="${g}"]`).getBoundingClientRect().top);
@@ -406,7 +406,7 @@ const UNLOCK = UI.popup.unlock.replace('{action}', UI.common.to_interactive);
     // '포트폴리오 화면으로 돌아가기'는 보관함 맨 위가 아니라 이 증거의 카드 자리로 — 카드가 화면 가운데쯤, 잠깐 들린다(10/11 기회 5).
     // 누르기(마우스 · 손가락)로 눌렀으면 카드에 초점을 옮기지 않는다 — 초점 테두리가 그려지지 않게
     const backAt = await page.evaluate(() => {
-      const card = document.querySelector('.ev-card[data-eid="E1"]');
+      const card = document.querySelector('.ev-card[data-eid="E1"], .ev-pick[data-eid="E1"]'); // E1은 10/19부터 대표작(SSR) 카드
       const r = card.getBoundingClientRect();
       const head = document.getElementById('site-header').getBoundingClientRect().bottom;
       return { inView: r.top >= head && r.bottom <= innerHeight, centered: Math.abs((r.top + r.bottom) / 2 - (head + innerHeight) / 2) <= 24, marked: card.classList.contains('is-back'), focused: document.activeElement === card };

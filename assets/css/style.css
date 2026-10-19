@@ -666,6 +666,11 @@ html.night .scene { background-image: url('../img/bg_office_night.jpg'); }
   .ev-grid:has(> .ev-group[data-group="doc"]) > .ev-group[data-group="game"] { grid-column: 2; }
   .ev-grid:has(> .ev-group[data-group="game"]) > .ev-group[data-group="doc"] .ev-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .ev-grid:has(> .ev-group[data-group="doc"]) > .ev-group[data-group="game"] .ev-cards { grid-template-columns: minmax(0, 1fr); }
+  /* 추가 포트폴리오는 게임 칸 아래로(10/19 — 대표작이 맨 위로 빠지며 묶음마다 카드가 한두 장이 되어, 아래 한 줄에 혼자 놓이면 비어 보였다) */
+  .ev-grid:has(> .ev-group[data-group="game"]):has(> .ev-group[data-group="extra"]) > .ev-group[data-group="doc"] { grid-row: 1 / span 2; }
+  .ev-grid:has(> .ev-group[data-group="doc"]) > .ev-group[data-group="game"] { grid-row: 1; }
+  .ev-grid:has(> .ev-group[data-group="doc"]):has(> .ev-group[data-group="game"]) > .ev-group[data-group="extra"] { grid-column: 2; grid-row: 2; }
+  .ev-grid:has(> .ev-group[data-group="doc"]):has(> .ev-group[data-group="game"]) > .ev-group[data-group="extra"] .ev-cards { grid-template-columns: minmax(0, 1fr); }
   /* 두 칸 사이의 세로 점선 — 기획 문서와 게임이 다른 묶음이라는 표시(사용자 결정: 선과 파일철 색을 같이) */
   .ev-grid:has(> .ev-group[data-group="doc"]) > .ev-group[data-group="game"] { position: relative; }
   .ev-grid:has(> .ev-group[data-group="doc"]) > .ev-group[data-group="game"]::before {
@@ -712,7 +717,9 @@ html.night .scene { background-image: url('../img/bg_office_night.jpg'); }
    evidence.js landOnCard가 붙였다 뗀다). 들고 내리는 움직임은 카드의 전환(--motion-fast) 그대로. 움직임 줄이기면 들지 않고 그림자 · 테두리만 */
 .ev-card.is-back { transform: translateY(-3px); box-shadow: var(--shadow-lift); border-color: var(--ink-soft); }
 .ev-card.is-back .ev-tab { border-color: var(--ink-soft); }
-@media (prefers-reduced-motion: reduce) { .ev-card.is-back { transform: none; } }
+.ev-pick { transition: transform var(--motion-fast) ease, box-shadow var(--motion-fast) ease; }
+.ev-pick.is-back { transform: translateY(-3px); box-shadow: 0 0 0 1px rgba(140, 29, 22, .35), var(--shadow-lift); }
+@media (prefers-reduced-motion: reduce) { .ev-card.is-back, .ev-pick.is-back { transform: none; } }
 
 /* 표지 칸 — 4:3 자리 안에 표지 전체를 종이 한 장으로 놓는다. 종이의 비율은 그림 비율(--ar, 그림을 받은 뒤 evidence.js가 넣는다).
    폭은 칸의 86% · 높이는 칸의 85%(= 폭의 63.75%) 안에서 큰 쪽에 맞춘다 — 세로 그림 E5는 세로 종이, 넓은 E3은 가로로 긴 종이.
@@ -3968,38 +3975,84 @@ body.plain-mode #view { min-height: 100vh; }
 .fx-card-left { display: block; margin-top: 4px; font-size: var(--text-xs); font-weight: 700; color: var(--fx-accent, var(--accent)); }
 .fx-boost { margin: 4px 0 0; font-size: var(--text-xs); font-weight: 700; color: var(--fx-accent, var(--accent)); text-align: right; }
 
-/* ---------- 짝 증거 바인더(10/15 사용자 제안 "두 개의 파일철이 하나를 묶는 느낌") ----------
-   엑셀 하나를 함께 쓰는 두 파일철(E6 · E7)을 한 바인더 표지 위에 나란히 철한다. 가운데 등받이에 고리 셋과 그 엑셀 이름표.
-   격자에서 두 칸을 차지하고(카드 폭은 조금 좁아진다), 휴대폰처럼 한 칸뿐인 폭에서는 위아래로 쌓고 등받이를 가로로 눕힌다 */
-.ev-bundle {
-  --binder: #3d372f; --binder-edge: #2b2721; --ring: #d9d4c9; --ring-shade: #9d968a;
-  grid-column: span 2; display: grid; gap: 8px; align-content: start; min-width: 0;
+/* ---------- 대표작(SSR) — 보관함 맨 위 한 줄(10/19 사용자 결정) ----------
+   수사 파일(마닐라 카드)에 금빛 테두리와 SSR 특별 도장. 중요도(SSR)와 감상 방법(게임패드 표시)은 다른 층이라 도장은 크게, 체험 표시는 작게.
+   큰 단추 = 원본(완성된 결과물), 작은 단추 = 그 결과물의 한 가지를 해 보는 인터랙티브 */
+.ev-picks { margin-bottom: 34px; }
+.ev-picks-h { border-left-color: var(--ssr-gold-deep, #b8892a); }
+.ev-picks-row {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
+  gap: 40px 22px; padding-top: 24px; align-items: stretch;
 }
-.ev-bundle-h { margin: 0; font-size: var(--text-xs); font-weight: 700; color: var(--ink-soft); letter-spacing: .02em; }
-.ev-bundle-row {
-  display: grid; grid-template-columns: minmax(0, 1fr) 56px minmax(0, 1fr); align-items: stretch;
-  padding: 32px 14px 14px; border-radius: var(--radius-card);
-  background: var(--binder) var(--grain); border: 1px solid var(--binder-edge); box-shadow: var(--shadow-paper);
+.ev-pick {
+  --ssr-gold: #d9b45a; --ssr-gold-deep: #a97c1f; --ssr-ink: #8c1d16;
+  position: relative; display: flex; flex-direction: column; gap: 12px; min-width: 0;
+  padding: 18px 18px 16px; border-radius: 0 var(--radius-card) var(--radius-card) var(--radius-card);
+  /* 테두리 — 금빛만으로는 마닐라 바탕과 대비가 약했다(10/19 사용자). 도장의 짙은 와인색과 금빛이 번갈아 도는 띠를 둘러
+     바탕과 확실히 가르고, 그 띠를 천천히 돌려 가챠 SSR처럼 빛이 흐르게 한다(움직임 줄이기면 멈춘 띠) */
+  border: 3px solid transparent;
+  background:
+    var(--grain) padding-box,
+    linear-gradient(var(--manila), var(--manila)) padding-box,
+    conic-gradient(from var(--ssr-a), var(--ssr-ink), #c9472f, var(--ssr-gold), #fff1c4, var(--ssr-gold), #c9472f, var(--ssr-ink)) border-box;
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--ssr-ink) 35%, transparent), 0 6px 18px rgba(140, 29, 22, .16), var(--shadow-paper);
 }
-.ev-bundle-row > .ev-card { height: auto; }
-.ev-spine { display: flex; flex-direction: column; align-items: center; justify-content: space-between; gap: 12px; padding: 18px 0; }
-.ev-ring {
-  width: 30px; height: 12px; border-radius: var(--radius-pill);
-  background: linear-gradient(180deg, var(--ring), var(--ring-shade)); box-shadow: 0 1px 2px rgba(0, 0, 0, .45), inset 0 1px 0 rgba(255, 255, 255, .5);
+@property --ssr-a { syntax: '<angle>'; inherits: false; initial-value: 0deg; }
+@keyframes ssr-spin { to { --ssr-a: 360deg; } }
+@media (prefers-reduced-motion: no-preference) {
+  .ev-pick { animation: ssr-spin 6s linear infinite; }
+  /* 표지 위를 한 번 스치는 빛 — 처음 보일 때와 마우스를 올렸을 때 */
+  .ev-pick-thumb::after {
+    content: ''; position: absolute; inset: 6px; pointer-events: none;
+    background: linear-gradient(105deg, transparent 35%, rgba(255, 250, 230, .55) 50%, transparent 65%) no-repeat;
+    background-size: 250% 100%; background-position: 120% 0; animation: ssr-shine 1.6s ease .4s 1 both;
+  }
+  .ev-pick:hover .ev-pick-thumb::after { animation: ssr-shine 1.1s ease 1 both; }
 }
-.ev-spine-hub {
-  writing-mode: vertical-rl; display: flex; align-items: center; gap: 6px;
-  padding: 12px 6px; border-radius: var(--radius-tag); text-decoration: none;
-  background: var(--surface); color: var(--ink); border: 1px solid var(--manila-edge);
-  font-size: var(--text-sm); font-weight: 700; letter-spacing: .02em; box-shadow: var(--shadow-card);
-  transition: border-color var(--motion-fast) ease, color var(--motion-fast) ease;
+@keyframes ssr-shine { from { background-position: 120% 0; } to { background-position: -40% 0; } }
+.ev-pick .ev-tab { left: -3px; border: 3px solid var(--ssr-ink); border-bottom: 0; }
+/* SSR 특별 도장 — 금빛 원판에 겹고리, 붉은 SSR, 기울여 찍은 잉크 번짐. 오른쪽 위 모서리에 걸쳐 찍는다 */
+.ssr-seal {
+  position: absolute; z-index: 3; top: -26px; right: -16px; width: 76px; height: 76px;
+  display: grid; place-items: center; border-radius: var(--radius-circle);
+  background: radial-gradient(circle at 35% 30%, #fbe9a9, var(--ssr-gold) 55%, var(--ssr-gold-deep));
+  border: 2.5px solid var(--ssr-ink);
+  box-shadow: inset 0 0 0 4px rgba(255, 246, 214, .75), inset 0 0 0 5.5px var(--ssr-ink), 0 3px 8px rgba(60, 30, 10, .28);
+  transform: rotate(-12deg); filter: url(#ink-rough);
 }
-.ev-spine-hub:hover, .ev-spine-hub:focus-visible { border-color: var(--accent); color: var(--accent); }
-.ev-spine-hub:focus-visible { outline: 2px solid var(--accent-on-dark, var(--accent)); outline-offset: 3px; }
-.ev-spine-go { color: var(--accent); }
-@media (max-width: 640px) {
-  .ev-bundle { grid-column: auto; }
-  .ev-bundle-row { grid-template-columns: 1fr; gap: 0; padding: 30px 10px 10px; }
-  .ev-spine { flex-direction: row; justify-content: center; padding: 12px 0 34px; }
-  .ev-spine-hub { writing-mode: horizontal-tb; padding: 6px 12px; }
+@media (max-width: 600px) { .ssr-seal { right: -6px; width: 66px; height: 66px; } }
+.ssr-seal b { font-size: 23px; font-weight: 900; letter-spacing: .02em; color: var(--ssr-ink); text-shadow: 0 1px 0 rgba(255, 240, 200, .8); }
+.ev-pick-thumb { position: relative; display: block; background: var(--surface); padding: 6px; box-shadow: var(--shadow-card); transform: rotate(-.6deg); }
+.ev-pick-thumb img { display: block; width: 100%; aspect-ratio: 16 / 9; object-fit: cover; }
+.ev-pick-thumb .clip { top: -14px; left: 12%; }
+.ev-pick .ev-title { margin: 2px 0 0; font-size: var(--text-lg); line-height: 1.4; text-wrap: balance; }
+.ev-pick-q { margin: -4px 0 0; font-size: var(--text-md); line-height: 1.55; color: var(--ink-soft); text-wrap: pretty; }
+.ev-pick-acts { display: grid; gap: 8px; margin-top: auto; }
+.ev-pick-acts .btn { display: grid; justify-items: start; gap: 2px; text-align: left; padding: 10px 14px; }
+.ev-pick-acts .btn small { font-size: var(--text-xs); font-weight: 400; opacity: .85; }
+.ev-pick-doc span { font-size: var(--text-ui); font-weight: 800; }
+.ev-pick-play { grid-template-columns: auto 1fr; column-gap: 8px; align-items: center; }
+.ev-pick-play .ev-play-ic { grid-row: 1 / span 2; }
+.ev-pick-play span, .ev-pick-play small { grid-column: 2; }
+.ev-pick .ev-code { align-self: flex-end; font-size: var(--text-xs); color: var(--muted); }
+/* 인터랙티브로 해 볼 수 있다는 작은 표시 — 일반 카드의 번호 옆, 대표작의 작은 단추 안 */
+.ev-play-ic { width: 20px; height: 14px; flex: none; color: var(--ink-soft); }
+.ev-foot .ev-play-ic { margin-left: 6px; vertical-align: -2px; }
+
+/* ---------- 공유 엑셀 쪽지 — 짝 증거(E6 · E7) 두 파일철에 각각 붙는다(10/19, 전에는 두 카드를 묶은 바인더 등받이) ----------
+   엑셀 종이 한 장(옅은 초록 칸 무늬)이 카드에 클립으로 물려 있다. 엑셀 이름과 '공유하는 증거 E#'. 누르면 새 탭 */
+.ev-xlsx {
+  position: relative; display: flex; align-items: center; gap: 10px; margin-top: 2px;
+  padding: 8px 12px; border-radius: var(--radius-tag); text-decoration: none; color: var(--ink);
+  background: #fff linear-gradient(#dfeadf 1px, transparent 1px) 0 0 / 100% 12px,
+              #fff linear-gradient(90deg, #dfeadf 1px, transparent 1px) 0 0 / 28px 100%;
+  border: 1px solid #b9cdb9; box-shadow: var(--shadow-card); transform: rotate(.5deg);
+  transition: border-color var(--motion-fast) ease, transform var(--motion-fast) ease;
 }
+.ev-xlsx:hover { border-color: #3f7a4a; transform: rotate(0deg) translateY(-1px); }
+.ev-xlsx:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.ev-xlsx-ic { flex: none; padding: 2px 5px; border-radius: 3px; background: #2f6b3a; color: #fff; font-size: 10px; font-weight: 800; letter-spacing: .04em; }
+.ev-xlsx-t { display: grid; min-width: 0; }
+.ev-xlsx-t b { font-size: var(--text-sm); }
+.ev-xlsx-t span { font-size: var(--text-xs); color: var(--ink-soft); }
+.ev-xlsx-go { margin-left: auto; color: #2f6b3a; font-weight: 700; }

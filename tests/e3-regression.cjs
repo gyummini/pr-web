@@ -200,13 +200,20 @@ const ch = (no) => `.lg-ch[data-chapter="${no}"]`;
     await shelf.goto(origin + '/evidence');
     await shelf.locator('.ev-grid').waitFor();
     // 아직 모으지 않은 카드는 블러 그대로 '요약 확인' — 누르면 수집하지 않고 요약 팝업이 뜬다(10/07 사용자 결정)
-    for (const id of ['E1', 'E7', 'E5', 'E2', 'E8', 'E3', 'E4']) assert.equal(await shelf.locator(`.ev-card[data-eid="${id}"] .ev-open`).innerText(), UI.evidence.open_summary, id);
-    assert.equal(await shelf.locator('.play-chip').count(), 1, 'only E3 plays inside its page');
+    for (const id of ['E7', 'E5', 'E2', 'E8', 'E4']) assert.equal(await shelf.locator(`.ev-card[data-eid="${id}"] .ev-open`).innerText(), UI.evidence.open_summary, id);
+    // 대표작(SSR) 셋은 맨 위 줄의 수사 파일 — 큰 단추는 원본(E3은 회고), 작은 단추는 체험(10/19 사용자 결정)
+    assert.deepEqual(await shelf.locator('.ev-picks .ev-pick').evaluateAll((els) => els.map((e) => e.dataset.eid)), ['E1', 'E3', 'E6'], 'the three SSR picks lead the shelf');
+    assert.equal(await shelf.locator('.ev-pick .ssr-seal').count(), 3, 'each pick carries the SSR seal');
+    assert.equal(await shelf.locator('.ev-pick[data-eid="E1"] .ev-pick-doc').getAttribute('href'), EVS.find((e) => e.id === 'E1').url, 'the big button opens the original');
+    assert.equal(await shelf.locator('.ev-pick[data-eid="E3"] .ev-pick-doc span').innerText(), UI.evidence.open_retro);
+    assert.equal(await shelf.locator('.play-chip').count(), 0, 'no play chip left on ordinary cards — E3 plays from its pick card');
     const unlock = (action) => UI.popup.unlock.replace('{action}', action);
     const badge = () => shelf.locator('#badge').innerText();
     const before = await badge();
     for (const [id, action] of [['E2', UI.common.to_interactive], ['E3', UI.evidence.open_retro], ['E8', UI.common.open_doc]]) {
-      await shelf.locator(`.ev-card[data-eid="${id}"]`).click();
+      // E3은 대표작 카드라 요약 팝업 단추가 없다 — 같은 팝업을 직접 열어 그림과 단추를 본다
+      if (id === 'E3') await shelf.evaluate(async () => (await import('/assets/js/popup.js')).openEvidencePopup('E3', { shelf: true }));
+      else await shelf.locator(`.ev-card[data-eid="${id}"]`).click();
       assert.deepEqual(await shelf.locator('.popup-actions .btn').allInnerTexts(), [UI.popup.to_statement, unlock(action)], `${id} shelf popup buttons`);
       assert.equal(await shelf.locator('.popup .ev-memo .memo').count(), 1, `${id} shows the summary memo`);
       if (id === 'E3') {
@@ -225,7 +232,7 @@ const ch = (no) => `.lg-ch[data-chapter="${no}"]`;
       await shelf.locator('.modal-overlay').waitFor({ state: 'detached' });
     }
     assert.equal(await badge(), before, 'looking at a summary does not collect');
-    assert.equal(await shelf.locator('.ev-card.unknown').count(), EVS.filter((e) => !e.hidden).length);
+    assert.equal(await shelf.locator('.ev-card.unknown').count(), EVS.filter((e) => !e.hidden && e.rank !== 'SSR').length); // 대표작(SSR)은 일반 카드가 아니다
     // '남은 증거 찾기' — 첫 미수집 증거(E1)의 요약 팝업, 증거 상세 화면으로 넘어가지 않는다
     await shelf.locator('.hidden-find').click();
     await shelf.locator('.popup').waitFor();
@@ -240,7 +247,8 @@ const ch = (no) => `.lg-ch[data-chapter="${no}"]`;
     assert.equal(await badge(), before, 'landing does not collect');
     // 장을 떠나면 그 장의 증거는 자동 수집된다(원래 규칙) — 보관함으로 돌아오면 E1이 수집돼 있다
     await shelf.locator('#tabs a[data-tab="evidence"]').click();
-    await shelf.locator('.ev-card.collected[data-eid="E1"]').waitFor();
+    await shelf.locator('.ev-pick[data-eid="E1"]').waitFor(); // E1은 대표작(SSR) 카드 — 모음 여부는 상태로 본다
+    await shelf.waitForFunction(async () => (await import('/assets/js/state.js')).state.collected.has('E1'));
     // 잠금해제하고 ○○ — 수집하고 바로 연다: 원본 문서(E8 — 10/10 E4를 뺀 뒤 같은 종류)는 새 탭 + 카드가 수집으로 뒤집힌다, 인터랙티브(E7)는 그 페이지로
     await shelf.evaluate(() => { window.__opened = []; window.open = (u) => { window.__opened.push(u); return null; }; });
     await shelf.locator('.ev-card[data-eid="E8"]').click();
@@ -313,9 +321,8 @@ const ch = (no) => `.lg-ch[data-chapter="${no}"]`;
     // '원본 ↗'은 수집하지 않은 카드에도 — 원본이 있는 증거 전부(E3은 페이지가 곧 원문이라 없다)(10/07 사용자 요청)
     const unknownIds = await shelf.locator('.ev-card.unknown').evaluateAll((els) => els.map((e) => e.dataset.eid));
     assert.equal(await shelf.locator('.ev-card.unknown .ev-direct').count(), unknownIds.filter((id) => EVS.find((e) => e.id === id).url).length, 'every uncollected card with an original has the shortcut');
-    assert.equal(await shelf.locator('.ev-card[data-eid="E3"] .ev-direct').count(), 0);
-    assert.equal(await shelf.locator('.ev-card[data-eid="E3"] .play-chip').innerText(), UI.evidence.play);
-    await shelf.locator('.ev-card[data-eid="E3"] .play-chip').click();
+    assert.equal(await shelf.locator('.ev-pick[data-eid="E3"] .ev-pick-play span').innerText(), UI.evidence.play);
+    await shelf.locator('.ev-pick[data-eid="E3"] .ev-pick-play').click();
     await shelf.waitForURL('**/evidence/E3/interactive');
     await shelf.waitForFunction(() => document.activeElement?.matches('.lg-cta a'));
     assert.equal(await shelf.locator('.lg-cta a').evaluate(a => a.classList.contains('cue') && a.getAttribute('href') === '/api/play'), true, 'lands on the play button, marked, not pressed');
@@ -378,7 +385,6 @@ const ch = (no) => `.lg-ch[data-chapter="${no}"]`;
     await shelf.locator('#tabs a[data-tab="evidence"]').click();
     await shelf.locator('.ev-card.collected[data-eid="E2"] .ev-direct').waitFor();
     assert.equal(await shelf.locator('.ev-card[data-eid="E2"] .ev-open').innerText(), UI.evidence.open_interactive);
-    assert.equal(await shelf.locator('.ev-card[data-eid="E3"] .ev-open').innerText(), UI.evidence.open_retro);
     for (const width of [1440, 1100, 760, 390, 320]) {
       await shelf.setViewportSize({ width, height: 900 });
       const inside = await shelf.locator('.ev-card[data-eid="E2"]').evaluate((c) => {
@@ -421,7 +427,7 @@ const ch = (no) => `.lg-ch[data-chapter="${no}"]`;
     await live.locator('.brief-foot a').click();
     await live.locator('.ev-grid').waitFor();
     const landed = await live.evaluate(() => {
-      const card = document.querySelector('.ev-card[data-eid="E3"]');
+      const card = document.querySelector('.ev-pick[data-eid="E3"]');
       const r = card.getBoundingClientRect();
       const head = document.getElementById('site-header').getBoundingClientRect().bottom;
       return { inView: r.top >= head && r.bottom <= innerHeight, centered: Math.abs((r.top + r.bottom) / 2 - (head + innerHeight) / 2) <= 24, marked: card.classList.contains('is-back'), focused: document.activeElement === card };
