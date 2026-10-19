@@ -19,31 +19,36 @@ function portfolioHtml({ root, data, ui, resume }) {
   const minor = groups.filter((g) => g.minor).reduce((n, g) => n + g.cards.length, 0);
   const count = minor ? fill(ui.common.portfolio_count_minor, { main, minor }) : fill(ui.common.portfolio_count, { main });
 
+  // 짝 증거(E6 · E7)는 두 파일철에 같은 엑셀 쪽지를 각각 붙인다(사이트 보관함과 같다, 10/19)
+  function xlsx(ev) {
+    const m = ev.doc_map || (ev.pair && (data.evidences.find((e) => e.id === ev.pair) || {}).doc_map);
+    if (!m || !m.hub) return '';
+    const partner = (m.docs.find((d) => d.eid !== ev.id) || {}).eid || '';
+    return `<a class="xlsx" href="${esc(m.hub.url)}"><span class="xi">xlsx</span><span class="xt"><b>${esc(m.hub.name)} ↗</b><span>${esc((m.labels || {}).partner || '')} ${esc(partner)}</span></span></a>`;
+  }
   function card(ev) {
     return `<div class="card">
       <span class="tab">${esc(ev.doc_type || '')}</span>
       <a class="thumb" href="${esc(target(ev))}"><img src="${img(ev.thumb)}" alt=""><span class="chip">${esc(ui.evidence.direct)}</span></a>
-      <div class="info"><h3>${esc(ev.title)}</h3><p>${esc(ev.subtitle || '')}</p></div>
+      <div class="info"><h3>${esc(ev.title)}</h3><p>${esc(ev.subtitle || '')}</p></div>${xlsx(ev)}
       <span class="code">${esc(ev.id)}</span>
     </div>`;
   }
-  function cardsHtml(list) {
-    let out = '';
-    for (let i = 0; i < list.length; i += 1) {
-      const a = list[i]; const b = list[i + 1];
-      if (b && a.pair === b.id && b.pair === a.id) {
-        const m = a.doc_map || b.doc_map;
-        out += `<div class="bundle"><p class="bundle-h">${esc(m.title)}</p><div class="bundle-row">${card(a)}
-          <a class="spine" href="${esc(m.hub.url)}"><span class="ring"></span><span class="spine-n">${esc(m.hub.name)} ↗</span><span class="ring"></span></a>${card(b)}</div></div>`;
-        i += 1;
-      } else out += card(a);
-    }
-    return out;
+  // 대표작(SSR) — 1쪽 한 줄. 수사 파일 위 SSR 특별 도장, 와인색과 금빛 테두리. 썸네일을 누르면 원본(E3은 사이트 회고)
+  function pick(ev) {
+    const p = ev.pick || {};
+    return `<div class="card pick">
+      <span class="tab">${esc(ev.doc_type || '')}</span><span class="seal">SSR</span>
+      <a class="thumb" href="${esc(target(ev))}"><img src="${img(ev.thumb)}" alt=""><span class="chip">${esc(ev.url ? ui.evidence.direct : ui.evidence.open_retro)}</span></a>
+      <div class="info"><h3>${esc(ev.title)}</h3><p>${esc(p.question || ev.subtitle || '')}</p><p class="note">${esc(p.doc_note || '')}</p></div>${xlsx(ev)}
+      <span class="code">${esc(ev.id)}</span>
+    </div>`;
   }
-  const group = (g) => `<section class="group g-${g.id}${g.minor ? ' minor' : ''}"><h2>${esc(g.label)} <span>${g.cards.length}</span></h2><div class="cards">${cardsHtml(g.cards)}</div></section>`;
-  const doc = groups.find((g) => g.id === 'doc');
-  const game = groups.find((g) => g.id === 'game');
-  const rest = groups.filter((g) => g !== doc && g !== game);
+  const picks = cards.filter((c) => c.rank === 'SSR').sort(byNo);
+  const shelf = data.groups.map((g) => ({ ...g, cards: cards.filter((c) => c.group === g.id && c.rank !== 'SSR').sort(byNo) })).filter((g) => g.cards.length);
+  const group = (g) => `<section class="group g-${g.id}${g.minor ? ' minor' : ''}"><h2>${esc(g.label)} <span>${g.cards.length}</span></h2><div class="cards">${g.cards.map(card).join('')}</div></section>`;
+  const doc = shelf.find((g) => g.id === 'doc');
+  const side = shelf.filter((g) => g !== doc);
   const NOTE = ui.pdf.portfolio_site_note || '';
   const head = `<header class="head"><div><h1>${esc(ui.evidence.title)}</h1><p class="lead">${esc(count)}</p></div>
     <div class="who"><b>${esc(resume.name)}</b><span class="site"><span class="note">${esc(NOTE)}</span><a href="${esc(site)}">${esc(site.replace(/^https?:\/\//, ''))}</a></span></div></header>`;
@@ -64,15 +69,14 @@ function portfolioHtml({ root, data, ui, resume }) {
   .who .note { color: #5d594f; }
   .who a { color: #1a56c4; text-decoration: underline; text-decoration-thickness: .6pt; }
   .cols { display: grid; grid-template-columns: 2fr 1fr; gap: 0 9mm; flex: 1; min-height: 0; }
-  .cols .g-game { position: relative; }
-  .cols .g-game::before { content: ''; position: absolute; left: -4.6mm; top: 0; bottom: 0; border-left: 1pt dashed #a59c8a; }
+  .side { display: flex; flex-direction: column; gap: 7mm; position: relative; }
+  .cols .side::before { content: ''; position: absolute; left: -4.6mm; top: 0; bottom: 0; border-left: 1pt dashed #a59c8a; }
   .group h2 { margin: 0 0 4.5mm; font-size: 10.5pt; border-left: 3pt solid #b23a2f; padding-left: 2.5mm; }
   .group h2 span { font-weight: 400; color: #5d594f; font-size: 9pt; }
   .group.minor h2 { border-left-color: #c9c5bc; color: #5d594f; }
   .cards { display: grid; gap: 7mm 5mm; }
   .g-doc .cards { grid-template-columns: 1fr 1fr; }
-  .g-game .cards { grid-template-columns: 1fr; }
-  .minor .cards { grid-template-columns: repeat(3, 1fr); }
+  .side .cards { grid-template-columns: 1fr; }
   .card { position: relative; background: #f1e9d6; border: 0.8pt solid #d6c9ab; border-radius: 0 2mm 2mm 2mm; padding: 3mm 3mm 2.5mm; display: flex; flex-direction: column; gap: 2mm; }
   .g-game .card { background: #e3e7dc; border-color: #bfc7b3; }
   .g-game .tab { background: #e3e7dc; border-color: #bfc7b3; }
@@ -84,16 +88,24 @@ function portfolioHtml({ root, data, ui, resume }) {
   .info h3 { margin: 0; font-size: 9pt; line-height: 1.35; }
   .info p { margin: 0.8mm 0 0; font-size: 7.5pt; color: #5d594f; line-height: 1.4; }
   .code { position: absolute; right: 3mm; top: -3.6mm; font-size: 6.5pt; color: #6d695e; }
-  .bundle { grid-column: 1 / -1; }
-  .bundle-h { margin: 0 0 1.5mm; font-size: 7pt; color: #5d594f; font-weight: 700; }
-  .bundle-row { display: grid; grid-template-columns: 1fr 9mm 1fr; background: #3d372f; border-radius: 2mm; padding: 6.5mm 3mm 3mm; gap: 0; }
-  .spine { display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding: 2mm 0; }
-  .ring { width: 6mm; height: 2.4mm; border-radius: 2mm; background: linear-gradient(#e9e5dc, #9d968a); }
-  .spine-n { writing-mode: vertical-rl; background: #fff; color: #26241f; font-size: 6.5pt; font-weight: 700; padding: 2mm 0.8mm; border-radius: 0.8mm; }
+  .picks h2 { border-left-color: #a97c1f; }
+  .picks .cards { grid-template-columns: repeat(3, 1fr); gap: 9mm 7mm; }
+  .card.pick { border: 1.6pt solid #8c1d16; box-shadow: 0 0 0 0.8pt #d9b45a inset, 0 1mm 3mm rgba(140,29,22,.18); padding: 4mm 4mm 3.5mm; gap: 2.5mm; }
+  .card.pick .tab { border: 1.6pt solid #8c1d16; border-bottom: 0; left: -1.6pt; }
+  .seal { position: absolute; top: -6mm; right: -4mm; z-index: 2; width: 17mm; height: 17mm; border-radius: 50%; display: grid; place-items: center;
+          background: radial-gradient(circle at 35% 30%, #fbe9a9, #d9b45a 55%, #a97c1f); border: 0.9mm solid #8c1d16;
+          box-shadow: inset 0 0 0 1.1mm rgba(255,246,214,.75), inset 0 0 0 1.5mm #8c1d16; transform: rotate(-12deg);
+          font-size: 13pt; font-weight: 900; color: #8c1d16; }
+  .card.pick h3 { font-size: 11pt; }
+  .card.pick .info p { font-size: 8.5pt; }
+  .card.pick .info .note { margin-top: 1.5mm; font-size: 7.5pt; color: #8c1d16; font-weight: 700; }
+  .xlsx { display: flex; align-items: center; gap: 2mm; padding: 1.5mm 2.5mm; background: #fff; border: 0.6pt solid #b9cdb9; border-radius: 1mm; }
+  .xi { padding: 0.4mm 1.2mm; border-radius: 0.6mm; background: #2f6b3a; color: #fff; font-size: 6pt; font-weight: 800; }
+  .xt { display: grid; } .xt b { font-size: 7.5pt; } .xt span { font-size: 6.5pt; color: #5d594f; }
   .foot { font-size: 7pt; color: #6d695e; text-align: right; }
   </style></head><body>
-  <div class="sheet">${head}<div class="cols">${group(doc)}${group(game)}</div></div>
-  <div class="sheet">${head}${rest.map(group).join('')}<p class="foot"><a href="${esc(site)}">${esc(site.replace(/^https?:\/\//, ''))}</a></p></div>
+  <div class="sheet">${head}<section class="group picks"><h2>${esc(ui.evidence.pick_title)} <span>${picks.length}</span></h2><div class="cards">${picks.map(pick).join('')}</div></section></div>
+  <div class="sheet">${head}<div class="cols">${doc ? group(doc) : '<div></div>'}<div class="side">${side.map(group).join('')}</div></div></div>
   </body></html>`;
 }
 

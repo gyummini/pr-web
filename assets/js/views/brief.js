@@ -148,7 +148,8 @@ export function renderBrief(view, eid) {
   // 원본은 머리말에 상시 둔다. 결론까지 내려가야만 닿으면, 브리프를 건너뛰고
   // 문서만 보려는 검토자에게 인터랙션이 통행료가 된다.
   // 브리프가 곧 원문인 증거(E3)는 따로 열 원본이 없다
-  if (ev.url) view.querySelector('.brief-head-doc').appendChild(docLink(T('brief.original_doc'), 'ghost', ev.url));
+  // 체험을 끝까지 하지 않아도 원본으로 바로 간다 — 머리의 원본 단추를 주 단추(채운 색)로(10/19 사용자 결정: PDF가 완성된 결과물, 인터랙티브는 그 한 가지를 해 보는 곳)
+  if (ev.url) view.querySelector('.brief-head-doc').appendChild(docLink(T('brief.original_doc'), 'accent', ev.url));
   // 엑셀 하나를 함께 쓰는 짝 증거가 있으면(E7 — 짝은 E6 데이터 테이블 설계) 머리말 아래에 짝 증거 지도를 둔다(10/15)
   if (hasDocMap(ev)) view.querySelector('.brief-lead').appendChild(renderDocMap(ev));
 

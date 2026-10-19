@@ -1,5 +1,5 @@
 import { DB, groupCards } from '../data.js';
-import { BASE_EVIDENCE_IDS, state, baseUnlocked } from '../state.js';
+import { BASE_EVIDENCE_IDS, state, baseUnlocked, counts } from '../state.js';
 import { addPending, landOne, flyFromRect, openDoc, unlanded, dismissUnlockToast } from '../ui.js';
 import { checkChapterToasts, fmtCase } from '../collect.js';
 import { hasBrief, briefOf, briefOpenKey } from './brief.js';
@@ -15,16 +15,25 @@ export function renderEvidence(view) {
 
   const cards = DB.cards.filter((c) => !c.hidden);
   const hidden = DB.cards.find((c) => c.hidden);
-  const groups = groupCards(cards);
+  // 대표작(SSR)은 맨 위 한 줄로 따로 뺀다 — 묶음 건수(머리 줄)는 원래 묶음 그대로 센다
+  const picks = cards.filter((c) => c.rank === 'SSR').sort((a, b) => Number(a.id.slice(1)) - Number(b.id.slice(1)));
+  const groups = groupCards(cards.filter((c) => c.rank !== 'SSR'));
+  const allGroups = groupCards(cards);
 
   view.innerHTML = `
     <div class="evidence-page">
       <div class="page-head">
         <div class="stamp">${TH('evidence.stamp')}</div>
         <h2>${TH('evidence.title')}</h2>
-        <p class="page-lead">${TH('evidence.lead', { count: leadCount(groups) })}</p>
+        <p class="page-lead">${TH('evidence.lead', { count: leadCount(allGroups) })}</p>
       </div>
       <div class="hidden-slot-wrap"></div>
+      ${
+        picks.length
+          ? `<section class="ev-picks" aria-labelledby="ev-picks-h"><h3 class="ev-group-h ev-picks-h" id="ev-picks-h">${TH('evidence.pick_title')} <span class="ev-group-n">${picks.length}</span></h3>
+               <div class="ev-picks-row">${picks.map(pickHtml).join('')}</div></section>`
+          : ''
+      }
       <div class="ev-grid">
         ${groups.map(groupHtml).join('')}
       </div>
@@ -41,6 +50,7 @@ export function renderEvidence(view) {
     </div>`;
 
   wireCards(view);
+  wirePicks(view);
   renderHiddenSlot(view.querySelector('.hidden-slot-wrap'), view, hidden);
   // 인터랙티브 페이지의 '포트폴리오 화면으로 돌아가기'로 왔으면 그 카드 자리로 내려앉는다(10/11 기회 5)
   landOnCard(view, takeLanding('evidence'));
@@ -75,34 +85,78 @@ function groupHtml(g) {
     <div class="ev-cards">${cardsHtml(g.cards)}</div></section>`;
 }
 
-// 엑셀 하나를 함께 쓰는 짝 증거(E6 데이터 테이블 설계 · E7 Cost 역기획서)는 한 바인더에 철한다(10/15 사용자 제안
-// "두 개의 파일철이 하나를 묶는 느낌"). 두 카드가 번호 순으로 붙어 있을 때만 묶는다 — 격자에서 두 칸을 차지하고, 가운데 등받이에 그 엑셀을 단다
 function cardsHtml(cards) {
-  let out = '';
-  for (let i = 0; i < cards.length; i += 1) {
-    const a = cards[i];
-    const b = cards[i + 1];
-    if (b && a.pair === b.id && b.pair === a.id && pairMap(a)) {
-      out += bundleHtml(a, b);
-      i += 1;
-    } else out += cardHtml(a);
-  }
-  return out;
+  return cards.map(cardHtml).join('');
 }
 
-function bundleHtml(a, b) {
-  const m = pairMap(a);
+// 엑셀 하나를 함께 쓰는 짝 증거(E6 데이터 테이블 설계 · E7 Cost 역기획서)는 두 파일철에 같은 엑셀 쪽지를 각각 붙인다
+// (10/19 사용자 결정 — 전에는 두 카드를 한 바인더에 철하고 등받이에 엑셀을 달았는데, E6이 대표작 줄로 올라가며 둘이 떨어졌다).
+// 쪽지에는 엑셀 이름과 '공유하는 증거 E#'(짝 지도의 확정 문구)을 적고, 누르면 엑셀이 새 탭에서 열린다
+function xlsxHtml(ev) {
+  const m = ev.pair || ev.doc_map ? pairMap(ev) : null;
+  if (!m) return '';
+  const partner = (m.docs.find((d) => d.eid !== ev.id) || {}).eid || '';
+  return `<a class="ev-xlsx" href="${esc(m.hub.url)}" target="_blank" rel="noopener">
+      <span class="ev-xlsx-ic" aria-hidden="true">xlsx</span>
+      <span class="ev-xlsx-t"><b>${esc(m.hub.name)}</b><span>${esc((m.labels || {}).partner || '')} ${esc(partner)}</span></span>
+      <span class="ev-xlsx-go" aria-hidden="true">↗</span></a>`;
+}
+
+// 인터랙티브로 직접 해 볼 수 있다는 작은 표시(게임패드) — 작품의 중요도(SSR)와는 다른 층의 정보라 작게, 글 없이(10/19)
+const PLAY_IC = '<svg class="ev-play-ic" viewBox="0 0 24 16" aria-hidden="true" focusable="false"><path d="M6.5 1h11a5.5 5.5 0 0 1 5.4 6.6l-1 5a3 3 0 0 1-5.2 1.3L14.5 11h-5l-2.2 2.9a3 3 0 0 1-5.2-1.3l-1-5A5.5 5.5 0 0 1 6.5 1Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M7 4.5v4M5 6.5h4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="16.5" cy="5.2" r="1.1" fill="currentColor"/><circle cx="18.6" cy="7.6" r="1.1" fill="currentColor"/></svg>';
+
+// 대표작(SSR) — 보관함 맨 위 한 줄(10/19 사용자 결정: PokeCollect · 캐릭터 분석서 · 데이터 테이블 설계).
+// 수사 파일 위에 SSR 특별 도장. 큰 단추는 완성된 결과물(원본 PDF, 원본이 따로 없는 E3는 회고 페이지),
+// 작은 단추는 그 결과물에서 가장 인상적인 한 가지를 해 보는 인터랙티브(E6은 Cost 역기획서와 함께 쓰는 체험 — '연계' 이름표).
+// 표지는 흐리게 가리지 않는다 — 가장 먼저 보여 주려는 작품이다. 어느 단추로 열든 그 증거는 모은 것이 된다
+function pickHtml(ev) {
+  const p = ev.pick || {};
+  const doc = ev.url
+    ? `<a class="btn accent ev-pick-doc" href="${esc(ev.url)}" target="_blank" rel="noopener"><span>${TH('evidence.pick_doc')}</span><small>${esc(p.doc_note || '')}</small></a>`
+    : `<a class="btn accent ev-pick-doc" href="/evidence/${esc(ev.id)}/interactive"><span>${TH('evidence.open_retro')}</span><small>${esc(p.doc_note || '')}</small></a>`;
+  const play = canPlay(ev)
+    ? `<a class="btn ghost ev-pick-play" data-play="1" href="/evidence/${esc(ev.id)}/interactive">${PLAY_IC}<span>${TH('evidence.play')}</span><small>${esc(p.play_note || '')}</small></a>`
+    : ev.url && hasBrief(ev)
+      ? `<a class="btn ghost ev-pick-play" href="/evidence/${esc(ev.id)}/interactive">${PLAY_IC}<span>${esc(p.play_label || '')}</span><small>${esc(p.play_note || '')}</small></a>`
+      : '';
+  const thumbHref = ev.url || `/evidence/${ev.id}/interactive`;
   return `
-    <div class="ev-bundle" data-pair="${esc(a.id)} ${esc(b.id)}">
-      <p class="ev-bundle-h">${esc(m.title)}</p>
-      <div class="ev-bundle-row">${cardHtml(a)}
-        <div class="ev-spine">
-          <span class="ev-ring" aria-hidden="true"></span>
-          <a class="ev-spine-hub" href="${esc(m.hub.url)}" target="_blank" rel="noopener"><span class="ev-spine-n">${esc(m.hub.name)}</span><span class="ev-spine-go" aria-hidden="true">↗</span></a>
-          <span class="ev-ring" aria-hidden="true"></span>
-        </div>${cardHtml(b)}
-      </div>
-    </div>`;
+    <article class="ev-pick" data-eid="${esc(ev.id)}">
+      <span class="ev-tab"><span class="ev-type">${esc(ev.doc_type || '')}</span></span>
+      <span class="ssr-seal" aria-hidden="true"><b>SSR</b></span>
+      <a class="ev-pick-thumb" href="${esc(thumbHref)}"${ev.url ? ' target="_blank" rel="noopener"' : ''} tabindex="-1" aria-hidden="true">
+        <img src="${esc(ev.thumb)}" alt="" loading="lazy"><span class="clip" aria-hidden="true"></span></a>
+      <h3 class="ev-title">${esc(ev.title)}</h3>
+      <p class="ev-pick-q">${esc(p.question || ev.subtitle || '')}</p>
+      <div class="ev-pick-acts">${doc}${play}</div>
+      ${xlsxHtml(ev)}
+      <span class="ev-code">${esc(ev.id)}</span>
+    </article>`;
+}
+
+// 대표작 단추로 열면 그 증거를 모은 것으로 친다 — 상세 화면의 잠금해제와 같은 쪽지(배지로 날아감)
+function collectFrom(el, id) {
+  if (state.collected.has(id)) return;
+  state.collected.add(id);
+  if (counts(id)) {
+    addPending(1, id);
+    flyFromRect(el.getBoundingClientRect(), () => {
+      landOne(id);
+      checkChapterToasts();
+    }, { id });
+  }
+}
+
+function wirePicks(view) {
+  view.querySelectorAll('.ev-pick[data-eid]').forEach((card) => {
+    const id = card.dataset.eid;
+    card.querySelectorAll('.ev-pick-doc, .ev-pick-thumb').forEach((a) => a.addEventListener('click', () => collectFrom(a, id)));
+    const play = card.querySelector('.ev-pick-play');
+    if (play) play.addEventListener('click', () => {
+      collectFrom(play, id);
+      if (play.dataset.play) landAt('retro', 'play'); // E3 — 회고 페이지의 '직접 플레이하기' 단추로 내려앉는다
+    });
+  });
 }
 
 // '추가'로 내린 묶음은 따로 센다 — 수집·엔딩 조건과는 별개인 표시일 뿐이다
@@ -130,7 +184,7 @@ function cardHtml(ev) {
   // 자기소개서에 나오지 않는 추가 포트폴리오(E4)는 장 이름 없이 번호만. 모으지 않은 카드는 도장이 상태를 말하므로 번호만
   const chs = (ev.chapters || []).map(fmtCase).join(', ');
   const code = got ? (chs ? T('evidence.code', { id: ev.id, chapters: chs }) : ev.id) : ev.id;
-  // 짝 증거의 공유 엑셀은 바인더 등받이에 한 번만 — 카드의 첨부 칩에서는 뺀다(칩 번호 data-att는 원래 자리 그대로)
+  // 짝 증거의 공유 엑셀은 카드에 붙인 엑셀 쪽지(xlsxHtml)로 보인다 — 첨부 칩에서는 뺀다(칩 번호 data-att는 원래 자리 그대로)
   const hubUrl = ev.pair || ev.doc_map ? (pairMap(ev) || { hub: {} }).hub.url : null;
   const atts = (ev.attachments || []).map((att, i) => ({ att, i })).filter(({ att }) => !hubUrl || att.url !== hubUrl);
   return `
@@ -153,8 +207,9 @@ function cardHtml(ev) {
                 .join('')}${canPlay(ev) ? `<button type="button" class="att-chip card play-chip">${TH('evidence.play')}</button>` : ''}</div>`
             : ''
         }
+        ${xlsxHtml(ev)}
         <div class="ev-foot">
-          <span class="ev-code">${esc(code)}</span>
+          <span class="ev-code">${esc(code)}</span>${hasBrief(ev) ? PLAY_IC : ''}
           <span class="ev-acts"><span class="ev-open">${TH(!got ? 'evidence.open_summary' : hasBrief(ev) ? briefOpenKey(ev) : 'common.open_doc')}</span>${
             // 절대원칙 1(2클릭 내 도달) 유지 — 본문이 브리프로 가더라도
             // 원본 문서로 바로 가는 길은 카드 안에 남겨둔다.
@@ -257,6 +312,13 @@ function wireCard(el, view) {
     play.addEventListener('keydown', (e) => {
       if (e.code === 'Enter' || e.code === 'Space') go(e);
     });
+  }
+
+  // 엑셀 쪽지는 링크 그대로(새 탭) — 카드 본체 클릭(요약 열기)으로 번지지 않게만 막는다
+  const xlsx = el.querySelector('.ev-xlsx');
+  if (xlsx) {
+    xlsx.addEventListener('click', (e) => e.stopPropagation());
+    xlsx.addEventListener('keydown', (e) => e.stopPropagation());
   }
 
   // 수집된 증거의 원본 문서로 가는 지름길 (카드 본체 클릭과 분리)
@@ -447,7 +509,8 @@ const BACK_MS = 1000;
 function landOnCard(view, want) {
   if (!want || !want.id) return;
   queueMicrotask(() => {
-    const card = view.querySelector(`.ev-card[data-eid="${want.id}"]`);
+    // 대표작(SSR) 카드도 같은 자리 찾기 — 초점은 그 카드의 큰 단추에(카드 자체는 단추가 아니다)
+    const card = view.querySelector(`.ev-card[data-eid="${want.id}"], .ev-pick[data-eid="${want.id}"]`);
     if (!card || !card.isConnected) return;
     const head = document.getElementById('site-header');
     const top0 = head ? Math.max(0, head.getBoundingClientRect().bottom) : 0;
@@ -455,7 +518,7 @@ function landOnCard(view, want) {
     const r = card.getBoundingClientRect();
     const dy = r.height < room ? r.top - top0 - (room - r.height) / 2 : r.top - top0 - 16; // 화면보다 크면 머리말 바로 아래부터
     window.scrollTo({ top: Math.max(0, window.scrollY + dy), behavior: 'instant' });
-    if (want.focus) card.focus({ preventScroll: true });
+    if (want.focus) (card.matches('.ev-pick') ? card.querySelector('.ev-pick-doc') || card : card).focus({ preventScroll: true });
     card.classList.add('is-back');
     setTimeout(() => card.classList.remove('is-back'), BACK_MS);
   });
