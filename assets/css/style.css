@@ -666,11 +666,8 @@ html.night .scene { background-image: url('../img/bg_office_night.jpg'); }
   .ev-grid:has(> .ev-group[data-group="doc"]) > .ev-group[data-group="game"] { grid-column: 2; }
   .ev-grid:has(> .ev-group[data-group="game"]) > .ev-group[data-group="doc"] .ev-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .ev-grid:has(> .ev-group[data-group="doc"]) > .ev-group[data-group="game"] .ev-cards { grid-template-columns: minmax(0, 1fr); }
-  /* 추가 포트폴리오는 게임 칸 아래로(10/19 — 대표작이 맨 위로 빠지며 묶음마다 카드가 한두 장이 되어, 아래 한 줄에 혼자 놓이면 비어 보였다) */
-  .ev-grid:has(> .ev-group[data-group="game"]):has(> .ev-group[data-group="extra"]) > .ev-group[data-group="doc"] { grid-row: 1 / span 2; }
-  .ev-grid:has(> .ev-group[data-group="doc"]) > .ev-group[data-group="game"] { grid-row: 1; }
-  .ev-grid:has(> .ev-group[data-group="doc"]):has(> .ev-group[data-group="game"]) > .ev-group[data-group="extra"] { grid-column: 2; grid-row: 2; }
-  .ev-grid:has(> .ev-group[data-group="doc"]):has(> .ev-group[data-group="game"]) > .ev-group[data-group="extra"] .ev-cards { grid-template-columns: minmax(0, 1fr); }
+  /* 추가 포트폴리오는 기획 문서 · 게임 아래 한 단계 낮은 줄(10/19 사용자 — 잠깐 게임 칸 아래에 두었다가 되돌림). 카드 폭은 위 칸들과 같게 세 칸 격자 */
+  .ev-grid:has(> .ev-group[data-group="doc"]):has(> .ev-group[data-group="game"]) > .ev-group[data-group="extra"] .ev-cards { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   /* 두 칸 사이의 세로 점선 — 기획 문서와 게임이 다른 묶음이라는 표시(사용자 결정: 선과 파일철 색을 같이) */
   .ev-grid:has(> .ev-group[data-group="doc"]) > .ev-group[data-group="game"] { position: relative; }
   .ev-grid:has(> .ev-group[data-group="doc"]) > .ev-group[data-group="game"]::before {
