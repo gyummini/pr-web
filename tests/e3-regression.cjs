@@ -210,7 +210,7 @@ const ch = (no) => `.lg-ch[data-chapter="${no}"]`;
     const unlock = (action) => UI.popup.unlock.replace('{action}', action);
     const badge = () => shelf.locator('#badge').innerText();
     const before = await badge();
-    for (const [id, action] of [['E2', UI.common.to_interactive], ['E3', UI.evidence.open_retro], ['E8', UI.common.open_doc]]) {
+    for (const [id, action] of [['E2', UI.common.open_doc], ['E3', UI.evidence.open_retro], ['E8', UI.common.open_doc]]) { // E2는 10/20부터 인터랙티브 없이 원본(아르카나 웹 제안서)
       // E3은 대표작 카드라 요약 팝업 단추가 없다 — 같은 팝업을 직접 열어 그림과 단추를 본다
       if (id === 'E3') await shelf.evaluate(async () => (await import('/assets/js/popup.js')).openEvidencePopup('E3', { shelf: true }));
       else await shelf.locator(`.ev-card[data-eid="${id}"]`).click();
@@ -322,10 +322,8 @@ const ch = (no) => `.lg-ch[data-chapter="${no}"]`;
     const unknownIds = await shelf.locator('.ev-card.unknown').evaluateAll((els) => els.map((e) => e.dataset.eid));
     assert.equal(await shelf.locator('.ev-card.unknown .ev-direct').count(), unknownIds.filter((id) => EVS.find((e) => e.id === id).url).length, 'every uncollected card with an original has the shortcut');
     assert.equal(await shelf.locator('.ev-pick[data-eid="E3"] .ev-pick-play span').innerText(), UI.evidence.play);
-    await shelf.locator('.ev-pick[data-eid="E3"] .ev-pick-play').click();
-    await shelf.waitForURL('**/evidence/E3/interactive');
-    await shelf.waitForFunction(() => document.activeElement?.matches('.lg-cta a'));
-    assert.equal(await shelf.locator('.lg-cta a').evaluate(a => a.classList.contains('cue') && a.getAttribute('href') === '/api/play'), true, 'lands on the play button, marked, not pressed');
+    // 직접 플레이는 바로 키 발급 페이지(새 탭) — 누르면 실제 키가 발급되므로 테스트는 누르지 않고 주소만 본다(10/20)
+    assert.deepEqual(await shelf.locator('.ev-pick[data-eid="E3"] .ev-pick-play').evaluate((a) => [a.getAttribute('href'), a.target]), ['/api/play', '_blank'], 'the pick play button goes straight to the key page');
     for (const [w, h] of [[1440, 900], [390, 844]]) {
       const det = await browser.newPage({ viewport: { width: w, height: h } });
       await det.route('**/_vercel/**', (r) => r.abort());
@@ -383,11 +381,11 @@ const ch = (no) => `.lg-ch[data-chapter="${no}"]`;
     await shelf.setViewportSize({ width: 1440, height: 900 });
     // 수집한 카드에는 '원본 ↗'이 붙는다 — 긴 행동 문구에 밀려 카드 밖으로 잘리지 않는다(10/07 사용자 발견). 보관함은 탭으로 옮겨 수집 상태를 지킨다
     await shelf.locator('#tabs a[data-tab="evidence"]').click();
-    await shelf.locator('.ev-card.collected[data-eid="E2"] .ev-direct').waitFor();
-    assert.equal(await shelf.locator('.ev-card[data-eid="E2"] .ev-open').innerText(), UI.evidence.open_interactive);
+    await shelf.locator('.ev-card.collected[data-eid="E7"] .ev-direct').waitFor(); // 10/20 E2 인터랙티브를 빼서 E7으로 본다
+    assert.equal(await shelf.locator('.ev-card[data-eid="E7"] .ev-open').innerText(), UI.evidence.open_interactive);
     for (const width of [1440, 1100, 760, 390, 320]) {
       await shelf.setViewportSize({ width, height: 900 });
-      const inside = await shelf.locator('.ev-card[data-eid="E2"]').evaluate((c) => {
+      const inside = await shelf.locator('.ev-card[data-eid="E7"]').evaluate((c) => {
         const cr = c.getBoundingClientRect();
         return [...c.querySelectorAll('.ev-foot *')].every((n) => { const r = n.getBoundingClientRect(); return r.left >= cr.left && r.right <= cr.right; });
       });
@@ -395,7 +393,7 @@ const ch = (no) => `.lg-ch[data-chapter="${no}"]`;
     }
     // 증거 상세(수첩의 증거 링크 · 주소로 직접 열기) — 브리프가 있는 증거는 인터랙티브 페이지로 가는 버튼이 나온다.
     // 10/07 최종 점검에서 E3과 '수집한' 브리프 증거의 상세가 오류 화면이었다(briefOpenKey를 불러오지 않았다). 여기서는 E2 · E3이 이미 수집돼 있다
-    for (const [id, label] of [['E3', UI.evidence.open_retro], ['E2', UI.common.to_interactive]]) {
+    for (const [id, label] of [['E3', UI.evidence.open_retro], ['E7', UI.common.to_interactive]]) {
       await shelf.evaluate(async (to) => { const { navigate } = await import('/assets/js/router.js'); navigate(to); }, `/evidence/${id}`);
       await shelf.locator('.detail').waitFor();
       assert.equal(await shelf.locator(`.detail-actions a[href="/evidence/${id}/interactive"]`).innerText(), label, `${id} detail opens its page`);
