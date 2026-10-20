@@ -10,7 +10,7 @@ const path = require('node:path');
 const ORIGIN = process.env.TEST_ORIGIN || 'http://127.0.0.1:4173';
 const SUITES = [
   ['인터랙티브 공통 (E1·E7)', ['node', ['tests/brief-regression.cjs']]],
-  ['E2 · one_card', ['node', ['tests/e2-regression.cjs']]],
+  // E2 · one_card — 10/20 사용자 결정으로 E2(아르카나) 인터랙티브 페이지를 뺐다. 본체(one-card.js)와 테스트 파일은 되살릴 때를 위해 남긴다
   ['E3 · retro', ['node', ['tests/e3-regression.cjs']]],
   ['E5 · cut_play', ['node', ['tests/e5-regression.cjs']]],
   ['수첩 · notebook', ['node', ['tests/notebook-regression.cjs']]],

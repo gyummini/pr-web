@@ -115,7 +115,8 @@ function pickHtml(ev) {
     ? `<a class="btn accent ev-pick-doc" href="${esc(ev.url)}" target="_blank" rel="noopener"><span>${TH('evidence.pick_doc')}</span><small>${esc(p.doc_note || '')}</small></a>`
     : `<a class="btn accent ev-pick-doc" href="/evidence/${esc(ev.id)}/interactive"><span>${TH('evidence.open_retro')}</span><small>${esc(p.doc_note || '')}</small></a>`;
   const play = canPlay(ev)
-    ? `<a class="btn ghost ev-pick-play" data-play="1" href="/evidence/${esc(ev.id)}/interactive">${PLAY_IC}<span>${TH('evidence.play')}</span><small>${esc(p.play_note || '')}</small></a>`
+    ? // 직접 플레이는 회고 페이지를 거치지 않고 바로 키 발급 페이지로, 새 탭(10/20 사용자 지시 — 회고 페이지의 '직접 플레이하기'와 같은 주소)
+      `<a class="btn ghost ev-pick-play" href="${esc(briefOf(ev).play.href)}" target="_blank" rel="noopener">${PLAY_IC}<span>${TH('evidence.play')}</span><small>${esc(p.play_note || '')}</small></a>`
     : ev.url && hasBrief(ev)
       ? `<a class="btn ghost ev-pick-play" href="/evidence/${esc(ev.id)}/interactive">${PLAY_IC}<span>${esc(p.play_label || '')}</span><small>${esc(p.play_note || '')}</small></a>`
       : '';
@@ -152,10 +153,7 @@ function wirePicks(view) {
     const id = card.dataset.eid;
     card.querySelectorAll('.ev-pick-doc, .ev-pick-thumb').forEach((a) => a.addEventListener('click', () => collectFrom(a, id)));
     const play = card.querySelector('.ev-pick-play');
-    if (play) play.addEventListener('click', () => {
-      collectFrom(play, id);
-      if (play.dataset.play) landAt('retro', 'play'); // E3 — 회고 페이지의 '직접 플레이하기' 단추로 내려앉는다
-    });
+    if (play) play.addEventListener('click', () => collectFrom(play, id));
   });
 }
 
